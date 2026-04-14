@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sys
 from typing import Iterable, List
 
 from docx import Document
@@ -14,7 +15,7 @@ from docx.shared import Cm, Pt
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_MD = ROOT / "paper_submission_2page.md"
-OUTPUT_DOCX = ROOT / "paper_submission_2page.docx"
+DEFAULT_OUTPUT_DOCX = ROOT / "paper_submission_2page.docx"
 
 
 def set_run_font(run, size_pt: int, bold: bool = False) -> None:
@@ -268,9 +269,10 @@ def build_doc() -> Document:
 
 
 def main() -> None:
+    output_docx = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else DEFAULT_OUTPUT_DOCX
     doc = build_doc()
-    doc.save(OUTPUT_DOCX)
-    print(f"Saved {OUTPUT_DOCX}")
+    doc.save(output_docx)
+    print(f"Saved {output_docx}")
 
 
 if __name__ == "__main__":
