@@ -14,7 +14,7 @@ from docx.shared import Cm, Pt
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE_MD = ROOT / "paper_submission_2page.md"
+DEFAULT_SOURCE_MD = ROOT / "paper_submission_2page.md"
 DEFAULT_OUTPUT_DOCX = ROOT / "paper_submission_2page.docx"
 
 
@@ -75,8 +75,8 @@ def set_columns(section, count: int, space_cm: float) -> None:
         sect_pr.append(cols_el)
 
 
-def read_lines() -> List[str]:
-    return SOURCE_MD.read_text(encoding="utf-8").splitlines()
+def read_lines(source_md: Path) -> List[str]:
+    return source_md.read_text(encoding="utf-8").splitlines()
 
 
 def extract_title(lines: List[str]) -> str:
@@ -208,8 +208,8 @@ def add_bullets(doc: Document, items: List[str]) -> None:
         set_run_font(run, 10, bold=False)
 
 
-def build_doc() -> Document:
-    lines = read_lines()
+def build_doc(source_md: Path) -> Document:
+    lines = read_lines(source_md)
     title = extract_title(lines)
     abstract_blocks = parse_blocks(section_lines(lines, "## 초록"))
     body_blocks = [{"type": "heading", "level": 2, "text": "1. 서론"}]
@@ -269,8 +269,9 @@ def build_doc() -> Document:
 
 
 def main() -> None:
-    output_docx = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else DEFAULT_OUTPUT_DOCX
-    doc = build_doc()
+    source_md = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else DEFAULT_SOURCE_MD
+    output_docx = Path(sys.argv[2]).resolve() if len(sys.argv) > 2 else DEFAULT_OUTPUT_DOCX
+    doc = build_doc(source_md)
     doc.save(output_docx)
     print(f"Saved {output_docx}")
 
