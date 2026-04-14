@@ -507,13 +507,23 @@ def build_detailed() -> Document:
 
     add_heading(doc, "2.1 데이터 생성 및 표현 계층", level=2)
     add_body(doc,
-        "입력 데이터는 단일 이미지 파일이 아니라 두 소스의 로그 정합 결과이다. Bucket A에는 "
-        "primary fail map raw 파일이 저장되고, Bucket B에는 chip-level measurement 로그가 저장된다. "
-        "두 bucket은 wafer 식별 규칙과 ±10초 시간 오프셋을 이용해 자동 매칭되며, 256 연결 병렬 "
-        "다운로드와 압축 해제(LZW, gzip) 후 Cython 기반 파싱(Python 대비 3~5× 가속)을 거쳐 "
-        "wafer image와 positions JSON을 동시에 생성한다. positions JSON에는 rect, grid_edges, "
-        "b, f, q와 함께 wafer-level yield, sys, lt, tm이 저장되며, 분류기와 UI가 동일 좌표계를 "
-        "공유하도록 한다.")
+        "본 계층의 목적은 단순히 이미지를 생성하는 것이 아니라, wafer의 공간 패턴 정보와 chip-level "
+        "계측 정보를 동일 좌표계에서 결합한 공통 표현을 구축하는 데 있다. Bucket A의 raw fail-map "
+        "로그는 불량의 공간 분포를 정밀하게 담고 있지만 chip-level measurement를 포함하지 않고, "
+        "Bucket B의 계측 로그는 BIN, FBT, QVL과 같은 수치 정보를 제공하지만 공간 패턴 자체를 직접 "
+        "보여주지 않는다. 두 소스를 정합하여 wafer image와 positions JSON을 동시에 생성하면, 동일 "
+        "wafer를 등록 불량 분류 입력, unknown defect 군집 검토, UI overlay, 향후 이미지-계측 "
+        "multimodal 학습의 공통 샘플 단위로 재사용할 수 있다.")
+    add_body(doc,
+        "구현 측면에서 중요한 제약은 두 로그가 동일 wafer를 가리키더라도 파일명 형식이 일치하지 않고 "
+        "저장 시각에도 편차가 존재한다는 점이다. 이 때문에 단순 파일명 join이나 사후 DB 매칭에 "
+        "의존하면 전수 검색 비용이 커지고, 실시간에 가까운 데이터 생성 파이프라인을 구성하기 어렵다. "
+        "따라서 본 시스템은 wafer 식별 규칙과 ±10초 시간 오프셋을 이용해 Bucket A의 primary fail map "
+        "raw 파일과 Bucket B의 chip-level measurement 로그를 로그 단계에서 직접 정합한다. 이후 "
+        "Bucket A 로그의 `X=, Y=, b=` 헤더와 뒤따르는 hex grade block을 Cython 기반 Hex 파싱으로 "
+        "변환하여 chip tile array를 복원하고, Bucket B에서 읽은 BIN, FBT, QVL 및 wafer-level yield, "
+        "sys, lt, tm을 positions JSON에 병합한다. 이 결과 분류기와 UI는 동일한 wafer 좌표계와 동일한 "
+        "chip 인덱스를 공유하게 된다.")
     add_body(doc,
         "wafer map 저장 포맷으로 32-color 8-bit palette-indexed PNG를 채택한 이유도 도메인 지식에 "
         "기반한다. 실제 생성 이미지는 자연영상처럼 수천~수만 색을 쓰지 않고, grade, background, "
@@ -724,11 +734,11 @@ if __name__ == "__main__":
 
     print("[2/2] Building 2-page compact version...")
     doc_2p = build_2page()
-    # 자동 rev 번호: paper_codex_2page_rev1.docx, rev2.docx, ...
+    # 자동 rev 번호: paper_claude_2page_rev1.docx, rev2.docx, ...
     rev = 1
-    while (OUT_DIR / f"paper_codex_2page_rev{rev}.docx").exists():
+    while (OUT_DIR / f"paper_claude_2page_rev{rev}.docx").exists():
         rev += 1
-    path_2p = OUT_DIR / f"paper_codex_2page_rev{rev}.docx"
+    path_2p = OUT_DIR / f"paper_claude_2page_rev{rev}.docx"
     doc_2p.save(str(path_2p))
     print(f"  -> saved: {path_2p}")
 
