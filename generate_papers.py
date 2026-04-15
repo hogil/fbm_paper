@@ -38,15 +38,19 @@ M_BOTTOM = 2.5
 M_LEFT   = 1.5
 M_RIGHT  = 1.5
 
-# ─── 공통 데이터 ──────────────────────────────────────────────
-TITLE_KO = "DRAM Failbit Map 기반 Known·Unknown 불량 분류·검출 아키텍처"
-TITLE_EN = ("A Known/Unknown Defect Classification and Detection Architecture "
-            "Based on DRAM Failbit Maps")
+# ─── 문서별 데이터 ────────────────────────────────────────────
+TITLE_KO_CLAUDE = "DRAM Failbit Map 기반 Known·Unknown 불량 분류·검출 아키텍처"
+TITLE_EN_CLAUDE = ("A Known/Unknown Defect Classification and Detection Architecture "
+                   "Based on DRAM Failbit Maps")
+
+TITLE_KO_CODEX = "DRAM Failbit Map 기반 Known·Unknown 불량 분류·검출 아키텍처"
+TITLE_EN_CODEX = ("A Known/Unknown Defect Classification and Detection Architecture "
+                  "Based on DRAM Failbit Maps")
 
 AUTHORS  = "홍길동\u00b9, 김철수\u00b9"   # 위첨자 번호 포함 — 실제 이름으로 교체
 AFFIL    = "\u00b9 반도체연구소, Samsung Electronics, 화성시, 대한민국"
 
-ABSTRACT = (
+ABSTRACT_CLAUDE = (
     "Failbit Map은 반도체 EDS Test에서 생성되는 웨이퍼당 약 1,000만 point 규모의 초고밀도 데이터로, "
     "공간적 불량 패턴 해석을 통한 수율 개선의 핵심 자료이다. "
     "그러나 대량 데이터 생성·저장 체계와 수만 장 열람 환경이 부재하여, "
@@ -60,6 +64,16 @@ ABSTRACT = (
     "13개 그룹 모두 실제 의미를 해석할 수 있는 패턴으로 정리되었다. 이 중 7개는 실제 의미 있는 불량 그룹으로 확인되었고, "
     "나머지 후보 역시 1 lot 편중 패턴 또는 현업 불량으로 이어지지 않은 이상 이미지로 정리되어 후속 검토 리스트로 활용되었다. "
     "또한 palette-indexed PNG 기반 데이터 표현과 고속 UI를 통해 대량 Map 탐색과 후속 원인 분석용 Measure 연계를 지원함으로써, 제안 아키텍처가 실제 불량 분석 workflow에 활용될 수 있음을 확인하였다."
+)
+
+ABSTRACT_CODEX = (
+    "Failbit Map은 반도체 EDS Test에서 생성되는 웨이퍼당 약 1,000만 point 규모의 초고밀도 데이터로, 수율 개선을 위한 공간적 불량 패턴 해석의 핵심 자료이다. "
+    "그러나 데이터 규모와 열람 한계로 인해 실제 현업에서는 Failbit Map 대신 chip별 Measure 평균 기반 분석에 주로 의존해 왔으며, 등록 불량의 세밀한 분류와 미등록 Unknown 불량 후보 발굴을 동시에 수행하기 어려웠다. "
+    "본 논문은 이를 해결하기 위해 DRAM Failbit Map 기반 Known·Unknown 불량 분류·검출 아키텍처를 제안한다. Known 경로에서는 ConvNeXtV2-Base를 주 분류기로 사용하고, "
+    "wafer 내 발생 영역이 유사하여 혼동이 집중되는 저신뢰 샘플에 한해 Grad-CAM ROI 기반 YOLO를 선택적으로 적용하는 2단계 구조를 설계하여 16-class weighted F1을 0.78에서 0.95까지 향상시켰다. "
+    "Unknown 경로에서는 SimCLR 계열 contrastive learning, 6×6 structured local sampling, HDBSCAN 군집화를 결합하여 5일치 운영 이미지 약 10,000장으로 표현 공간을 학습하고 별도 1일치 2,000장을 13개 후보 그룹으로 압축하였다. "
+    "이는 직접 검토해야 할 대상을 약 154배 줄인 결과이며, 13개 그룹 모두 설명 가능한 패턴으로 정리되었다. 이 중 7개는 실제 의미 있는 불량 그룹으로 확인되었고, 나머지 후보 역시 1 lot 편중 패턴 또는 현업 불량으로 이어지지 않은 이상 이미지로 정리되어 후속 검토 리스트로 활용되었다. "
+    "또한 palette-indexed PNG 기반 데이터 표현, 고속 UI, 후속 원인 분석용 Measure 연계를 통해 제안 아키텍처가 실제 불량 분석 workflow에 활용될 수 있음을 확인하였다."
 )
 
 # ─── 표 데이터 ───────────────────────────────────────────────
@@ -814,9 +828,9 @@ def build_detailed() -> Document:
     doc.styles["Normal"].font.name = F_KO
 
     # ── 1단 영역: 제목 / 저자 / 초록 ─────────────────────────
-    add_title_block(doc, TITLE_KO, TITLE_EN)
+    add_title_block(doc, TITLE_KO_CLAUDE, TITLE_EN_CLAUDE)
     add_author_block(doc, AUTHORS, AFFIL)
-    add_abstract_block(doc, ABSTRACT)
+    add_abstract_block(doc, ABSTRACT_CLAUDE)
 
     # 1단→2단 전환 (연속 섹션 구분)
     add_single_to_double_break(doc)
@@ -1004,9 +1018,9 @@ def build_2page() -> Document:
     doc.styles["Normal"].font.name = F_KO
 
     # ── 1단: 제목 / 저자 / 초록 ──────────────────────────────
-    add_title_block(doc, TITLE_KO, TITLE_EN)
+    add_title_block(doc, TITLE_KO_CODEX, TITLE_EN_CODEX)
     add_author_block(doc, AUTHORS, AFFIL)
-    add_abstract_block(doc, ABSTRACT)
+    add_abstract_block(doc, ABSTRACT_CODEX)
     add_single_to_double_break(doc)
 
     # ── 2단: 본문 ─────────────────────────────────────────────
@@ -1098,9 +1112,9 @@ def build_2page_claude() -> Document:
     main_sp.insert(0, tp)
 
     # ── 1단: 제목 / 저자 / 초록 ──────────────────────────────
-    add_title_block(doc, TITLE_KO, TITLE_EN)
+    add_title_block(doc, TITLE_KO_CLAUDE, TITLE_EN_CLAUDE)
     add_author_block(doc, AUTHORS, AFFIL)
-    add_abstract_block(doc, ABSTRACT)
+    add_abstract_block(doc, ABSTRACT_CLAUDE)
 
     pk = doc.add_paragraph()
     rk = pk.add_run(
@@ -1122,17 +1136,17 @@ def build_2page_claude() -> Document:
         "웨이퍼당 약 1,000만 cell block 규모의 초고밀도 불량 데이터로, "
         "center, edge ring, scratch 등 공간적 불량 패턴이 공정 이상 원인과 직결되어 "
         "수율 개선의 핵심 자료이다. "
-        "그러나 대량 데이터의 생성·저장 체계와 수만 장을 탐색할 수 있는 열람 환경이 "
+        "그러나 대량 데이터 생성·저장 체계와 수만 장을 탐색할 수 있는 열람 환경이 "
         "갖춰져 있지 않아, 현업에서는 Failbit Map 대신 "
-        "chip별 Measure 데이터를 wafer 단위로 집계하는 방식에 의존하고 있다. "
-        "이 방식은 공간적 기하 형태를 갖는 불량 패턴을 파악하지 못하는 구조적 한계를 가진다.",
+        "chip별 Measure 데이터를 wafer 단위로 집계하는 방식에 주로 의존해 왔다. "
+        "이 방식으로는 공간적 기하 형태를 갖는 불량 패턴을 파악할 수 없다.",
         indent=True, space_after=Pt(2))
     add_body(doc,
-        "AI 모델 측면에서도 기존 연구는 공개 benchmark 기반 closed-set 분류에 집중되어 있다. "
-        "Nakazawa 등 [1]과 Alawieh 등 [2]은 CNN 기반 분류를 체계화하였으나 Unknown 불량에 대응하지 못하며, "
-        "Jang 등 [4]의 Unknown 탐지 연구도 라벨 없는 실제 운영 이미지에 대한 검증이 부재하다. "
-        "또한 chip별 FTN·QTN은 20조 row 규모 DB에 분산되어 "
-        "직접 조회 시 처리 지연 및 실패가 빈번해 분석 연계가 어려웠다.",
+        "기존 AI 연구는 공개 benchmark 기반 closed-set 분류에 집중되어 있어 "
+        "실제 운영 환경의 Unknown 불량에 대응하지 못한다. "
+        "Nakazawa 등 [1]과 Alawieh 등 [2]은 CNN 기반 분류를 체계화하였으나 "
+        "Unknown 불량 탐지가 불가능하며, "
+        "Jang 등 [4]의 Unknown 탐지 연구도 라벨 없는 실제 운영 이미지에 대한 검증이 부재하다.",
         indent=True, space_after=Pt(2))
     add_body(doc,
         "본 연구는 Failbit Map의 대량 데이터 생성·적재, "
@@ -1202,11 +1216,10 @@ def build_2page_claude() -> Document:
 
     add_subheading(doc, "2.4 통합 분석 UI")
     add_body(doc,
-        "Failbit Map 분류로 불량의 공간적 패턴 유형을 파악한 후, 공정 원인 규명에는 FTN·QTN과의 연계가 필수적이다. "
-        "FTN은 특정 테스트 항목의 불량값으로 bitline·wordline 수준의 회로 원인을 식별하고, "
-        "QTN은 cell block 내 세부 cell 불량 패턴을 제공하여 해당 공정 이상까지 분석을 확장한다. "
         "본 UI는 기존 1초/매·최대 48매 한계를 넘어 5,000매를 단일 그리드에서 로드·스크롤하며, "
         "Failbit Map·FTN·QTN overlay·composite map을 단일 화면에서 제공한다(Fig. 3). "
+        "FTN·QTN은 공정 원인 분석에 필요한 chip 단위 전기 특성 데이터로, "
+        "기존 20조 row 규모 DB 직접 조회의 지연·실패 없이 ms 수준으로 즉시 확인 가능하다. "
         "Unknown 탐지 및 Known 분류로 확인된 불량 샘플은 즉시 등록되어 "
         "AI 학습 데이터로 연결되는 human-in-the-loop 체계를 완성한다.",
         space_after=Pt(2))
@@ -1263,9 +1276,9 @@ def build_codex_revised() -> Document:
     tp.set(qn("w:val"), "continuous")
     main_sp.insert(0, tp)
 
-    add_title_block(doc, TITLE_KO, TITLE_EN)
+    add_title_block(doc, TITLE_KO_CODEX, TITLE_EN_CODEX)
     add_author_block(doc, AUTHORS, AFFIL)
-    add_abstract_block(doc, ABSTRACT)
+    add_abstract_block(doc, ABSTRACT_CODEX)
 
     pk = doc.add_paragraph()
     rk = pk.add_run(
@@ -1298,20 +1311,19 @@ def build_codex_revised() -> Document:
         "여기에 대량 Map 조회와 후속 원인 분석 연계가 더해져야 비로소 실제 활용성이 확보된다.",
         indent=True, space_after=Pt(2))
     add_body(doc,
-        "정리하면 본 연구의 기여는 세 가지이다. 첫째, ConvNeXtV2와 선택적 ROI-YOLO를 결합한 2단계 구조를 통해 실제로 발생하는 등록 불량의 취약 샘플을 정밀하게 분류하였다. "
-        "둘째, contrastive learning과 HDBSCAN을 결합하여 실제 운영 이미지에서 Unknown 후보를 그룹 단위로 압축하고 검토 리스트를 생성하는 경로를 제안하였다. "
-        "셋째, Failbit Map과 FTN·QTN을 동일 chip 기준으로 정합하고 대량 조회 UI와 연결하여, 분류·검출 결과가 후속 원인 분석으로 이어질 수 있는 기반을 구축하였으며 향후 multimodal 분석 확장 가능성도 함께 마련하였다.",
+        "정리하면 본 연구의 기여는 다음과 같다. 첫째, ConvNeXtV2와 선택적 ROI-YOLO를 결합한 2단계 구조로 등록 불량의 취약 샘플을 정밀하게 분류하였다. "
+        "둘째, contrastive learning과 HDBSCAN을 결합하여 실제 운영 이미지에서 Unknown 후보를 그룹 단위로 압축하고 검토 리스트를 생성하였다. "
+        "셋째, Failbit Map과 FTN·QTN을 동일 chip 기준으로 정합하고 대량 조회 UI와 연결하여, 분류·검출 결과가 후속 원인 분석과 향후 multimodal 확장으로 이어질 수 있는 기반을 구축하였다.",
         indent=True, space_after=Pt(2))
 
     add_heading(doc, "2. 제안 방법", level=1)
 
-    add_subheading(doc, "2.1 데이터 변환 및 통합 분석 구조")
+    add_subheading(doc, "2.1 데이터 생성 및 표현 계층")
     add_body(doc,
-        "제안 파이프라인은 설비 log를 서버에서 1시간 주기로 자동 수집하고, Failbit Map 이미지를 사전 변환하여 UI에 적재하는 구조로 설계하였다. "
+        "제안 아키텍처의 기반 계층은 설비 log를 서버에서 1시간 주기로 자동 수집하고, Failbit Map 이미지를 사전 변환하여 Known·Unknown 분석과 UI에 동시에 활용할 수 있도록 적재하는 구조이다. "
         "Failbit Map은 grade 0-7과 chip boundary 등 제한된 색상 집합만 사용하므로 palette-indexed PNG로 저장해 RGB 대비 약 75%의 용량 절감을 달성하였다. "
         "또한 chip index 기준으로 FTN, QTN, BIN 정보를 정합하여 Failbit Map과 Measure를 동일 화면에서 overlay, composite, side-by-side 형태로 함께 해석할 수 있도록 하였다. "
-        "현재 FTN·QTN은 모델 입력이 아니라 원인 해석과 공정 추적을 위한 분석 정보로 활용되며, 20조 row DB를 직접 반복 조회하던 구조 대신 사전 정합된 annotation으로 제공하여 ms급으로 즉시 확인할 수 있도록 하였다. "
-        "동시에 이러한 정합 구조는 향후 Failbit Map 이미지와 FTN·QTN test 정보를 함께 사용하는 multimodal 분석으로 확장하기 위한 기반으로도 활용될 수 있다.",
+        "현재 FTN·QTN은 모델 입력이 아니라 원인 해석과 공정 추적을 위한 분석 정보로 활용되며, 20조 row DB를 직접 반복 조회하던 구조 대신 사전 정합된 annotation으로 제공하여 ms급으로 즉시 확인할 수 있도록 하였다. 이러한 정합 구조는 향후 multimodal 분석의 기반으로도 활용될 수 있다.",
         space_after=Pt(2))
 
     add_subheading(doc, "2.2 Known 불량 분류")
@@ -1326,7 +1338,7 @@ def build_codex_revised() -> Document:
         "그 결과 ConvNeXtV2 단독 분류기의 weighted F1 0.92를 0.95까지 향상시켰으며, 전체 속도 저하를 최소화하면서 유사 클래스 간 오분류를 보정할 수 있음을 확인하였다.",
         space_after=Pt(2))
 
-    add_subheading(doc, "2.3 Unknown 후보 grouping")
+    add_subheading(doc, "2.3 Unknown 후보 발굴")
     add_body(doc,
         "Unknown 불량은 사전에 정답 클래스를 정의하기 어려운 실제 운영 이미지를 대상으로 하므로, 본 연구에서는 이를 정답 분류 문제가 아니라 후보 grouping 문제로 정의하였다. "
         "특정 제품의 하루 전체 Map이 약 2,000장 수준으로 발생하는 환경에서, 5일치 운영 데이터 약 10,000장으로 SimCLR 계열 contrastive learning [6] 기반 임베딩을 학습하고, "
@@ -1335,17 +1347,17 @@ def build_codex_revised() -> Document:
     add_body(doc,
         "이때 6×6 grid 기반 structured local sampling을 적용하여 wafer 내 위치와 형상 정보를 함께 반영하였고, 실제 운영 이미지 2,000장은 13개 후보 그룹으로 정리되었다. "
         "Unknown 경로는 closed-set 분류처럼 정답 label 기반 F1으로 평가하는 대신, 실제 현업에서 필요한 후보 발굴 성과로 평가하였다. 구체적으로는 "
-        "(1) 하루 2,000장의 검토 대상을 13개 그룹으로 압축한 review compression, "
-        "(2) 각 그룹이 실제 불량, 1 lot 편중 패턴, 이상 이미지 중 하나로 설명 가능한 actionable grouping, "
+        "(1) 하루 2,000장의 검토 대상을 13개 그룹으로 압축한 검토 단위 축소 효과, "
+        "(2) 각 그룹이 실제 불량, 1 lot 편중 패턴, 이상 이미지 중 하나로 설명 가능한 해석 가능성, "
         "(3) 이 중 실제 의미 있는 불량 그룹을 얼마나 발굴했는가의 세 축으로 해석하였다. "
         "분석 담당자 검토 결과 13개 그룹 모두 설명 가능한 패턴으로 정리되었고, 이 중 7개는 실제 의미 있는 불량 그룹으로 확인되었다. "
         "나머지 후보 역시 1 lot 편중 패턴 또는 현업 불량으로 이어지지 않은 이상 이미지로 분류되어, 무의미한 랜덤 군집이 아니라 실제 검토 가치가 있는 후보 묶음을 자동 생성했음을 보여준다.",
         space_after=Pt(2))
 
-    add_subheading(doc, "2.4 통합 UI 및 등록 workflow")
+    add_subheading(doc, "2.4 분석 UI와 후속 연계")
     add_body(doc,
         "사전 변환 구조를 통해 UI에서는 Failbit Map을 초당 약 50매 수준으로 로드하고, 최대 5,000매를 단일 grid에서 끊김 없이 탐색할 수 있도록 하였다. 사용자는 Failbit Map과 FTN·QTN을 함께 비교하며 불량 유형과 샘플을 즉시 등록할 수 있고, 등록 결과는 이후 Known 분류 학습 데이터와 Unknown 검토 이력으로 연결된다. "
-        "즉, 본 시스템은 단순 조회 도구가 아니라 대량 이미지 탐색, 후보 선별, 원인 추론, 데이터 등록을 한 번에 수행하는 운영형 분석 workflow이다.",
+        "즉, 본 시스템은 대량 이미지 탐색, 후보 선별, 원인 추론, 데이터 등록을 하나의 흐름으로 연결한 분석 체계이다.",
         space_after=Pt(2))
 
     add_heading(doc, "3. 결과 및 논의", level=1)
@@ -1354,12 +1366,15 @@ def build_codex_revised() -> Document:
         "Known 경로에서는 baseline 0.78, ConvNeXtV2+HPO 0.92, 선택적 ROI-YOLO 보정 0.95의 단계적 향상을 확인하였다. 이는 CNN이 wafer 전역 문맥을 빠르게 판별하고, ROI-YOLO가 저신뢰 취약 샘플만 보정하는 역할 분리가 유효함을 보여준다.",
         space_after=Pt(2))
     add_body(doc,
-        "Unknown 경로에서는 특정 제품의 하루 2,000장 이미지를 13개 후보 그룹으로 압축하여 검토 단위를 약 154배 축소하였다. 13개 그룹은 모두 실제 의미를 해석할 수 있는 패턴으로 정리되었고, 이 중 7개는 실제 의미 있는 불량 그룹으로 판정되었다. 나머지 후보도 1 lot 편중 패턴 또는 현업 불량으로 이어지지 않은 이상 이미지로 정리되어, 후보 리스트 전체가 검토 가능한 작업 단위로 기능하였다. 즉 Unknown 결과의 핵심은 단순 군집 정확도가 아니라, 대량 운영 이미지에서 실제 검토 가치가 있는 후보 리스트를 안정적으로 생성했다는 점이다. 또한 FTN/QTN은 약 20조 row DB 직접 조회 대신 사전 정합 구조를 통해 ms급으로 접근 가능하게 하였고, UI는 초당 약 50매 로드와 최대 5,000매 탐색을 지원하여 기존 1매당 약 1초, 최대 48매 수준의 조회 한계를 실질적으로 완화하였다.",
+        "Unknown 경로에서는 특정 제품의 하루 2,000장 이미지를 13개 후보 그룹으로 압축하여 검토 단위를 약 154배 축소하였다. 13개 그룹은 모두 실제 의미를 해석할 수 있는 패턴으로 정리되었고, 이 중 7개는 실제 의미 있는 불량 그룹으로 판정되었다. 나머지 후보도 1 lot 편중 패턴 또는 현업 불량으로 이어지지 않은 이상 이미지로 정리되어, 후보 리스트 전체가 검토 가능한 작업 단위로 기능하였다. 즉 Unknown 결과의 핵심은 단순 군집 정확도가 아니라, 대량 운영 이미지에서 실제 검토 가치가 있는 후보 리스트를 안정적으로 생성했다는 점이다.",
+        space_after=Pt(2))
+    add_body(doc,
+        "시스템 측면에서도 FTN·QTN 연계와 대량 Map 탐색 UI를 통해 후속 분석 효율을 함께 개선하였다.",
         space_after=Pt(2))
 
     add_heading(doc, "4. 결론", level=1)
     add_body(doc,
-        "본 연구는 DRAM Failbit Map을 대상으로 등록 불량을 정밀 분류하고 미등록 불량 후보를 자동 발굴하는 Known·Unknown 불량 분석 아키텍처를 제안하였다. Known 경로에서는 ConvNeXtV2와 선택적 ROI-YOLO의 역할 분리를 통해 높은 분류 성능을 확보하였고, Unknown 경로에서는 contrastive learning 기반 표현 학습과 군집화를 통해 실제 검토 가능한 후보 리스트를 생성할 수 있음을 확인하였다. 또한 Failbit Map의 결과 정보와 FTN·QTN의 원인 단서를 같은 분석 환경에서 해석할 수 있도록 함으로써, defect pattern 확인에서 bitline·wordline·cell 수준의 공정 원인 추론까지 이어지는 분석 흐름을 마련하였다. 향후에는 현재 구축한 정합 구조를 바탕으로 Failbit Map 이미지와 FTN·QTN test 정보를 함께 활용하는 multimodal 분석으로 확장하여 원인 분석 자동화를 더욱 고도화할 계획이다.",
+        "본 연구는 DRAM Failbit Map을 대상으로 등록 불량을 정밀 분류하고 미등록 불량 후보를 자동 발굴하는 Known·Unknown 불량 분석 아키텍처를 제안하였다. Known 경로에서는 ConvNeXtV2와 선택적 ROI-YOLO의 역할 분리를 통해 높은 분류 성능을 확보하였고, Unknown 경로에서는 contrastive learning 기반 표현 학습과 군집화를 통해 실제 검토 가능한 후보 리스트를 생성할 수 있음을 확인하였다. 또한 Failbit Map의 결과 정보와 FTN·QTN의 원인 단서를 같은 분석 환경에서 해석할 수 있도록 함으로써, defect pattern 확인에서 공정 원인 추론까지 이어지는 분석 흐름을 마련하였다. 향후에는 현재 구축한 정합 구조를 바탕으로 Failbit Map 이미지와 FTN·QTN test 정보를 함께 활용하는 multimodal 분석으로 확장할 계획이다.",
         indent=True, space_after=Pt(2))
 
     add_refs(doc, REFS)
