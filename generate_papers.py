@@ -1329,12 +1329,11 @@ def build_codex_revised() -> Document:
         "실제 현업 적용에는 두 가지 제약이 있다. 첫째, 대량 Map 생성이 어렵다. 설비 Log는 Wafer당 10~50MB "
         "수준이며, 특정 제품군에서는 하루 약 2,000장의 Wafer가 발생한다. 그러나 기존 환경에서는 속도와 "
         "메모리 제약으로 한 번에 48매 이하만 처리할 수 있다. 둘째, Map이 생성되더라도 불량 여부와 유형 판단은 "
-        "여전히 엔지니어의 직접 확인에 의존하고 있어 전수 분석이 어렵다. 따라서 현업 적용을 위해서는 대량 "
-        "Raw Data를 처리하는 데이터 파이프라인과, Known·Unknown 불량을 분석하는 AI 구조가 함께 필요하다.",
+        "여전히 엔지니어의 직접 확인에 의존하고 있어 전수 분석이 어렵다. 따라서 본 논문은 대량 Raw Data를 "
+        "처리하는 데이터 파이프라인과 Failbit Map 기반 Known 불량 분류 및 Unknown 불량 검출을 통합한 "
+        "AI 아키텍처를 구현하여 실데이터에 적용·검증하였다.",
         indent=True, space_after=Pt(2))
     add_body(doc,
-        "본 논문은 이러한 요구를 충족하기 위해 Failbit Map 기반 Known 불량 분류와 Unknown 불량 검출을 "
-        "통합한 AI 아키텍처와 End-to-End 분석 구조를 구현하였다. "
         "본 논문의 주요 기여는 다음과 같다.",
         indent=True, space_after=Pt(2))
     add_body(doc,
