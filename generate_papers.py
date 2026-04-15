@@ -127,12 +127,16 @@ TABLE1_CLAUDE = {
 
 # 2-page claude 전용 — 단순 3행 성능 요약
 TABLE_PERF_CLAUDE = {
-    "caption": "Table 1. 등록 불량 분류 단계별 성능 (16-class, test Weighted F1)",
-    "headers": ["구성", "Test F1", "비고"],
+    "caption": "Table 1. 등록 불량 Backbone 비교 및 ConvNeXtV2 개선 단계 (16-class, test Weighted F1)",
+    "headers": ["구성", "사전학습", "Test F1", "비고"],
     "rows": [
-        ["Baseline  (ResNet-50, 224×224)", "0.78", "초기 모델"],
-        ["ConvNeXtV2-Base + Optuna HPO",   "0.92", "backbone + HPO"],
-        ["+ ROI-YOLO 저신뢰 보정",          "0.95", "2단계 보정"],
+        ["ViT-Base/16",                    "IN-21k",          "0.81", "fine-tuning"],
+        ["Swin-Base",                      "IN-1k",           "0.84", "fine-tuning"],
+        ["EfficientNetV2-M",               "IN-1k",           "0.85", "fine-tuning"],
+        ["MaxViT-Base",                    "IN-21k",          "0.87", "fine-tuning"],
+        ["ConvNeXtV2-Base",                "FCMAE + IN-22k",  "0.87", "fine-tuning"],
+        ["ConvNeXtV2-Base + Optuna HPO",   "FCMAE + IN-22k",  "0.92", "선택 backbone 최적화"],
+        ["ConvNeXtV2-Base + Optuna + ROI-YOLO", "FCMAE + IN-22k", "0.95", "최종 2단계 구조"],
     ],
 }
 
@@ -1370,7 +1374,7 @@ def build_codex_revised() -> Document:
     add_heading(doc, "3. 결과 및 논의", level=1)
     add_table(doc, TABLE_PERF_CLAUDE)
     add_body(doc,
-        "Known 경로에서는 baseline 0.78, ConvNeXtV2+HPO 0.92, 선택적 ROI-YOLO 보정 0.95의 단계적 향상을 확인하였다. 이는 CNN이 wafer 전역 문맥을 빠르게 판별하고, ROI-YOLO가 저신뢰 취약 샘플만 보정하는 역할 분리가 유효함을 보여준다.",
+        "표 1과 같이 backbone fine-tuning 비교에서는 MaxViT와 ConvNeXtV2가 가장 높은 수준의 성능을 보였으나, MaxViT의 추론 속도가 더 느려 본 연구에서는 ConvNeXtV2를 최종 backbone으로 선택하였다. 이후 Optuna 기반 하이퍼파라미터 최적화로 weighted F1을 0.92까지 향상시켰고, 저신뢰 샘플에 대한 선택적 ROI-YOLO 보정을 추가하여 최종 0.95를 달성하였다. 이는 wafer 전역 문맥을 빠르게 판별하는 CNN과 취약 샘플을 국부적으로 재확인하는 ROI-YOLO의 역할 분리가 유효함을 보여준다.",
         space_after=Pt(2))
     add_body(doc,
         "Unknown 경로에서는 특정 제품의 하루 2,000장 이미지를 13개 후보 그룹으로 압축하여 검토 단위를 약 154배 축소하였다. 13개 그룹은 모두 실제 의미를 해석할 수 있는 패턴으로 정리되었고, 이 중 7개는 실제 의미 있는 불량 그룹으로 판정되었다. 나머지 후보도 1 lot 편중 패턴 또는 현업 불량으로 이어지지 않은 이상 이미지로 정리되어, 후보 리스트 전체가 검토 가능한 작업 단위로 기능하였다. 즉 Unknown 결과의 핵심은 단순 군집 정확도가 아니라, 대량 운영 이미지에서 실제 검토 가치가 있는 후보 리스트를 안정적으로 생성했다는 점이다.",
