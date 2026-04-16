@@ -706,6 +706,68 @@ def add_labeled_example_block(doc, title: str, lines, caption: str):
     gap_after.add_run().font.size = Pt(4)
 
 
+def add_labeled_example_table(doc, title: str, lines, caption: str):
+    """1x1 표 안에 제목/라벨/값 예시를 넣고 하단 캡션을 붙인다."""
+    gap_before = doc.add_paragraph()
+    gap_before.paragraph_format.space_before = Pt(0)
+    gap_before.paragraph_format.space_after = Pt(0)
+    gap_before.add_run().font.size = Pt(4)
+
+    table = doc.add_table(rows=1, cols=1)
+    table.style = "Table Grid"
+    table.autofit = True
+    cell = table.cell(0, 0)
+
+    # top padding paragraph
+    p_pad = cell.paragraphs[0]
+    p_pad.paragraph_format.space_before = Pt(0)
+    p_pad.paragraph_format.space_after = Pt(0)
+    p_pad.add_run().font.size = Pt(2)
+
+    p_title = cell.add_paragraph()
+    p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    _set_single_spacing(p_title)
+    p_title.paragraph_format.space_before = Pt(0)
+    p_title.paragraph_format.space_after = Pt(2)
+    r_title = p_title.add_run(title)
+    _apply_run_font(r_title, size=PT10, bold=True)
+
+    for label, value in lines:
+        p_label = cell.add_paragraph()
+        p_label.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        _set_single_spacing(p_label)
+        p_label.paragraph_format.left_indent = Cm(0.35)
+        p_label.paragraph_format.space_before = Pt(0)
+        p_label.paragraph_format.space_after = Pt(0 if value is not None else 1)
+        r_label = p_label.add_run(label)
+        _apply_run_font(r_label, size=PT10, italic=True)
+
+        if value is not None:
+            value_lines = [value] if isinstance(value, str) else list(value)
+            for idx, v in enumerate(value_lines):
+                p_value = cell.add_paragraph()
+                p_value.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                _set_single_spacing(p_value)
+                p_value.paragraph_format.left_indent = Cm(0.85)
+                p_value.paragraph_format.space_before = Pt(0)
+                p_value.paragraph_format.space_after = Pt(1 if idx == len(value_lines) - 1 else 0)
+                r_value = p_value.add_run(v)
+                _apply_run_font(r_value, size=PT10, italic=True)
+
+    cp = doc.add_paragraph()
+    cp.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    cr = cp.add_run(caption)
+    _apply_run_font(cr, size=PT9, bold=True)
+    _set_single_spacing(cp)
+    cp.paragraph_format.space_before = Pt(1)
+    cp.paragraph_format.space_after = Pt(0)
+
+    gap_after = doc.add_paragraph()
+    gap_after.paragraph_format.space_before = Pt(0)
+    gap_after.paragraph_format.space_after = Pt(6)
+    gap_after.add_run().font.size = Pt(4)
+
+
 def make_yolo_roi_figure(save_path: str):
     """
     3-panel single-row figure:
@@ -1590,19 +1652,19 @@ def build_codex_revised() -> Document:
         "주요 병목은 wafer당 약 1,000만 개의 암호화된 test 결과를 grade 값으로 변환하는 처리 속도와, 4K를 초과하는 초고해상도 이미지의 저장 용량 부담이었다. "
         "이에 Cython 최적화로 데이터 변환 속도를 약 100배 향상시켰으며(Fig. 1), palette-indexed PNG 적용으로 이미지 용량을 약 75% 절감하였다(Fig. 2).",
         space_after=Pt(2))
-    add_labeled_example_block(
+    add_labeled_example_table(
         doc,
         "Hex-to-grade conversion",
         [
             ("Raw:", "090B0C0D0E0F090A0B0C"),
             ("Decoding:", "\"0C\" -> \"C\" -> 12 (hex to decimal) -> 3 (if value != 0, subtract 9)"),
-            ("Python:", "parse, convert, and correct for each pixel"),
-            ("Cython:", "same workflow in a compiled integer loop"),
+            ("Python:", "interpreter-based loop execution"),
+            ("Cython:", "compiled integer loop execution"),
             ("Grade:", "0 2 3 4 5 6 0 1 2 3"),
         ],
-        "Fig. 1. Hex-to-grade conversion. Python은 pixel마다 parse, convert, and correct를 반복하지만, Cython은 동일 workflow를 compiled integer loop로 수행하여 변환 속도를 약 100배 향상시켰다.",
+        "Fig. 1. Hex-to-grade conversion accelerated by Cython.",
     )
-    add_labeled_example_block(
+    add_labeled_example_table(
         doc,
         "RGB PNG vs Palette-indexed PNG",
         [
@@ -1617,7 +1679,7 @@ def build_codex_revised() -> Document:
             ]),
             ("Result:", "(123,54,24) -> (3)"),
         ],
-        "Fig. 2. Palette-indexed PNG encoding. RGB 값을 pixel마다 저장하는 대신 palette entry와 index 배열만 저장하여 이미지 용량을 약 75% 절감하였다.",
+        "Fig. 2. Palette-indexed PNG for failbit map compression.",
     )
 
     add_subheading(doc, "2.2 Known 불량 분류")
