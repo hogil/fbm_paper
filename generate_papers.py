@@ -1691,7 +1691,7 @@ def build_codex_revised() -> Document:
     add_figure(
         doc,
         _fig_known_path,
-        "Fig. 3. Representative Class A and Class B patterns, and a true Class A sample misclassified as Class B by the first-stage CNN but corrected to Class A by the second-stage ROI-YOLO.",
+        "Fig. 3. Representative Class A/B patterns and ROI-YOLO refinement of a true Class A sample.",
         width_cm=8.2,
     )
     add_table(doc, TABLE_PERF_CLAUDE)
