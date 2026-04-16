@@ -44,9 +44,8 @@ TITLE_KO_CLAUDE = "DRAM Failbit Map 기반 Known·Unknown 불량 분류·검출 
 TITLE_EN_CLAUDE = ("A Known/Unknown Defect Classification and Detection Architecture "
                    "Based on DRAM Failbit Maps")
 
-TITLE_KO_CODEX = "DRAM Failbit Map 기반 Known 불량 및 Unknown 불량 분석 AI 아키텍처"
-TITLE_EN_CODEX = ("An AI Architecture for Known and Unknown Defect Analysis "
-                  "Based on DRAM Failbit Maps")
+TITLE_KO_CODEX = "Failbit Map Known & Unknown 불량 분석 아키텍처"
+TITLE_EN_CODEX = "Hybrid Failbit Map Analysis Architecture for Known Classification and Unknown Discovery"
 
 AUTHORS  = "홍길동\u00b9, 김철수\u00b9"   # 위첨자 번호 포함 — 실제 이름으로 교체
 AFFIL    = "\u00b9 반도체연구소, Samsung Electronics, 화성시, 대한민국"
@@ -67,7 +66,7 @@ ABSTRACT_CLAUDE = (
 ABSTRACT_CODEX = (
     "Failbit Map은 반도체 EDS Test에서 생성되는 웨이퍼당 약 1,000만 pixel 수준의 초고해상도 데이터로, 불량 패턴 분석의 핵심 자료이다. "
     "그러나 실제 현업에서는 대량의 Failbit Map 조회가 불가능하고, 일부 Map 분석도 엔지니어의 수작업에 의존하고 있다. "
-    "본 논문은 이를 해결하기 위해 대규모 Failbit Map을 생성 및 저장하는 파이프라인과 Known 불량 분류와 Unknown 불량 검출 AI 아키텍처를 구현하였다. "
+    "본 논문은 이를 해결하기 위해 대량 Failbit Map 운영을 위한 데이터 파이프라인을 구축하고, 그 위에서 등록된 Known 불량은 2-stage supervised classification으로, 미등록 Unknown 불량은 self-supervised 기반 검출 구조로 처리하는 통합 아키텍처를 구현하였다. "
     "Cython 적용으로 데이터 변환 속도를 약 100배 향상시켰고, Palette PNG 적용으로 이미지 용량을 약 75% 절감하였다. "
     "Known 불량 분류는 ConvNeXtV2 기반 1차 분류와 저신뢰 샘플에 대한 ROI 기반 YOLO 2차 분류를 결합한 구조로 설계하였으며, F1-score 0.95를 달성하였다. "
     "Unknown 불량 검출은 레이블 없이 SimCLR 계열 contrastive learning 기반으로 수행하였고, wafer의 zone 기반 불량 해석 특성을 반영하기 위해 grid structured local sampling을 적용하였다. "
@@ -125,8 +124,8 @@ TABLE1_CLAUDE = {
 
 # 2-page claude 전용 — 단순 3행 성능 요약
 TABLE_PERF_CLAUDE = {
-    "caption": "Table 1. Backbone comparison and staged improvements for known-defect classification (16 classes, test Weighted F1)",
-    "headers": ["Configuration", "Pretraining", "Test F1", "Note"],
+    "caption": "Table 1. Backbone comparison and staged improvements for known-fail classification (16-class, test Weighted F1)",
+    "headers": ["Configuration", "Pre Train", "Test F1", "Note"],
     "font_size": 8,
     "widths_cm": [3.3, 1.9, 1.0, 1.6],
     "rows": [
@@ -438,11 +437,11 @@ def add_author_block(doc, authors: str, affil: str):
     pf.paragraph_format.space_after = Pt(6)
 
 
-def add_abstract_block(doc, text: str):
+def add_abstract_block(doc, text: str, label: str = "초록"):
     """초록 레이블 + 본문 — 모두 10pt Bold, 1단 전폭"""
     ph = doc.add_paragraph()
     ph.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    rh = ph.add_run("초록")
+    rh = ph.add_run(label)
     _apply_run_font(rh, size=PT10, bold=True)
     _set_single_spacing(ph)
     ph.paragraph_format.space_before = Pt(6)
@@ -1150,8 +1149,8 @@ def add_bullet(doc, text: str):
     p.paragraph_format.space_after = Pt(1)
 
 
-def add_refs(doc, refs: list):
-    add_heading(doc, "참고문헌", level=1)
+def add_refs(doc, refs: list, title: str = "참고문헌"):
+    add_heading(doc, title, level=1)
     for ref in refs:
         p = doc.add_paragraph()
         r = p.add_run(ref)
@@ -1370,7 +1369,7 @@ def build_2page() -> Document:
     # ── 1단: 제목 / 저자 / 초록 ──────────────────────────────
     add_title_block(doc, TITLE_KO_CODEX, TITLE_EN_CODEX)
     add_author_block(doc, AUTHORS, AFFIL)
-    add_abstract_block(doc, ABSTRACT_CODEX)
+    add_abstract_block(doc, ABSTRACT_CODEX, label="(Abstract)")
     add_single_to_double_break(doc)
 
     # ── 2단: 본문 ─────────────────────────────────────────────
@@ -1606,12 +1605,12 @@ def build_codex_revised() -> Document:
 
     add_title_block(doc, TITLE_KO_CODEX, TITLE_EN_CODEX)
     add_author_block(doc, AUTHORS, AFFIL)
-    add_abstract_block(doc, ABSTRACT_CODEX)
+    add_abstract_block(doc, ABSTRACT_CODEX, label="(Abstract)")
 
     pk = doc.add_paragraph()
     rk = pk.add_run(
-        "Keywords: Failbit Map, Wafer Defect Analysis, ConvNeXtV2, "
-        "YOLO, Contrastive Learning, HDBSCAN"
+        "Keywords: Failbit Map, Wafer Failure Analysis, ConvNeXtV2, "
+        "Grad-CAM, YOLO, Contrastive Learning, HDBSCAN, Multimodal"
     )
     _apply_run_font(rk, size=PT9, italic=True)
     _set_single_spacing(pk)
@@ -1619,7 +1618,7 @@ def build_codex_revised() -> Document:
 
     add_1col_header_break(doc)
 
-    add_heading(doc, "1. 서론", level=1)
+    add_heading(doc, "1. INTRODUCTION", level=1)
     add_body(doc,
         "Failbit Map은 EDS Test에서 Memory Cell Block 단위의 불량 정도를 Grade 0(정상)부터 7(최대 불량)까지로 표현한 데이터이다. "
         "Wafer 1장에는 약 1,000만 개의 block이 존재하므로, Failbit Map은 불량의 위치와 형태를 반영하는 초고해상도 데이터이자 수율 저하 원인 분석의 핵심 분석 대상이다. "
@@ -1628,10 +1627,10 @@ def build_codex_revised() -> Document:
         "Failbit Map 자체를 핵심 분석 단위로 삼아야 한다.",
         indent=True, space_after=Pt(2))
     add_body(doc,
-        "실제 현업 적용에는 두 가지 제약이 있다. 첫째, 대량 Map 생성이 어렵다. 설비 Log는 Wafer당 10~50MB 수준이며, 특정 제품에서는 하루 약 2,000장의 Wafer가 발생한다. "
-        "그러나 기존 환경은 속도와 메모리 제약으로 대량 처리가 어려웠으며, 실제로는 한 번에 48매까지 확인 가능하여 전수 분석에 한계가 있었다. "
-        "둘째, Map이 생성되더라도 불량 여부와 유형 판단이 엔지니어의 수동 판독에 의존하므로 전수 분석이 어렵다. "
-        "본 논문은 이러한 한계를 해결하기 위해, 대량 Raw Data 처리를 위한 데이터 파이프라인과 Failbit Map 기반 Known 불량 분류, Unknown 불량 검출을 통합한 분석 아키텍처를 제안한다. "
+        "실제 현업 적용에는 두 가지 제약이 있다. 첫째, 기존 시스템은 설비 Log를 대량 Failbit Map으로 변환하고 저장·조회하는 처리 성능이 부족하였다. "
+        "설비 Log는 Wafer당 10~50MB 수준이며 특정 제품에서는 하루 약 2,000장의 Wafer가 발생하지만, 기존 환경에서는 속도와 메모리 제약으로 대량 처리가 어려웠고 실제 확인 가능 수량도 한 번에 48매 수준으로 제한되었다. "
+        "둘째, 생성된 Map에 대한 불량 여부 및 유형 판정이 엔지니어의 수동 판독에 의존하여 전수 자동 분석이 어려웠다. "
+        "본 논문은 이러한 한계를 해결하기 위해, 대량 Raw Data를 지속적으로 Failbit Map으로 생성·운영하는 데이터 파이프라인과, 등록된 Known 불량을 2-stage supervised classification으로 분석하고 미등록 Unknown 불량을 self-supervised 기반으로 검출하는 통합 분석 아키텍처를 제안한다. "
         "주요 기여는 다음과 같다.",
         indent=True, space_after=Pt(2))
     add_body(doc,
@@ -1641,9 +1640,9 @@ def build_codex_revised() -> Document:
         "또한 grid structured local sampling을 적용하여 발생 위치까지 반영함으로써, Unknown 불량을 보다 정밀하게 검출할 수 있도록 하였다.",
         indent=True, space_after=Pt(2))
 
-    add_heading(doc, "2. 제안 방법 및 결과", level=1)
+    add_heading(doc, "2. PROPOSED METHOD", level=1)
 
-    add_subheading(doc, "2.1 데이터 파이프라인")
+    add_subheading(doc, "2.1 DATA PIPELINE")
     add_body(doc,
         "주요 병목은 wafer당 약 1,000만 개의 암호화된 test 결과를 grade 값으로 변환하는 처리 속도와, 4K를 초과하는 초고해상도 이미지의 저장 용량 부담이었다. "
         "이에 Cython 최적화로 데이터 변환 속도를 약 100배 향상시켰으며(Fig. 1), palette-indexed PNG 적용으로 이미지 용량을 약 75% 절감하였다(Fig. 2).",
@@ -1653,12 +1652,12 @@ def build_codex_revised() -> Document:
         "Hex-to-grade conversion",
         [
             ("Raw:", "090B0C0D0E0F090A0B0C"),
-            ("Decoding:", "\"0C\" -> \"C\" -> 12 (hex to decimal) -> 3 (if value != 0, subtract 9)"),
+            ("Decoding:", "\"0C\" -> \"C\" -> 12 (hex to decimal) -> 3"),
             ("Python:", "interpreter-based loop execution"),
             ("Cython:", "compiled integer loop execution"),
             ("Grade:", "0 2 3 4 5 6 0 1 2 3"),
         ],
-        "Fig. 1. Hex-to-grade conversion accelerated by Cython.",
+        "Fig. 1. Hex-to-grade conversion accelerated by Cython",
     )
     add_labeled_example_table(
         doc,
@@ -1673,18 +1672,18 @@ def build_codex_revised() -> Document:
                 "[(3), (3), ..., (3)],",
                 "[(3), (3), ..., (3)]",
             ]),
-            ("Result:", "(123,54,24) -> (3)"),
+            ("RGB_to_Palette:", "(123,54,24) -> (3)"),
         ],
         "Fig. 2. Palette-indexed PNG for failbit map compression.",
     )
     add_subheading(doc, "2.2 Known 불량 분류")
     add_body(doc,
         "Known 불량 분석은 16개 등록 클래스를 대상으로 하였으며, 1,500개의 Failbit Map을 사용하여 "
-        "ConvNeXtV2[1] 기반 1단계 wafer-level 분류기와 저신뢰 샘플 대상 2단계 ROI 기반 YOLO로 이루어진 구조를 설계하였다.",
+        "ConvNeXtV2[1] 기반 1단계 wafer-level 분류기와 저신뢰 샘플 대상 2단계 ROI 기반 YOLO를 결합한 2-stage 구조를 설계하였다.",
         space_after=Pt(2))
     add_body(doc,
-        "이는 wafer 내 불량 chip 분포가 유사하여 혼동되는 클래스를 구분하기 위해, 1차 분류의 confidence가 낮은 경우 "
-        "ROI 기반 YOLO로 불량 chip의 종류를 추가 판별하여 최종 wafer 불량을 구분하도록 구성한 것이다(Fig. 3).",
+        "ConvNeXtV2 기반 wafer-level 분류는 전반적으로 높은 정확도와 처리 속도를 보였으나, wafer 내 불량 chip의 분포가 유사한 클래스에서는 분류 성능이 저하되었다. "
+        "이를 보완하기 위해 1차 분류의 저신뢰 샘플에 대해 ROI 기반 YOLO를 적용하여 개별 chip 수준의 형태 차이를 추가 판별하는 2-stage 구조를 설계하였다(Fig. 3).",
         space_after=Pt(2))
 
     _fig_known_path = str(OUT_DIR / "_fig_yolo_roi.png")
@@ -1692,14 +1691,14 @@ def build_codex_revised() -> Document:
     add_figure(
         doc,
         _fig_known_path,
-        "Fig. 3. Two-stage known-defect classification with ROI-YOLO.",
+        "Fig. 3. Representative Class A and Class B patterns, and a true Class A sample misclassified as Class B by the first-stage CNN but corrected to Class A by the second-stage ROI-YOLO.",
         width_cm=8.2,
     )
     add_table(doc, TABLE_PERF_CLAUDE)
     add_body(doc,
         "전체 운영 기준 하루 약 2만 장 이상의 Wafer Failbit Map이 발생하므로, backbone 선택에서는 정확도와 추론 처리량을 함께 고려하였다. "
         "MaxViT[4]와 ConvNeXtV2 (Ref)는 동일한 test Weighted F1 0.87을 보였으나, ConvNeXtV2는 더 낮은 추론 지연으로 운영 처리량 확보에 유리하여 최종 backbone으로 선정하였다. "
-        "선정된 ConvNeXtV2 (Ref)의 test Weighted F1 0.87은 Ref + Optuna에서 0.92, Ref + Optuna + ROI에서 0.95로 단계적으로 향상되었다.",
+        "선정된 ConvNeXtV2 (Ref)의 test Weighted F1은 0.87에서 Ref + Optuna로 0.92, Ref + Optuna + ROI로 0.95까지 단계적으로 향상되었다.",
         space_after=Pt(2))
 
     add_subheading(doc, "2.3 Unknown 불량 검출")
@@ -1714,7 +1713,7 @@ def build_codex_revised() -> Document:
     add_figure(
         doc,
         _fig_unknown_path,
-        "Fig. 4. Unknown-defect grouping on production images.",
+        "Fig. 4. Unknown-fail grouping on production images.",
         width_cm=8.2,
     )
     add_body(doc,
@@ -1722,14 +1721,14 @@ def build_codex_revised() -> Document:
         "나머지 6개 그룹은 lot성 warning 수준의 noise이거나 실제 chip 불량으로 이어지지 않는 패턴으로 해석되었다.",
         space_after=Pt(2))
 
-    add_heading(doc, "3. 결론", level=1)
+    add_heading(doc, "3. CONCLUSION", level=1)
     add_body(doc,
-        "본 연구는 수율 개선 업무의 핵심인 Failbit Map 분석을 위해 대량 생성 파이프라인과 "
-        "Known 불량 및 Unknown 불량 분석 AI를 통합함으로써, 기존 수작업 중심 분석을 현업 적용 가능한 AI 자동화 체계로 고도화하였다. "
+        "본 연구는 Failbit Map 기반 대량 운영 파이프라인 위에 등록된 Known 불량의 2-stage 분류와 미등록 Unknown 불량의 self-supervised 기반 검출을 통합함으로써, "
+        "기존 수작업 중심 분석을 현업 적용 가능한 AI 자동화 체계로 고도화하였다. "
         "현재 DRAM 생산 라인에서 운영 중이며, 1시간 주기 Map 생성과 등록·미등록 불량 자동 분석을 통해 FAB 품질 분석과 신규 불량 대응에 실질적으로 기여하고 있다.",
         indent=True, space_after=Pt(2))
 
-    add_refs(doc, REFS_CODEX)
+    add_refs(doc, REFS_CODEX, title="REFERENCES")
     return doc
 
 
