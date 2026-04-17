@@ -869,11 +869,11 @@ def make_yolo_roi_figure(save_path: str):
                     if highlight:
                         ax.add_patch(Rectangle(
                             (x0 - 0.35, y0 - 0.35), size + 0.7, size + 0.7,
-                            fill=False, ec="#00A82D", lw=0.9))
+                            fill=False, ec="#D62728", lw=0.9))
                 else:
                     _draw_normal_chip(ax, xi + 0.5, yi + 0.5, chip - 1.3)
         ax.add_patch(Circle((cx, cy), R, fill=False, ec="#333333", lw=1.4))
-        ax.add_patch(Rectangle((22, 45), 22, 22, fill=False, ec="#FFB300", lw=1.8, ls="--"))
+        ax.add_patch(Circle((33, 56), 15, fill=False, ec="#2563EB", lw=1.8))
 
     def _draw_panel(ax, pattern, title, pred_lines=None, highlight=False):
         ax.set_xlim(0, 100)
@@ -902,20 +902,20 @@ def make_yolo_roi_figure(save_path: str):
         axes[2], "star", "Pred sample (c)",
         pred_lines=[
             (16, "CNN pred: Class B  \u2717  (conf 0.54)", "#CC0000"),
-            (7,  "YOLO ROI pred: Class A  \u2713", "#007700"),
+            (7,  "YOLO ROI pred: Class A  \u2713", "#B22222"),
         ],
         highlight=True,
     )
 
-    axes[2].add_patch(Rectangle((20, 66), 28, 8, facecolor="#00A82D", edgecolor="none"))
+    axes[2].add_patch(Rectangle((20, 66), 28, 8, facecolor="#D62728", edgecolor="none"))
     axes[2].text(34, 70, "star mark 0.91", ha="center", va="center",
                  fontsize=8, fontweight="bold", color="white")
-    axes[2].text(17.5, 68, "ROI", ha="right", va="center", fontsize=7.2, color="#FF9900", fontweight="bold")
+    axes[2].text(17.5, 68, "ROI", ha="right", va="center", fontsize=7.2, color="#2563EB", fontweight="bold")
     axes[2].annotate("", xy=(20, 67), xytext=(11.5, 67),
-                     arrowprops=dict(arrowstyle="->", lw=0.9, color="#FF9900"))
-    axes[2].text(55, 60, "YOLO box", ha="left", va="center", fontsize=7.1, color="#00A82D", fontweight="bold")
+                     arrowprops=dict(arrowstyle="->", lw=0.9, color="#2563EB"))
+    axes[2].text(55, 60, "YOLO box", ha="left", va="center", fontsize=7.1, color="#D62728", fontweight="bold")
     axes[2].annotate("", xy=(46, 56), xytext=(54.5, 59),
-                     arrowprops=dict(arrowstyle="->", lw=0.9, color="#00A82D"))
+                     arrowprops=dict(arrowstyle="->", lw=0.9, color="#D62728"))
 
     # 범례 (우상단 inset)
     ax3 = axes[2]
@@ -1706,7 +1706,7 @@ def build_codex_revised() -> Document:
     add_figure(
         doc,
         _fig_known_path,
-        "Fig. 3. Representative patterns of Class A(a) and Class B(b), and a true Class A sample(c) misclassified as Class B by the first-stage CNN but corrected to Class A by the second-stage ROI-YOLO. The dashed yellow box indicates the ROI, and the green boxes denote YOLO detections of chip-level defect patterns within the ROI.",
+        "Fig. 3. Representative patterns of Class A(a) and Class B(b), and a true Class A sample(c) misclassified as Class B by the first-stage CNN but corrected to Class A by the second-stage ROI-YOLO. The blue circle indicates the ROI, and the red boxes denote YOLO detections of chip-level defect patterns within the ROI.",
         width_cm=8.2,
     )
     add_table(doc, TABLE_PERF_CLAUDE)
