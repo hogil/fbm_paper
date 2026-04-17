@@ -248,13 +248,13 @@ REFS_CODEX = [
     "[1] S. Woo et al., \"ConvNeXt V2: Co-Designing and Scaling ConvNets With Masked Autoencoders,\" "
     "in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), "
     "pp. 16133-16142, 2023.",
-    "[2] T. Chen, S. Kornblith, M. Norouzi, and G. Hinton, \"A Simple Framework for Contrastive Learning "
+    "[2] Z. Tu et al., \"MaxViT: Multi-Axis Vision Transformer,\" in Proceedings of the European "
+    "Conference on Computer Vision (ECCV), pp. 459-479, 2022.",
+    "[3] T. Chen, S. Kornblith, M. Norouzi, and G. Hinton, \"A Simple Framework for Contrastive Learning "
     "of Visual Representations,\" in Proceedings of the 37th International Conference on Machine Learning "
     "(ICML), PMLR 119, pp. 1597-1607, 2020.",
-    "[3] R. J. G. B. Campello, D. Moulavi, and J. Sander, \"Density-Based Clustering Based on Hierarchical "
+    "[4] R. J. G. B. Campello, D. Moulavi, and J. Sander, \"Density-Based Clustering Based on Hierarchical "
     "Density Estimates,\" in Advances in Knowledge Discovery and Data Mining, PAKDD 2013, pp. 160-172, 2013.",
-    "[4] Z. Tu et al., \"MaxViT: Multi-Axis Vision Transformer,\" in Proceedings of the European "
-    "Conference on Computer Vision (ECCV), pp. 459-479, 2022.",
     "[5] FBM, https://www.failbitmap.com",
 ]
 
@@ -1649,8 +1649,10 @@ def build_codex_revised() -> Document:
         "주요 기여는 다음과 같다.",
         indent=True, space_after=Pt(2))
     add_body(doc,
-        "본 논문의 주요 기여는 대량 Log 적재 및 1시간 주기 Failbit Map 생성 파이프라인 구축, ConvNeXtV2와 ROI-YOLO를 결합한 Known 불량 2-stage 분류, "
-        "그리고 SimCLR 기반 Unknown 불량 그룹 검출의 세 가지이다.",
+        "첫째, 대량 설비 Log의 실시간 적재와 1시간 주기 Failbit Map 생성 체계를 구현하여, 대량 Map의 지속적 생성과 운영 활용이 가능한 데이터 처리 기반을 구축하였다. "
+        "둘째, Known 불량 분류는 ConvNeXt V2로 Wafer 내 불량 Chip들의 종류와 분포 패턴을 1차 분류하고, 유사 분포로 인해 혼동되는 샘플은 ROI 기반 YOLO로 개별 Chip object detection을 수행하여 "
+        "2차 분류함으로써 성능을 향상시켰다. 셋째, 기존 분류 체계에 등록되지 않은 상태에서 새롭게 발생하는 Unknown 불량을 검출하기 위해 SimCLR 계열 contrastive learning 기반 분석 구조를 구현하였다. "
+        "또한 grid structured local sampling을 적용하여 발생 위치까지 반영함으로써, Unknown 불량을 보다 정밀하게 검출할 수 있도록 하였다.",
         indent=True, space_after=Pt(2))
 
     add_heading(doc, "2. PROPOSED METHOD", level=1)
@@ -1666,8 +1668,8 @@ def build_codex_revised() -> Document:
         [
             ("Raw:", "090B0C0D0E0F090A0B0C"),
             ("Decoding:", "\"0C\" -> \"C\" -> 12 (hex to decimal) -> 3"),
-            ("Python:", "interpreter-based loop"),
-            ("Cython:", "compiled integer loop"),
+            ("Python:", "interpreter-based loop execution"),
+            ("Cython:", "compiled integer loop execution"),
             ("Grade:", "0 2 3 4 5 6 0 1 2 3"),
         ],
         "Fig. 1. Hex-to-grade conversion accelerated by Cython",
@@ -1676,13 +1678,19 @@ def build_codex_revised() -> Document:
         doc,
         "RGB PNG vs Palette-indexed PNG",
         [
-            ("RGB PNG:", "[(123,54,24), (123,54,24), ...]"),
-            ("Palette-indexed PNG:", "P[3]=(123,54,24), [(3), (3), ...]"),
+            ("RGB PNG:", [
+                "[(123,54,24), (123,54,24), ..., (123,54,24)],",
+                "[(123,54,24), (123,54,24), ..., (123,54,24)]",
+            ]),
+            ("Palette-indexed PNG:", [
+                "P[3] = (123,54,24)",
+                "[(3), (3), ..., (3)],",
+                "[(3), (3), ..., (3)]",
+            ]),
             ("RGB_to_Palette:", "(123,54,24) -> (3)"),
         ],
         "Fig. 2. Palette-indexed PNG for failbit map compression.",
     )
-    add_note(doc, "[5] FBM(Failbit Map Browser): https://www.failbitmap.com", space_after=Pt(4))
     add_subheading(doc, "2.2 Known 불량 분류")
     add_body(doc,
         "Known 불량 분석은 16개 등록 클래스를 대상으로 하였으며, 1,500개의 Failbit Map을 사용하여 "
@@ -1698,20 +1706,20 @@ def build_codex_revised() -> Document:
     add_figure(
         doc,
         _fig_known_path,
-        "Fig. 3. Representative patterns of Class A(a) and Class B(b), and a true Class A sample(c) misclassified as Class B by the first-stage CNN but corrected to Class A by the second-stage ROI-YOLO.",
+        "Fig. 3. Representative patterns of Class A(a) and Class B(b), and a true Class A sample(c) misclassified as Class B by the first-stage CNN but corrected to Class A by the second-stage ROI-YOLO. The dashed yellow box indicates the ROI, and the green boxes denote YOLO detections of chip-level defect patterns within the ROI.",
         width_cm=8.2,
     )
     add_table(doc, TABLE_PERF_CLAUDE)
     add_body(doc,
-        "하루 약 2만 장 이상의 Wafer Failbit Map이 발생하므로 backbone 선택에서는 정확도와 추론 처리량을 함께 고려하였다. "
-        "MaxViT[4]와 ConvNeXtV2 (Ref)는 동일한 test Weighted F1 0.87을 보였으나, ConvNeXtV2는 파라미터 수 약 26% 감소(119.5M → 88.6M)와 FLOPs 약 39% 감소(74.2G → 45.1G)로 추론 처리량이 우수하여 최종 backbone으로 선정하였다. "
-        "이후 Optuna 기반 hyperparameter 최적화로 test Weighted F1을 0.92까지 높였고, ROI-YOLO 보정으로 최종 0.95를 달성하였다.",
+        "MaxViT[2]와 ConvNeXtV2 (Ref)는 동일한 test Weighted F1 0.87을 보였으나, ConvNeXtV2는 파라미터 수 약 26% 감소(119.5M → 88.6M)와 FLOPs 약 39% 감소(74.2G → 45.1G)로 더 효율적이라 최종 backbone으로 선정하였다. "
+        "이는 하루 약 2만 장 이상의 Wafer Failbit Map이 발생하는 운영 환경을 고려한 선택이다. "
+        "이후 Optuna를 통해 lr, weight decay, focal loss, class weight 등을 최적화하여 test Weighted F1을 0.92까지 향상시켰고, ROI-YOLO 보정으로 최종 0.95를 달성하였다.",
         space_after=Pt(2))
 
     add_subheading(doc, "2.3 Unknown 불량 검출")
     add_body(doc,
         "Unknown 불량 검출은 유사한 형태를 그룹화하여 불량 후보 그룹을 찾는 문제로 정의하였다. 5일치 운영 데이터 10,000장으로 SimCLR 계열 "
-        "contrastive learning[2] 기반 임베딩을 학습하고, 별도 1일치 2,000장에 HDBSCAN[3]을 적용하여 유사 패턴을 그룹화하였다. "
+        "contrastive learning[3] 기반 임베딩을 학습하고, 별도 1일치 2,000장에 HDBSCAN[4]을 적용하여 유사 패턴을 그룹화하였다. "
         "또한 Wafer 이미지를 N×N grid로 균등 분할하고 동일 grid cell 내 샘플을 positive pair로 구성하는 "
         "grid structured local sampling으로 발생 위치 정보를 반영하였다.",
         space_after=Pt(2))
@@ -1730,10 +1738,10 @@ def build_codex_revised() -> Document:
 
     add_heading(doc, "3. CONCLUSION", level=1)
     add_body(doc,
-        "본 연구는 1시간 주기의 Failbit Map 전수 생성과 자동 불량 분석을 위한 통합 아키텍처를 구현하였다. "
-        "Cython 최적화와 palette-indexed PNG로 대량 Map의 생성 및 저장을 가능하게 하였고, "
-        "Known 2-stage 분류와 Unknown self-supervised 검출을 결합하여 Failbit Map 분석을 수작업 중심 업무에서 자동화 체계로 고도화하였다. "
-        "또한 Failbit Map 조회 및 분석용 시스템을 개발하여 운영 중이며, 현업 피드백을 반영해 지속적으로 개선하고 있다.",
+        "본 연구는 Failbit Map 전수 생성과 자동 불량 분석을 위한 통합 아키텍처를 구현하였다. "
+        "Cython 최적화와 palette-indexed PNG로 대량 Map을 생성하였고, "
+        "Known 2-stage 분류와 Unknown self-supervised 검출을 결합하여 자동화 및 고도화하였다. "
+        "현재 분석용 Web App[5] 운영 중이며 DRAM 전제품 확인 가능하다.",
         indent=True, space_after=Pt(2))
 
     add_refs(doc, REFS_CODEX, title="REFERENCES")
