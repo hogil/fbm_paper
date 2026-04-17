@@ -66,8 +66,8 @@ ABSTRACT_CLAUDE = (
 ABSTRACT_CODEX = (
     "Failbit Map은 반도체 EDS Test에서 생성되는 웨이퍼당 약 1,000만 pixel 수준의 초고해상도 데이터로, 불량 패턴 분석의 핵심 자료이다. "
     "그러나 실제 현업에서는 대량의 Failbit Map 조회가 불가능하고, 일부 Map 분석도 엔지니어의 수작업에 의존하고 있다. "
-    "본 논문은 이를 해결하기 위해 대량 Failbit Map 운영용 데이터 파이프라인을 구축하고, 그 위에서 Known 불량은 2-stage supervised classification으로, Unknown 불량은 self-supervised 기반 검출 구조로 처리하는 통합 아키텍처를 구현하였다. "
-    "Cython 적용으로 데이터 변환 속도를 약 100배 향상시켰고, Palette PNG 적용으로 이미지 용량을 약 75% 절감하였다. "
+    "본 논문은 이를 해결하기 위해 대량 Failbit Map 데이터 파이프라인을 구축하고, Known 불량은 2-stage supervised classification으로, Unknown 불량은 self-supervised로 검출하는 아키텍처를 구현하였다. "
+    "데이터는 Cython 적용으로 변환 속도를 약 100배 향상시켰고, 이미지는 Palette PNG 적용으로 용량을 약 75% 절감하였다. "
     "Known 불량 분류는 ConvNeXtV2 기반 1차 분류와 저신뢰 샘플에 대한 ROI(Region of Interest) 기반 YOLO 2차 분류를 결합한 구조로 설계하였으며, F1-score 0.95를 달성하였다. "
     "Unknown 불량 검출은 레이블 없이 SimCLR 계열 모델에 wafer의 zone 기반 불량 해석 특성을 반영하기 위해 grid structured local sampling을 적용하여 대조학습을 수행하였다. "
     "양산 5일치 Failbit Map 10,000장 학습 후 1일치 2,000장 적용 시 13개 불량 그룹이 검출되었고, "
