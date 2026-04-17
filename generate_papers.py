@@ -70,8 +70,8 @@ ABSTRACT_CODEX = (
     "Cython 적용으로 데이터 변환 속도를 약 100배 향상시켰고, Palette PNG 적용으로 이미지 용량을 약 75% 절감하였다. "
     "Known 불량 분류는 ConvNeXtV2 기반 1차 분류와 저신뢰 샘플에 대한 ROI 기반 YOLO 2차 분류를 결합한 구조로 설계하였으며, F1-score 0.95를 달성하였다. "
     "Unknown 불량 검출은 레이블 없이 SimCLR 계열 contrastive learning 기반으로 수행하였고, wafer의 zone 기반 불량 해석 특성을 반영하기 위해 grid structured local sampling을 적용하였다. "
-    "실제 양산 5일치 Failbit Map 10,000장을 학습한 뒤 1일치 2,000장에 대해 추론한 결과 13개 불량 그룹이 검출되었다. "
-    "현업 분석 엔지니어 검증 결과 이 중 7개가 실제 불량 그룹으로 판정되었으며, 이를 통해 운영 환경 적용 가능성을 입증하였다."
+    "실제 양산 5일치 Failbit Map 10,000장을 학습한 뒤 1일치 2,000장에 적용한 결과 13개 불량 그룹이 검출되었고, "
+    "이 중 7개가 현업 엔지니어 검증에서 실제 불량 그룹으로 판정되어 실전 운영 가능성을 입증하였다."
 )
 
 # ─── 표 데이터 ───────────────────────────────────────────────
@@ -255,6 +255,7 @@ REFS_CODEX = [
     "Density Estimates,\" in Advances in Knowledge Discovery and Data Mining, PAKDD 2013, pp. 160-172, 2013.",
     "[4] Z. Tu et al., \"MaxViT: Multi-Axis Vision Transformer,\" in Proceedings of the European "
     "Conference on Computer Vision (ECCV), pp. 459-479, 2022.",
+    "[5] FBM, https://www.failbitmap.com",
 ]
 
 # build_2page_claude 전용 참고문헌
@@ -466,13 +467,22 @@ def add_heading(doc, text: str, level: int = 1):
     p.paragraph_format.space_after  = Pt(10)   # 아래 한 줄
 
 
-def add_body(doc, text: str, indent: bool = False, space_after=Pt(3)):
+def add_body(doc, text: str, indent: bool = True, space_after=Pt(3)):
     p = doc.add_paragraph()
     r = p.add_run(text)
     _apply_run_font(r, size=PT10)
     _set_single_spacing(p)
     if indent:
         p.paragraph_format.first_line_indent = Cm(0.5)
+    p.paragraph_format.space_after = space_after
+    return p
+
+
+def add_note(doc, text: str, size=PT8, italic=True, space_after=Pt(3)):
+    p = doc.add_paragraph()
+    r = p.add_run(text)
+    _apply_run_font(r, size=size, italic=italic)
+    _set_single_spacing(p)
     p.paragraph_format.space_after = space_after
     return p
 
@@ -886,10 +896,10 @@ def make_yolo_roi_figure(save_path: str):
                              facecolor="white",
                              gridspec_kw={"wspace": 0.10})
 
-    _draw_panel(axes[0], "star", "Class A  (object star mark)")
-    _draw_panel(axes[1], "x", "Class B  (object x mark)")
+    _draw_panel(axes[0], "star", "Class A (a)")
+    _draw_panel(axes[1], "x", "Class B (b)")
     _draw_panel(
-        axes[2], "star", "Test sample  (GT: Class A)",
+        axes[2], "star", "Pred sample (c)",
         pred_lines=[
             (16, "CNN pred: Class B  \u2717  (conf 0.54)", "#CC0000"),
             (7,  "YOLO ROI pred: Class A  \u2713", "#007700"),
@@ -900,6 +910,12 @@ def make_yolo_roi_figure(save_path: str):
     axes[2].add_patch(Rectangle((20, 66), 28, 8, facecolor="#00A82D", edgecolor="none"))
     axes[2].text(34, 70, "star mark 0.91", ha="center", va="center",
                  fontsize=8, fontweight="bold", color="white")
+    axes[2].text(17.5, 68, "ROI", ha="right", va="center", fontsize=7.2, color="#FF9900", fontweight="bold")
+    axes[2].annotate("", xy=(20, 67), xytext=(11.5, 67),
+                     arrowprops=dict(arrowstyle="->", lw=0.9, color="#FF9900"))
+    axes[2].text(55, 60, "YOLO box", ha="left", va="center", fontsize=7.1, color="#00A82D", fontweight="bold")
+    axes[2].annotate("", xy=(46, 56), xytext=(54.5, 59),
+                     arrowprops=dict(arrowstyle="->", lw=0.9, color="#00A82D"))
 
     # 범례 (우상단 inset)
     ax3 = axes[2]
@@ -1621,11 +1637,9 @@ def build_codex_revised() -> Document:
 
     add_heading(doc, "1. INTRODUCTION", level=1)
     add_body(doc,
-        "Failbit Map은 EDS Test에서 Memory Cell Block 단위의 불량 정도를 Grade 0(정상)부터 7(최대 불량)까지로 표현한 데이터이다. "
-        "Wafer 1장에는 약 1,000만 개의 block이 존재하므로, Failbit Map은 불량의 위치와 형태를 반영하는 초고해상도 데이터이자 수율 저하 원인 분석의 핵심 분석 대상이다. "
-        "그러나 현업 분석은 Wafer 내 약 1,000개 Chip에서 산출된 Measure 값의 발생 개수를 기반으로 이상 여부를 판단하고 있어, "
-        "Failbit Map에서만 발현되는 불량을 검출하지 못한다. 따라서 수율 개선 및 Drop 방지를 위해서는 Measure 기반 접근만으로는 충분하지 않으며, "
-        "Failbit Map 자체를 핵심 분석 단위로 삼아야 한다.",
+        "Failbit Map은 EDS Test에서 Memory Cell Block 단위의 불량 정도를 Grade 0부터 7까지로 표현한 데이터이다. "
+        "Wafer 1장에는 약 1,000만 개의 block이 존재하므로, 현업의 Measure 기반 분석만으로는 Failbit Map에서만 발현되는 불량을 검출하기 어렵다. "
+        "따라서 불량 분석을 위해서는 Failbit Map을 전수 분석해야 한다.",
         indent=True, space_after=Pt(2))
     add_body(doc,
         "실제 현업 적용에는 두 가지 제약이 있다. 첫째, 기존 시스템은 설비 Log를 대량 Failbit Map으로 변환하고 저장·조회하는 처리 성능이 부족하였다. "
@@ -1635,18 +1649,16 @@ def build_codex_revised() -> Document:
         "주요 기여는 다음과 같다.",
         indent=True, space_after=Pt(2))
     add_body(doc,
-        "첫째, 대량 설비 Log의 실시간 적재와 1시간 주기 Failbit Map 생성 체계를 구현하여, 대량 Map의 지속적 생성과 운영 활용이 가능한 데이터 처리 기반을 구축하였다. "
-        "둘째, Known 불량 분류는 ConvNeXt V2로 Wafer 내 불량 Chip들의 종류와 분포 패턴을 1차 분류하고, 유사 분포로 인해 혼동되는 샘플은 ROI 기반 YOLO로 개별 Chip object detection을 수행하여 "
-        "2차 분류함으로써 성능을 향상시켰다. 셋째, 기존 분류 체계에 등록되지 않은 상태에서 새롭게 발생하는 Unknown 불량을 검출하기 위해 SimCLR 계열 contrastive learning 기반 분석 구조를 구현하였다. "
-        "또한 grid structured local sampling을 적용하여 발생 위치까지 반영함으로써, Unknown 불량을 보다 정밀하게 검출할 수 있도록 하였다.",
+        "본 논문의 주요 기여는 대량 Log 적재 및 1시간 주기 Failbit Map 생성 파이프라인 구축, ConvNeXtV2와 ROI-YOLO를 결합한 Known 불량 2-stage 분류, "
+        "그리고 SimCLR 기반 Unknown 불량 그룹 검출의 세 가지이다.",
         indent=True, space_after=Pt(2))
 
     add_heading(doc, "2. PROPOSED METHOD", level=1)
 
     add_subheading(doc, "2.1 DATA PIPELINE")
     add_body(doc,
-        "주요 병목은 wafer당 약 1,000만 개의 암호화된 test 결과를 grade 값으로 변환하는 처리 속도와, 4K를 초과하는 초고해상도 이미지의 저장 용량 부담이었다. "
-        "이에 Cython 최적화로 데이터 변환 속도를 약 100배 향상시켰으며(Fig. 1), palette-indexed PNG 적용으로 이미지 용량을 약 75% 절감하였다(Fig. 2).",
+        "주요 병목은 wafer당 약 1,000만 개의 암호화된 test 결과를 grade 값으로 변환하는 속도와 초고해상도 이미지의 저장 용량 부담이었다. "
+        "이에 Cython 최적화로 변환 속도를 약 100배 향상시키고(Fig. 1), palette-indexed PNG로 이미지 용량을 약 75% 절감하였다(Fig. 2).",
         space_after=Pt(2))
     add_labeled_example_table(
         doc,
@@ -1654,8 +1666,8 @@ def build_codex_revised() -> Document:
         [
             ("Raw:", "090B0C0D0E0F090A0B0C"),
             ("Decoding:", "\"0C\" -> \"C\" -> 12 (hex to decimal) -> 3"),
-            ("Python:", "interpreter-based loop execution"),
-            ("Cython:", "compiled integer loop execution"),
+            ("Python:", "interpreter-based loop"),
+            ("Cython:", "compiled integer loop"),
             ("Grade:", "0 2 3 4 5 6 0 1 2 3"),
         ],
         "Fig. 1. Hex-to-grade conversion accelerated by Cython",
@@ -1664,23 +1676,17 @@ def build_codex_revised() -> Document:
         doc,
         "RGB PNG vs Palette-indexed PNG",
         [
-            ("RGB PNG:", [
-                "[(123,54,24), (123,54,24), ..., (123,54,24)],",
-                "[(123,54,24), (123,54,24), ..., (123,54,24)]",
-            ]),
-            ("Palette-indexed PNG:", [
-                "P[3] = (123,54,24)",
-                "[(3), (3), ..., (3)],",
-                "[(3), (3), ..., (3)]",
-            ]),
+            ("RGB PNG:", "[(123,54,24), (123,54,24), ...]"),
+            ("Palette-indexed PNG:", "P[3]=(123,54,24), [(3), (3), ...]"),
             ("RGB_to_Palette:", "(123,54,24) -> (3)"),
         ],
         "Fig. 2. Palette-indexed PNG for failbit map compression.",
     )
+    add_note(doc, "[5] FBM(Failbit Map Browser): https://www.failbitmap.com", space_after=Pt(4))
     add_subheading(doc, "2.2 Known 불량 분류")
     add_body(doc,
         "Known 불량 분석은 16개 등록 클래스를 대상으로 하였으며, 1,500개의 Failbit Map을 사용하여 "
-        "ConvNeXtV2[1] 기반 1단계 wafer-level 분류기와 저신뢰 샘플 대상 2단계 ROI 기반 YOLO를 결합한 2-stage 구조를 설계하였다.",
+        "ConvNeXtV2[1] 기반 1단계 wafer-level 분류기와 저신뢰 샘플 대상 2단계 ROI(Region of Interest) 기반 YOLO를 결합한 2-stage 구조를 설계하였다.",
         space_after=Pt(2))
     add_body(doc,
         "ConvNeXtV2 기반 wafer-level 분류는 전반적으로 높은 정확도와 처리 속도를 보였으나, wafer 내 불량 chip의 분포가 유사한 클래스에서는 분류 성능이 저하되었다. "
@@ -1692,14 +1698,14 @@ def build_codex_revised() -> Document:
     add_figure(
         doc,
         _fig_known_path,
-        "Fig. 3. Representative patterns of Class A and Class B, and a true Class A sample misclassified as Class B by the first-stage CNN but corrected to Class A by the second-stage ROI-YOLO.",
+        "Fig. 3. Representative patterns of Class A(a) and Class B(b), and a true Class A sample(c) misclassified as Class B by the first-stage CNN but corrected to Class A by the second-stage ROI-YOLO.",
         width_cm=8.2,
     )
     add_table(doc, TABLE_PERF_CLAUDE)
     add_body(doc,
         "하루 약 2만 장 이상의 Wafer Failbit Map이 발생하므로 backbone 선택에서는 정확도와 추론 처리량을 함께 고려하였다. "
         "MaxViT[4]와 ConvNeXtV2 (Ref)는 동일한 test Weighted F1 0.87을 보였으나, ConvNeXtV2는 파라미터 수 약 26% 감소(119.5M → 88.6M)와 FLOPs 약 39% 감소(74.2G → 45.1G)로 추론 처리량이 우수하여 최종 backbone으로 선정하였다. "
-        "이후 test Weighted F1은 Ref + Optuna에서 0.92, Ref + Optuna + ROI에서 0.95로 향상되었다.",
+        "이후 Optuna 기반 hyperparameter 최적화로 test Weighted F1을 0.92까지 높였고, ROI-YOLO 보정으로 최종 0.95를 달성하였다.",
         space_after=Pt(2))
 
     add_subheading(doc, "2.3 Unknown 불량 검출")
@@ -1725,8 +1731,9 @@ def build_codex_revised() -> Document:
     add_heading(doc, "3. CONCLUSION", level=1)
     add_body(doc,
         "본 연구는 1시간 주기의 Failbit Map 전수 생성과 자동 불량 분석을 위한 통합 아키텍처를 구현하였다. "
-        "데이터 파이프라인에서는 Cython 최적화와 palette-indexed PNG를 적용하여 대량 Map의 생성 및 저장이 가능하도록 하였고, "
-        "분석 단계에서는 Known 불량의 2-stage 분류와 Unknown 불량의 self-supervised 기반 검출을 결합하여 Failbit Map 분석을 수작업 중심 업무에서 자동화 체계로 고도화하였다.",
+        "Cython 최적화와 palette-indexed PNG로 대량 Map의 생성 및 저장을 가능하게 하였고, "
+        "Known 2-stage 분류와 Unknown self-supervised 검출을 결합하여 Failbit Map 분석을 수작업 중심 업무에서 자동화 체계로 고도화하였다. "
+        "또한 Failbit Map 조회 및 분석용 시스템을 개발하여 운영 중이며, 현업 피드백을 반영해 지속적으로 개선하고 있다.",
         indent=True, space_after=Pt(2))
 
     add_refs(doc, REFS_CODEX, title="REFERENCES")
