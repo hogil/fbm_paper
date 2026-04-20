@@ -440,21 +440,16 @@ def add_author_block(doc, authors: str, affil: str):
 
 
 def add_abstract_block(doc, text: str, label: str = "초록"):
-    """초록 레이블 + 본문 — 모두 10pt Bold, 1단 전폭"""
-    ph = doc.add_paragraph()
-    ph.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    rh = ph.add_run(label)
+    """초록 레이블 + 본문 — 한 문단에 이어 붙이기, 10pt Bold, 1단 전폭"""
+    p = doc.add_paragraph()
+    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    rh = p.add_run(label + " ")
     _apply_run_font(rh, size=PT10, bold=True)
-    _set_single_spacing(ph)
-    ph.paragraph_format.space_before = Pt(6)
-    ph.paragraph_format.space_after  = Pt(2)
-
-    pb = doc.add_paragraph()
-    rb = pb.add_run(text)
+    rb = p.add_run(text)
     _apply_run_font(rb, size=PT10, bold=True)
-    _set_single_spacing(pb)
-    pb.paragraph_format.first_line_indent = Cm(0.5)
-    pb.paragraph_format.space_after = Pt(4)
+    _set_single_spacing(p)
+    p.paragraph_format.space_before = Pt(6)
+    p.paragraph_format.space_after  = Pt(4)
 
 
 def add_heading(doc, text: str, level: int = 1):
