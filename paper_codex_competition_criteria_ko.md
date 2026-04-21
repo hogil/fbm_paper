@@ -2,11 +2,15 @@
 
 본 문서는 논문 「Hybrid Failbit Map Analysis Architecture for Known Classification and Unknown Discovery」(rev167)의 경진대회 평가 항목(기술의 우수성, 독창성, 근거 타당성, 파급효과) 네 가지 기준에 대한 서술 자료이다. 각 항목은 2,000자 제한을 기준으로 작성되었다.
 
+## 요약
+
+기존 반도체 결함 분석은 chip 단위 pass/fail만 담긴 저해상도 chip bin map에 거리 기반 clustering을 적용하는 수준에 머물러 있었다. 본 연구는 이를 chip당 수천 bit 단위까지 해상도가 확장된 Failbit Map 위에서, 등록 결함은 supervised 분류로 정확히 가르고 미등록 결함은 self-supervised 탐지로 먼저 찾아내는 통합 학습 아키텍처로 발전시켰다. Known 쪽은 ConvNeXtV2가 wafer 전체를 1차 분류한 뒤 저신뢰 구간만 ROI-YOLO로 chip 내부 형태까지 재검사하는 2단계 구조로 weighted F1 0.95를 달성하였고, Unknown 쪽은 wafer를 격자로 나눠 동일 grid cell 내에서만 positive pair를 만드는 grid 기반 SimCLR로 "모양 + 위치"가 함께 고려된 표현을 학습한 뒤 HDBSCAN으로 그룹핑하여 13개 후보 중 7개를 실제 신규 결함 그룹으로 확인하였다. 데이터 파이프라인 측면에서는 Cython 기반 hex-to-grade 변환이 처리 속도를 약 100배, 32색 팔레트 인덱스 PNG가 저장 용량을 약 75% 줄여 일 약 20,000장 규모의 대량 운영을 가능하게 하였으며, 전체 아키텍처는 failbitmap.com 기반 분석 웹 애플리케이션으로 생산 현장에 상시 배포되어 있다.
+
 ---
 
 ## 1. 기술의 우수성
 
-본 기술은 반도체 EDS 테스트에서 생성되는 웨이퍼당 약 1,000만 픽셀 규모의 초고해상도 Failbit Map을 실시간으로 생성하고 저장하며 분석까지 이어가는, 업계에서 보기 드문 대규모 통합 아키텍처이다. 그동안 현업에서는 장비 로그를 Failbit Map으로 대량 변환해 저장할 처리 성능이 부족했고, 그 결과 엔지니어가 한 번에 살펴볼 수 있는 이미지가 약 48개로 제한되어 있었다. 결함 판정 역시 숙련 엔지니어의 눈에 의존해야 했기 때문에, 전수 분석은 현실적으로 불가능한 영역에 가까웠다. 본 연구는 이러한 구조적 한계를 풀기 위해 hex-to-grade 변환 로직을 Cython으로 재작성하여 처리 속도를 약 100배 끌어올렸고, 이미지 저장 방식을 32색 팔레트 인덱스 PNG로 바꾸어 용량을 약 75% 줄였다. 이 두 개선이 맞물리면서 일 약 20,000장에 달하는 Failbit Map을 시간 단위로 누적하고 조회할 수 있는 기반이 마련되었다. 그 위에 Known 결함은 ConvNeXtV2 기반 wafer-level 1차 분류기와, 저신뢰 샘플에 한해 동작하는 ROI-YOLO 2차 분류기를 계층적으로 묶어 처리하고, Unknown 결함은 웨이퍼의 zone 기반 해석 특성을 반영한 grid 구조 local sampling 기반 SimCLR 자기지도학습으로 탐지하도록 설계하였다. 지도학습과 자기지도학습을 하나의 운영 파이프라인 안에서 결합한 사례는 반도체 Failbit Map 분야에서 찾아보기 어려우며, 향후 대용량 결함 데이터 분석의 새로운 기술 방향을 제시했다는 점에서 의의가 있다.
+본 기술의 우수성은 기존 반도체 결함 분석이 저해상도 chip bin map을 대상으로 한 단순 clustering 수준에 머물러 있던 것을, 초고해상도 Failbit Map 위에서 supervised 분류와 self-supervised 탐지를 결합한 통합 학습 아키텍처로 끌어올렸다는 데 있다. 기존 방식은 chip 단위로 pass/fail 혹은 bin 등급만 남긴 저해상도 맵에 거리 기반 clustering을 적용하는 수준이었기 때문에, 결함의 모양·위치·chip 내부 형태라는 층위를 구분해서 해석하기 어려웠다. 본 연구는 chip당 수천 bit 단위까지 해상도를 확장한 Failbit Map을 입력으로 삼고, 등록된 결함은 supervised 학습으로 정확히 분류하면서 라벨이 없는 결함은 self-supervised 학습으로 탐지하는 이원화된 파이프라인을 구성하였다. 두 계열은 서로 다른 학습 방식을 쓰지만, Failbit Map이 "wafer 전역 모양 + zone 위치 + chip 내부 형태"라는 다층 공간 구조로 해석되어야 한다는 동일한 도메인 원칙 위에 놓여 있다. Known 쪽에서는 ConvNeXtV2가 wafer 전체를 보고 1차 판정을 내리되, center 계열처럼 wafer-level 분포가 비슷해 혼동이 잦은 저신뢰 구간만 2단계로 넘긴다. 2단계에서는 해당 영역을 ROI로 잡고 YOLO가 chip 단위 결함 형태를 검출하여, 전역에서는 같아 보이던 center-object A와 center-object B를 chip 내부 패턴으로 구분해낸다. Unknown 쪽에서는 표준 SimCLR의 random crop이 패치의 출처 위치 정보를 잃게 만들어 12시와 6시에 나타난 동일 모양의 결함이 같은 표현으로 뭉쳐버리는 한계를 해소하기 위해, wafer를 격자로 나눠 동일 grid cell 내 패치만 positive pair로 묶는 방식을 적용하였다. 그 결과 HDBSCAN 클러스터가 "모양"이 아니라 "모양 + 위치"로 갈라져, 상부 로딩 포트 계열과 하부 체임버 계열처럼 근본 원인이 다른 결함이 분리된 그룹으로 드러난다. 요약하면 분류 쪽의 CNN→ROI-YOLO 2단계와 표현학습 쪽의 grid 기반 sampling이 같은 공간적 감각 위에서 결합된 것이 본 기술의 우수성이며, chip bin map 기반 분석이 다다를 수 없던 해상도와 해석 깊이를 동시에 확보한 구조이다.
 
 ---
 
