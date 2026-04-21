@@ -4,7 +4,7 @@
 
 ## 요약
 
-기존 반도체 결함 분석은 chip 단위 pass/fail만 담긴 저해상도 chip bin map에 거리 기반 clustering을 적용하는 수준에 머물러 있었다. 본 연구는 이를 chip당 수천 bit 단위까지 해상도가 확장된 Failbit Map 위에서, 등록 결함은 supervised 분류로 정확히 가르고 미등록 결함은 self-supervised 탐지로 먼저 찾아내는 통합 학습 아키텍처로 발전시켰다. Known 쪽은 ConvNeXtV2가 wafer 전체를 1차 분류한 뒤 저신뢰 구간만 ROI-YOLO로 chip 내부 형태까지 재검사하는 2단계 구조로 weighted F1 0.95를 달성하였고, Unknown 쪽은 wafer를 격자로 나눠 동일 grid cell 내에서만 positive pair를 만드는 grid 기반 SimCLR로 "모양 + 위치"가 함께 고려된 표현을 학습한 뒤 HDBSCAN으로 그룹핑하여 13개 후보 중 7개를 실제 신규 결함 그룹으로 확인하였다. 데이터 파이프라인 측면에서는 Cython 기반 hex-to-grade 변환이 처리 속도를 약 100배, 32색 팔레트 인덱스 PNG가 저장 용량을 약 75% 줄여 일 약 20,000장 규모의 대량 운영을 가능하게 하였으며, 전체 아키텍처는 failbitmap.com 기반 분석 웹 애플리케이션으로 생산 현장에 상시 배포되어 있다.
+기존 반도체 결함 분석은 chip 단위 pass/fail만 담긴 저해상도 chip bin map에 거리 기반 clustering을 적용하는 수준에 머물러 있었다. 본 연구는 이를 chip당 수천 bit 단위까지 해상도가 확장된 Failbit Map 위에서, 실시간 로그 수집부터 시간 단위 이미지 생성, 대규모 저장과 조회, 이원화된 학습 분석까지 이어지는 end-to-end 통합 아키텍처로 발전시켰다. 먼저 데이터 파이프라인 측면에서, 웨이퍼당 약 1,000만 bit에 달하는 hex-to-grade 변환 병목을 Cython으로 재구현하여 처리 속도를 약 100배 끌어올렸고, 이미지 저장은 32색 팔레트 인덱스 PNG로 전환하여 용량을 약 75% 줄였다. 이 두 최적화가 맞물려 일 약 20,000장 규모의 Failbit Map을 시간 단위로 누적하고 조회할 수 있는 기반이 마련되었고, 동시 조회가 48개 수준으로 막혀 있던 기존 환경이 사실상 전수 분석이 가능한 환경으로 전환되었다. 그 위에서 Known 결함은 ConvNeXtV2가 wafer 전체를 1차 분류한 뒤 저신뢰 구간만 ROI-YOLO로 chip 내부 형태까지 재검사하는 2단계 구조로 weighted F1 0.95를 달성하였고, Unknown 결함은 wafer를 격자로 나눠 동일 grid cell 내에서만 positive pair를 만드는 grid 기반 SimCLR로 "모양 + 위치"가 함께 고려된 표현을 학습한 뒤 HDBSCAN 그룹핑으로 13개 후보 중 7개를 실제 신규 결함 그룹으로 확인하였다. 전체 아키텍처는 failbitmap.com 기반 분석 웹 애플리케이션으로 생산 현장에 상시 배포되어 운영 중이다.
 
 ---
 
