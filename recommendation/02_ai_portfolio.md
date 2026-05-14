@@ -192,7 +192,7 @@ val_margin 은 `positive bits 평균 score - negative bits 최대 score` 로 정
 | 8 | Ensemble 4-bag | 0.9909 | TBD | TBD | 0.00% | TBD | TBD | k=3 기준 Total FAR 0.00% |
 | 9 | KD distill 4-bag → student | 0.9872 | TBD | TBD | 12.86% | 약 0.00% | TBD | OOD over-fire 확인, 운영 후보가 아닌 보조 검증 |
 
-[추가 생성 chip 데이터, PoC] 2026-05-15 pair-sweep 보조 확인에서 `ladder5b_complement_g4n2_p25` 는 stage1 eval 기준 best cell `T0__I3` macro F1 0.8913 / micro F1 0.8840 / top1 11-class 0.7990 으로 확인했습니다. 단, 해당 산출물은 macro F1 기준 stage1 report 이며 위 표의 bit_F1 / single / 2combo / FAR breakdown 은 아직 산출되지 않아 TBD 갱신 대상에서 제외합니다.
+[추가 생성 chip 데이터, PoC] 2026-05-15 pair-sweep 보조 확인에서 추가 Pair Mask 변형 2종 (Complement + Pair Mask, grid 4x2, p=0.25 / Single Pair Mask, p=0.50) 은 stage1 report 기준 macro F1 0.8913 / micro F1 0.8840 / top1 11-class 0.7990 으로 확인됐고, 후속 자동 집계 기준 두 변형 모두 bit_F1 0.8743 / Total FAR 100.00% / NI-FAR 100.00% / OOD-FAR 100.00% 로 확인했습니다. 이는 Pair Mask 계열 단독 변형도 negative false-positive 를 억제하지 못한 보조 근거이며, single / 2combo breakdown 은 아직 산출되지 않아 위 표의 TBD 갱신 대상에서 제외합니다.
 
 **ㅁ P3. Trend Episode 데이터 생성 기반 Anomaly-detection 검증 PoC**
 
