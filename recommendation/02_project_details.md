@@ -209,7 +209,7 @@ Transformer 계열은 wafer 전체 구조를 보는 데 강점이 있으나, 본
 | 해상도 | wafer 이미지 내 ROI 영역만 활용 | 원본 chip 해상도 그대로 유지 |
 | 추론 속도 | YOLO bbox 탐지 비용 | chip 분류 (병렬 가능) — 도메인상 더 빠름 |
 | Annotation | ROI 내 chip-level bbox 라벨 필요 (수동 비용 큼) | chip 단일 클래스 라벨만 필요 |
-| 본인 개선 history | **[실전 현업 데이터]** 0.78 (Baseline) → 0.87 (ConvNeXtV2 채택) → 0.92 (Optuna HPO) → **0.95 (ROI YOLO 2-stage 통합)** | **[추가 생성 chip 데이터]** baseline chip-CNN → chip 단위 결함 분류 데이터 1.16M 확장 → Grade/라벨 값을 평균내지 않고 보존하는 범주형 확대 방식 → chip별 결함 분류 결과를 wafer 좌표계 obj-id map 으로 재구성 → **보조 개발 지표 val_f1 0.9946 (chip 분류기 단계만 검증, Stage 1+Stage 2 통합 성과 아님, 통합 평가는 2026년 내 완료 목표)** |
+| 본인 개선 history | **[실전 현업 데이터]** 0.78 (Baseline, ConvNeXtV2 untuned) → 0.87 (ConvNeXtV2) → 0.92 (Optuna HPO) → **0.95 (ROI YOLO 2-stage 통합)** | **[추가 생성 chip 데이터]** baseline chip-CNN → chip 단위 결함 분류 데이터 1.16M 확장 → Grade/라벨 값을 평균내지 않고 보존하는 범주형 확대 방식 → chip별 결함 분류 결과를 wafer 좌표계 obj-id map 으로 재구성 → **보조 개발 지표 val_f1 0.9946 (chip 분류기 단계만 검증, Stage 1+Stage 2 통합 성과 아님, 통합 평가는 2026년 내 완료 목표)** |
 | 상태 | [사내 실전 검증 완료] | [chip 분류기 단독 지표 검증 완료 / Stage 1+Stage 2 통합 평가는 2026년 내 완료 목표] |
 
 **(3) Unknown self-supervised 검출 — ConvNeXtV2-base TAPT + Global InfoNCE + MoCo Queue 4096 + NV-Retriever NEG 0.72 + NeCo 0.2 + HDBSCAN**
@@ -286,7 +286,7 @@ Unknown 불량은 등록 클래스가 아닌 신규 패턴이므로 supervised c
 | NEW + KNN-softmax post (τ=0.5) | 1.000 | 0.00% | 0.994 | 0.942 | 0.868 ± 0.013 | 0.960 | 0.781 | 후처리로 noise 제거 |
 | NEW recipe cross-anchor | 1.000 | 4.73% | 0.936 | 0.786 | 0.444 | 0.851 | 0.521 | 다른 합성 anchor 에 대한 stress test |
 
-**cross-anchor ARI 0.4437 의 의미**: cross-anchor 는 학습 anchor 와 분포가 다른 별도 생성 anchor (E, 39 class 8,354 PNG) 에 대한 ARI 로, **추가 생성 데이터 내부에서 도메인 shift 영향을 정량화** 하기 위한 stress test 수치입니다. same-anchor 0.8588 ↔ cross-anchor 0.4437 의 gap 은 anchor 분포 차이 영향을 측정한 결과이며, 후속 개선 (anchor diversification + queue tuning) 으로 본인이 추가 개발 중입니다. 본 ARI/cross-anchor 는 모두 추가 생성 데이터 평가용 보조 지표이며, 실전 운영 결과 (5일 학습 + 1일 적용 → 13 후보 → 7 실제 불량 현업 정성 확인) 와는 별도 trace 입니다.
+**cross-anchor ARI 0.4437 의 의미**: cross-anchor 는 학습 anchor 와 분포가 다른 별도 생성 anchor (E, 39 class 8,354 PNG) 에 대한 ARI 로, **추가 생성 데이터 내부에서 도메인 shift 영향을 정량화** 하기 위한 stress test 수치입니다. same-anchor 0.8588 ↔ cross-anchor 0.4437 의 gap 은 anchor 분포 차이 영향을 측정한 결과이며, 후속 개선 (anchor diversification + queue tuning) 으로 본인이 2026년 내 cross-anchor ARI 개선을 목표로 추가 개발 중입니다. 본 ARI/cross-anchor 는 모두 추가 생성 데이터 평가용 보조 지표이며, 실전 운영 결과 (5일 학습 + 1일 적용 → 13 후보 → 7 실제 불량 현업 정성 확인) 와는 별도 trace 입니다.
 
 ### 1.6 구현 성과
 
@@ -297,7 +297,7 @@ Unknown 불량은 등록 클래스가 아닌 신규 패턴이므로 supervised c
 | 항목 | 수치 | 근거 |
 |------|------|------|
 | Known weighted F1 (본인 1차 개발 ROI YOLO 2-stage) **[실전 현업 데이터]** | **0.95** | 사내 실제 불량 이미지 데이터 16-class / 1,500 labeled samples / 4:1 stratified split. ConvNeXtV2 + Optuna + ROI YOLO 2-stage. 사내 실전 검증값 |
-| Known weighted F1 단계별 **[실전 현업 데이터]** | 0.78 (Baseline) → 0.87 (ConvNeXtV2) → 0.92 (Optuna) → **0.95 (ROI YOLO 2-stage)** | 동 실전 데이터셋, Backbone 5종 비교 표 |
+| Known weighted F1 단계별 **[실전 현업 데이터]** | 0.78 (Baseline, ConvNeXtV2 untuned) → 0.87 (ConvNeXtV2) → 0.92 (Optuna) → **0.95 (ROI YOLO 2-stage)** | 동 실전 데이터셋, Backbone 5종 비교 표 |
 | 본인 2차 개발 (chip별 결함 분류 결과를 wafer 좌표계에 재구성하는 보정 구조) **[추가 생성 chip 데이터, 개발 중]** | 보조 개발 지표: chip 분류기 단계 **val_f1 0.9946 / test_f1 0.9872 / 5-seed 0.9838±0.0092** | 별도 생성 chip 데이터셋 기준. chip 분류기 단독 지표이며 2-stage 통합 성과가 아닙니다. 2-stage 통합 평가는 개발 중 |
 | Backbone 효율 | 파라미터 26% 감소 (119.5M → 88.6M), FLOPs 39% 감소 (74.2G → 45.1G) | 동 실전 데이터셋, MaxViT 대비 ConvNeXtV2 |
 | Unknown 운영 적용 **[실전 현업 데이터]** | 5일 운영 데이터 10,000장 학습 + 별도 1일 운영 데이터 2,000장 적용 → **13 후보 중 7개 실제 불량 현업 확인** (정량 metric 없음) | HDBSCAN 후보 그룹을 현업 엔지니어가 확인 |
@@ -341,7 +341,7 @@ Unknown 불량은 등록 클래스가 아닌 신규 패턴이므로 supervised c
 
 ### 2.3 개인별 기여 서술
 
-본 과제의 main 성과는 **FCM-PM 본인 신규 적용**이며, 개발 순서는 **CutMix 선정 → CutMix + Pair Mask 로 background loss 제외 → Full-Cover Mixup + Pair Mask (FCM-PM) 구성**입니다. 이후 val_margin best-model 선택 기준과 KD single-model 압축을 붙여 multi-label 오탐 억제와 1× 추론 후보 확보까지 확장했습니다.
+본 과제의 main 성과는 FCM-PM 본인 신규 적용이며, 개발 순서는 **CutMix 선정 → CutMix + Pair Mask 로 background loss 제외 → Full-Cover Mixup + Pair Mask (FCM-PM) 구성** 입니다. 이후 val_margin best-model 선택 기준과 KD single-model 압축을 붙여 multi-label 오탐 억제와 1× 추론 후보 확보까지 확장했습니다.
 
 - **FCM-PM (Full-Cover Mixup + Pair Mask) 본인 신규 적용 - 반도체 도메인 지식의 직접 코드화**: chip 2-combo 라벨이 부족한 상황에서 먼저 Grade 값을 보존하는 CutMix 계열을 선정했고, 다음 단계로 합성 chip 의 background 영역을 loss 에서 제외하는 Pair Mask 를 붙였습니다. 그러나 일반 CutMix 는 chip 의 **특정 영역만 잘라** 다른 chip 에 붙이는 방식이라, 본 도메인 (Failbit Map chip) 처럼 **불량 영역이 chip 안 어디에 분포할지 사전에 알 수 없는** 경우 정작 합성에 포함하려던 불량 패턴이 잘려 학습 신호가 사라질 수 있습니다. 본인은 이를 해결하기 위해 **chip 전체를 grid 로 분할하여 모든 영역을 cover 하는 Full-Cover Mixup (FCM)** 으로 확장하고, Pair Mask (PM) 와 결합한 **FCM-PM** 구조를 구성했습니다. **Pair Mask 제거 시 FAR 100% (전면 오판)** 으로 떨어져, FCM-PM 의 background loss masking 이 성패를 가르는 핵심 장치였음을 제거 비교로 입증했습니다.
 - **val_f1 → val_margin 전환 (best-model 선택 기준 도입)**: 작은 val set (n=163) 에서 val_f1 이 3 plateau 로 saturate 되어 best-model 선택 안정성이 낮은 문제를 해결하기 위해, **val_margin = positive bits 평균 prob − negative bits 최대 prob** 의 연속값 지표로 best-model 선택 기준을 본인이 전환했습니다. 학습 설정에는 margin 최대화 기준으로 반영했으며, val_margin 으로 전환한 결과 saturation 없는 연속 spectrum 위에서 안정적 best-model 선택이 가능해졌습니다.
