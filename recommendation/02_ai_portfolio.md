@@ -113,9 +113,9 @@ Unknown 검출은 실전 운영에서 13 후보 중 7개 실제 불량을 확인
 | 3 | + MoCo Queue 4096 | 1.000 | 1.31% | 0.983 | 0.937 | 0.846 | 0.950 | 0.573 |
 | 4 | + NV-Retriever NEG 0.72 | 1.000 | 0.52% | 0.985 | 0.944 | 0.861 | 0.956 | 0.611 |
 | 5 | + NeCo 0.2 | 1.000 | 0.96% | 0.980 | 0.940 | 0.856 | 0.950 | 0.610 |
-| 6 | NEW (Local 제거, 4-tool) | 1.000 | 1.48% | 0.994 | 0.942 | 0.859 ± 0.018 | 0.960 | 0.781 |
-| 7 | NEW + τ=0.5 post-reassign | 1.000 | 0.00% | 0.994 | 0.942 | 0.868 ± 0.013 | 0.960 | 0.781 |
-| 8 | NEW cross-anchor 확인 | 38/38 | 4.73% | 0.936 | 0.786 | 0.444 | 0.851 | 0.521 |
+| 6 | Selected contrastive recipe | 1.000 | 1.48% | 0.994 | 0.942 | 0.859 ± 0.018 | 0.960 | 0.781 |
+| 7 | Selected recipe + τ=0.5 reassignment | 1.000 | 0.00% | 0.994 | 0.942 | 0.868 ± 0.013 | 0.960 | 0.781 |
+| 8 | Selected recipe cross-anchor 확인 | 38/38 | 4.73% | 0.936 | 0.786 | 0.444 | 0.851 | 0.521 |
 
 **ㅁ P2. Chip Multi-label Classification**
 
@@ -138,7 +138,7 @@ Unknown 검출은 실전 운영에서 13 후보 중 7개 실제 불량을 확인
 
 P2 의 핵심 성과는 FCM-PM 을 본 과제 데이터 특성에 맞게 신규 적용한 점입니다. 본인은 chip 내부 defect 위치를 사전에 알 수 없는 조건에서 일반 CutMix 가 defect signal 을 잘라낼 수 있다는 한계를 인지하고, `CutMix 선정 → CutMix + Pair Mask 로 background loss 제외 → Full-Cover Mixup + Pair Mask 구성` 순서로 방법을 확장했습니다.
 
-먼저 CutMix 계열로 Grade 값을 보존하는 합성을 구성했고, Pair Mask 를 결합해 합성 background 영역을 loss 에서 제외함으로써 background 를 defect 로 오학습하는 문제를 차단했습니다. 이어 Full-Cover Mixup 으로 chip 전체 grid 를 cover 하여 defect 위치 사전 미지 조건을 합성 단계에 반영했습니다. P2에서는 연세대 인공지능 컴퓨팅 학부 박은병 교수 (이미지 생성 전공)에게 CutMix 계열 선택 방향을 검토받았고, Grade 0-7 양자화 이미지에서는 픽셀값이 중간 색으로 섞이는 Mixup / Diffusion 계열보다 양자화 의미를 보존하는 CutMix 계열이 적합하다는 의견을 반영했습니다.
+먼저 CutMix 계열로 Grade 값을 보존하는 합성을 구성했고, Pair Mask 를 결합해 합성 background 영역을 loss 에서 제외함으로써 background 를 defect 로 오학습하는 문제를 차단했습니다. 이어 Full-Cover Mixup 으로 chip 전체 grid 를 cover 하여 defect 위치 사전 미지 조건을 합성 단계에 반영했습니다. P2에서는 이미지 생성 전공인 연세대 인공지능 컴퓨팅 학부 박은병 교수에게 CutMix 계열 선택 방향을 검토받았고, Grade 0-7 양자화 이미지에서는 픽셀값이 중간 색으로 섞이는 Mixup / Diffusion 계열보다 양자화 의미를 보존하는 CutMix 계열이 적합하다는 의견을 반영했습니다.
 
 학습·평가 운영 측면에서는 val_margin 기준을 도입해 작은 validation set 에서 val_f1 plateau 로 checkpoint 선택이 흔들리는 문제를 줄였으며, KD single student 로 1× inference cost 운영 후보를 함께 확인했습니다.
 
@@ -184,16 +184,18 @@ val_margin 은 `positive bits 평균 score - negative bits 최대 score` 로 정
 
 | # | Recipe | bit_F1 | single | 2combo | FAR | NI-FAR | OOD-FAR | Note |
 |---|--------|-------:|-------:|-------:|----:|-------:|--------:|------|
-| 1 | Baseline (BCE+LS=0.30, no CutMix) | 0.1093 | 0.1662 | 0.0652 | 99.47% | 99.65% | 98.91% | FINAL bit/FAR matrix 확인, baseline collapse |
-| 2 | Focal Loss (sigmoid focal, no CutMix) | 0.7980 | 0.7981 | 0.3987 | 45.72% | 35.55% | 77.50% | FINAL bit/FAR matrix 확인 |
-| 3 | ASL (Asymmetric Loss, no CutMix) | 0.6435 | 0.6000 | 0.4874 | 100.00% | 100.00% | 100.00% | FINAL bit/FAR matrix 확인, FAR collapse |
-| 4 | CutMix only (random rect, no pair) | 0.9359 | 1.0000 | 0.4138 | 42.05% | 37.00% | 57.81% | FINAL bit/FAR matrix 확인, FAR high |
-| 5 | CutMix + Pair (random rect + masked) | 0.9256 | TBD | TBD | 100.00% | 100.00% | 100.00% | FINAL bit/FAR matrix 확인, Pair Mask 단독이 아니라 FCM-PM 조합 필요성 확인 |
-| 6 | FCM-PM best (val_f1 / val_margin 동일 epoch) | 0.9964 | 0.9961 | 0.9999 | 0.83% | 약 1.00% | 약 0.78% | 두 선택 기준이 같은 epoch 를 선택 |
-| 7 | Ensemble 4-bag | 0.9909 | TBD | TBD | 0.00% | TBD | TBD | k=3 기준 Total FAR 0.00% |
-| 8 | KD distill 4-bag → student | 0.9872 | TBD | TBD | 12.86% | 약 0.00% | TBD | OOD over-fire 확인, 운영 후보가 아닌 보조 검증 |
+| 1 | Baseline (BCE+LS=0.30, no CutMix) | 0.1093 | 0.1662 | 0.0652 | 99.47% | 99.65% | 98.91% | bit/FAR 평가 확인, baseline 성능 저하 |
+| 2 | Focal Loss (sigmoid focal, no CutMix) | 0.7980 | 0.7981 | 0.3987 | 45.72% | 35.55% | 77.50% | bit/FAR 평가 확인 |
+| 3 | ASL (Asymmetric Loss, no CutMix) | 0.6435 | 0.6000 | 0.4874 | 100.00% | 100.00% | 100.00% | bit/FAR 평가 확인, FAR 100% 한계 |
+| 4 | CutMix only (random rect, no pair) | 0.9359 | 1.0000 | 0.4138 | 42.05% | 37.00% | 57.81% | bit/FAR 평가 확인, FAR 높음 |
+| 5 | CutMix + Pair (random rect + masked) | 0.9256 | 미산출 | 미산출 | 100.00% | 100.00% | 100.00% | bit/FAR 평가 확인, Pair Mask 단독이 아니라 FCM-PM 조합 필요성 확인 |
+| 6 | FCM-PM best (val_f1 / val_margin 동일 epoch) | 0.9964 | 0.9961 | 0.9999 | 0.83% | 약 1.00% | 약 0.78% | 요약 평가 0.9943 / per-class 2,000 갱신 평가 0.9964 |
+| 7 | Ensemble 4-bag | 0.9909 | 미산출 | 미산출 | 0.00% | 미산출 | 미산출 | k=3 기준 Total FAR 0.00% |
+| 8 | KD distill 4-bag → student | 0.9872 | 미산출 | 미산출 | 12.86% | 약 0.00% | 미산출 | OOD over-fire 확인, 운영 후보가 아닌 보조 검증 |
 
-[추가 생성 chip 데이터, PoC] 2026-05-15 pair-sweep 보조 확인에서 추가 Pair Mask 변형 2종 (Complement + Pair Mask, grid 4x2, p=0.25 / Single Pair Mask, p=0.50) 은 stage1 report 기준 macro F1 0.8913 / micro F1 0.8840 / top1 11-class 0.7990 으로 확인됐고, 후속 자동 집계 기준 두 변형 모두 bit_F1 0.8743 / Total FAR 100.00% / NI-FAR 100.00% / OOD-FAR 100.00% 로 확인했습니다. 이는 Pair Mask 계열 단독 변형도 negative false-positive 를 억제하지 못한 보조 근거이며, single / 2combo breakdown 은 아직 산출되지 않아 위 표의 TBD 갱신 대상에서 제외합니다.
+`미산출`은 해당 평가 단위에서 single / 2combo 또는 세부 FAR breakdown 을 별도 집계하지 않은 항목입니다. 대표 판단은 bit_F1 과 Total FAR 기준으로 수행했습니다.
+
+[추가 생성 chip 데이터, PoC] 2026-05-15 pair-sweep 보조 평가에서 추가 Pair Mask 변형 2종 (Complement + Pair Mask, grid 4x2, p=0.25 / Single Pair Mask, p=0.50) 은 macro F1 0.8913 / micro F1 0.8840 / top1 11-class 0.7990 으로 확인됐고, 동일 평가 기준에서 두 변형 모두 bit_F1 0.8743 / Total FAR 100.00% / NI-FAR 100.00% / OOD-FAR 100.00% 로 확인했습니다. 이는 Pair Mask 계열 단독 변형도 negative false-positive 를 억제하지 못한 보조 근거입니다.
 
 **ㅁ P3. Trend Episode 데이터 생성 기반 Anomaly-detection 검증 PoC**
 
