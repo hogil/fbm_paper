@@ -34,7 +34,7 @@ P1 기여도 70%는 본인이 데이터 변환·저장 파이프라인, Web App,
 
 데이터 처리 단에서는 Cython 기반 hex-to-grade 변환으로 wafer 당 약 1,000만 cell 변환 병목을 약 100배 가속했고, 32-color palette-indexed PNG 저장으로 Failbit Map 저장 용량을 약 75% 절감해 양산 운영의 처리량과 저장 비용을 동시에 확보했습니다.
 
-AI 모델 단에서는 ConvNeXtV2 + ROI YOLO 2-stage 로 16 class / 1,500 labeled samples / 4:1 stratified split **[실전 현업 데이터]** 에서 weighted F1 0.95 를 달성했으며, Unknown 검출은 **[실전 현업 데이터]** 5일 운영 데이터 10,000장 학습 + 별도 1일 2,000장 적용 결과 13 후보 중 7개가 실제 불량으로 현업 확인되었습니다. ROI YOLO 의 한계를 보완하기 위해 chip-CNN 결과를 wafer 좌표계 object-id map 으로 재구성하는 2차 보정 구조를 **[추가 생성 chip 데이터, 개발 중]** 기반으로 개발 중에 있습니다.
+AI 모델 단에서는 ConvNeXtV2 + ROI YOLO 2-stage 로 16 class / 1,500 labeled samples / 4:1 stratified split **[실전 현업 데이터]** 에서 weighted F1 0.95 를 달성했으며, Unknown 검출은 **[실전 현업 데이터]** 5일 운영 데이터 10,000장 학습 + 별도 1일 2,000장 적용 결과 13 후보 중 7개가 실제 불량으로 현업 확인되었습니다. ROI YOLO 의 한계를 보완하기 위해 chip-CNN 결과를 wafer 좌표 보정 지도(object-id map)로 재구성하는 2차 보정 구조를 **[추가 생성 chip 데이터, 개발 중]** 기반으로 개발 중에 있습니다.
 
 **ㅁ 문제정의**
 
@@ -87,7 +87,7 @@ Backbone 선정은 Transformer 와 CNN 계열을 비교해 판단했습니다. T
         ↓
 [chip별 defect id]
         ↓
-[wafer 좌표계 object-id map 재구성]
+[wafer 좌표 보정 지도(object-id map) 재구성]
         ↓
 [최종 보정 classifier 입력]
 ```
@@ -102,9 +102,11 @@ Backbone 선정은 Transformer 와 CNN 계열을 비교해 판단했습니다. T
 | **[양산 운영]** | 운영 파이프라인 | 일 약 2만 장 wafer / 1시간 주기 적재 |
 | **[양산 운영]** | 데이터 처리 | Cython hex-to-grade 약 **100배** 가속, 32-color palette PNG 약 **75%** 저장 절감 |
 | **[양산 운영]** | Web App | 12일 누적 **2,317 요청**, peak 1,801 요청 (2026-03-07) |
-| **[추가 생성 데이터, 개발 중]** | 후속 고도화 | Unknown metric 고도화 (ARI / capture rate 기반 cluster quality 정량화) 와 chip-CNN object-id map 보정 구조를 실전 성과와 분리해 개발 중 |
+| **[추가 생성 데이터, 개발 중]** | 후속 고도화 | Unknown metric 고도화 (ARI / capture rate 기반 cluster quality 정량화) 와 chip-CNN 기반 wafer 좌표 보정 지도(object-id map) 구조를 실전 성과와 분리해 개발 중 |
 
 Unknown 검출은 실전 운영에서 13 후보 중 7개 실제 불량을 확인한 뒤, 추가 개선 및 정량 metric 측정을 위해 생성 데이터 기반 benchmark 를 별도로 구축해 개발 중입니다. 아래 표는 **[추가 생성 데이터, 개발 중]** 기반 보조 개발 metric 이며, 실전 Unknown 운영 성과를 대체하는 지표가 아닙니다.
+
+Selected contrastive recipe 는 Global contrastive learning 에 MoCo Queue, NV-Retriever negative sampling, NeCo 를 조합한 보조 검증 구성입니다.
 
 | # | Recipe | P1 capture | P2 noise | P3 Comp | P4 Hom | ARI | AMI | Sil |
 |---|--------|-----------:|---------:|--------:|-------:|----:|----:|----:|
@@ -178,7 +180,7 @@ val_margin 은 `positive bits 평균 score - negative bits 최대 score` 로 정
 | **[추가 생성 chip 데이터, PoC]** | FCM-PM 대표 모델 | bit F1 **0.9943** (기존 요약 평가) / **0.9964** (per-class 2,000 갱신 평가), Normal / Invalid / OOD negative false-positive **0건** |
 | **[추가 생성 chip 데이터, PoC]** | FCM-PM 내 Pair Mask 제거 비교 | FCM-PM 구조에서 Pair Mask 를 제거하면 FAR **100%** 로 negative 전체 오탐이 발생했습니다. 단순 CutMix + Pair Mask 가 아니라 Full-Cover Mixup 과 Pair Mask 를 함께 쓰는 조합이 주요 개선 요인임을 확인 |
 | **[추가 생성 chip 데이터, PoC]** | val_margin 기준 도입 | false-positive 위험까지 반영하는 best-model 선택 기준으로 적용 |
-| **[추가 생성 chip 데이터, PoC]** | KD single student | bit F1 **0.9872** / FAR **0.5%** / 1× inference cost |
+| **[추가 생성 chip 데이터, PoC]** | KD single student | bit F1 **0.9872** / FAR **0.5%** (기존 요약 평가 기준) / 1× inference cost |
 
 아래 표는 추가 생성 chip 데이터 기반 per-class 2,000 갱신 평가입니다. 대표 성과의 bit F1 0.9943 은 기존 요약 평가 기준이고, 표의 FCM-PM bit F1 0.9964 는 동일 계열 모델을 per-class 2,000 단위로 재평가한 값입니다. val_f1 best 와 val_margin best 는 동일 epoch 로 확인되어 하나의 row 로 통합했습니다.
 
@@ -191,7 +193,7 @@ val_margin 은 `positive bits 평균 score - negative bits 최대 score` 로 정
 | 5 | CutMix + Pair (random rect + masked) | 0.9256 | 미산출 | 미산출 | 100.00% | 100.00% | 100.00% | bit/FAR 평가 확인, Pair Mask 단독이 아니라 FCM-PM 조합 필요성 확인 |
 | 6 | FCM-PM best (val_f1 / val_margin 동일 epoch) | 0.9964 | 0.9961 | 0.9999 | 0.83% | 약 1.00% | 약 0.78% | 요약 평가 0.9943 / per-class 2,000 갱신 평가 0.9964 |
 | 7 | Ensemble 4-bag | 0.9909 | 미산출 | 미산출 | 0.00% | 미산출 | 미산출 | k=3 기준 Total FAR 0.00% |
-| 8 | KD distill 4-bag → student | 0.9872 | 미산출 | 미산출 | 12.86% | 약 0.00% | 미산출 | OOD over-fire 확인, 운영 후보가 아닌 보조 검증 |
+| 8 | KD distill 4-bag → student | 0.9872 | 미산출 | 미산출 | 12.86% | 약 0.00% | 미산출 | per-class 2,000 stress 평가 기준 FAR 12.86%; 기존 요약 평가 기준 FAR 0.5% 와 평가 단위가 다름 |
 
 `미산출`은 해당 평가 단위에서 single / 2combo 또는 세부 FAR breakdown 을 별도 집계하지 않은 항목입니다. 대표 판단은 bit_F1 과 Total FAR 기준으로 수행했습니다.
 
