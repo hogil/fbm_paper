@@ -97,11 +97,11 @@ Backbone 선정은 Transformer 와 CNN 계열을 비교해 판단했습니다. T
 | Known 2-stage **[실전 현업 데이터]** | weighted F1 **0.95** (16 class / 1,500 labeled samples / 4:1 stratified split) |
 | Known 단계별 개선 **[실전 현업 데이터]** | 0.78 → 0.87 → 0.92 → **0.95** |
 | Unknown 실전 운영 확인 **[실전 현업 데이터]** | 5일 10,000장 학습 + 별도 1일 2,000장 적용 → 13 후보 중 7개 실제 불량 확인 |
-| Unknown 보조 개발 지표 **[추가 생성 데이터, 개발 중]** | same-anchor ARI **0.8588±0.018** / class capture **1.000**, cross-anchor ARI **0.4437**. 실전 운영 성과가 아니라 합성 wafer 데이터 기반 표현학습 품질 점검 지표입니다. |
+| Unknown 보조 개발 지표 **[추가 생성 데이터, 개발 중]** | same-anchor ARI **0.8588±0.018** / class capture **1.000 (43/43)**, cross-anchor ARI **0.4437**. 실전 운영 성과가 아니라 합성 wafer 데이터 기반 표현학습 품질 점검 지표입니다. |
 | 운영 파이프라인 **[양산 운영]** | 일 약 2만 장 wafer / 1시간 주기 적재 |
 | 데이터 처리 **[양산 운영]** | Cython hex-to-grade 약 **100배** 가속, 32-color palette PNG 약 **75%** 저장 절감 |
 | Web App **[양산 운영]** | 12일 누적 **2,317 요청**, peak 1,801 요청 (2026-03-07) |
-| chip-CNN 보조 개발 **[추가 생성 데이터, 개발 중]** | val_f1 **0.9946** / test_f1 **0.9872** / 5-seed **0.9838±0.0092**. 2-stage 통합 성과가 아니라 chip 분류기 단독 지표입니다. |
+| chip-CNN 보조 개발 **[추가 생성 데이터, 개발 중]** | 생성 chip 데이터 **1.16M** 기준 val_f1 **0.9946** / test_f1 **0.9872** / 5-seed **0.9838±0.0092**. 2-stage 통합 성과가 아니라 chip 분류기 단독 지표입니다. |
 
 **Unknown contrastive 구성요소 성능표 [추가 생성 데이터, 개발 중 - 학습 후 정량 채움]**
 
@@ -168,7 +168,7 @@ P2의 main 성과는 FCM-PM 을 본 과제 데이터 특성에 맞게 신규 적
 [대표 모델 / 4-bag ensemble / KD single 비교]
 ```
 
-val_margin 은 `positive bits 평균 score - negative bits 최대 score` 로 정의했습니다. 작은 validation set 에서 val_f1 이 plateau 로 포화되는 문제를 줄이고, false-positive risk 까지 반영하는 best-model selection signal 로 사용했습니다.
+val_margin 은 `positive bits 평균 score - negative bits 최대 score` 로 정의했습니다. 작은 validation set 에서 val_f1 이 plateau 로 포화되는 문제를 줄이고, false-positive 위험까지 반영해 best-model 선택 신호로 사용했습니다.
 
 **ㅁ 구현 성과**
 

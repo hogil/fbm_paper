@@ -28,15 +28,15 @@
 - 수행 업무: Cython hex-to-grade 변환, 32-color palette-indexed PNG 저장, mapviewer 운영, ConvNeXtV2 backbone 선정 및 hyperparameter optimization, ROI YOLO 2-stage 보정, Unknown self-supervised embedding 및 HDBSCAN grouping, chip-CNN → wafer 좌표계 object-id map 기반 Stage 2 보정 구조 개발을 수행했습니다.
 - 성과: **[실전 현업 데이터]** Known weighted F1 **0.95** (16 class / 1,500 labeled samples / 4:1 stratified split) 를 달성했습니다.
 - 성과: **[실전 현업 데이터]** Unknown 은 5일 운영 데이터 10,000장 학습 + 별도 1일 운영 데이터 2,000장 적용 결과 13 후보 중 7개 실제 불량을 현업 확인받았습니다. 이 항목은 정량 metric 이 아니라 실전 운영 확인 근거입니다.
-- 성과: **[추가 생성 데이터, 개발 중]** Unknown self-supervised PoC 는 합성 wafer 데이터에서 label 을 학습에 사용하지 않는 contrastive embedding / HDBSCAN 구조로 보조 지표를 확인했습니다. same-anchor 기준 ARI **0.8588±0.018**, class capture **1.000**, cross-anchor 기준 ARI **0.4437** 로 분포 변화에 따른 일반화 risk 도 함께 확인했습니다. 이는 실전 운영 성과가 아니라 추가 생성 데이터 기반 개발 지표입니다.
-- 성과: **[양산 운영]** EDS Test → S3 → fail-map → mapviewer 1시간 주기 적재, 일 약 2만 장 wafer 처리, Cython hex-to-grade 약 **100배** 가속, 32-color palette PNG 저장 용량 약 **75%** 절감, 사내 failbitmap 서비스 12일 누적 **2,317 요청**을 확인했습니다.
-- 성과: **[추가 생성 데이터, 개발 중]** chip 분류기 보조 개발 지표는 val_f1 **0.9946** / test_f1 **0.9872** / 5-seed **0.9838±0.0092** 입니다. 이는 2-stage 통합 성과가 아니라 chip 분류기 단독 개발 지표입니다.
+- 성과: **[추가 생성 데이터, 개발 중]** Unknown self-supervised PoC 는 합성 wafer 데이터에서 label 을 학습에 사용하지 않는 contrastive embedding / HDBSCAN 구조로 보조 지표를 확인했습니다. same-anchor 기준 ARI **0.8588±0.018**, class capture **1.000 (43/43)**, cross-anchor 기준 ARI **0.4437** 로 분포 변화에 따른 일반화 risk 도 함께 확인했습니다. 이는 실전 운영 성과가 아니라 추가 생성 데이터 기반 개발 지표입니다.
+- 성과: **[양산 운영]** EDS Test → S3 → fail-map → mapviewer 1시간 주기 적재, 일 약 2만 장 wafer 처리, Cython hex-to-grade 약 **100배** 가속, 32-color palette PNG 저장 용량 약 **75%** 절감, 사내 failbitmap 서비스 12일 누적 **2,317 요청** (peak 1,801, 2026-03-07) 을 확인했습니다.
+- 성과: **[추가 생성 데이터, 개발 중]** chip 분류기 보조 개발 지표는 추가 생성 chip 데이터 **1.16M** 기준 val_f1 **0.9946** / test_f1 **0.9872** / 5-seed **0.9838±0.0092** 입니다. 이는 2-stage 통합 성과가 아니라 chip 분류기 단독 개발 지표입니다.
 
 **과제 관련 도메인 / AI 기술 / 모델 / 방법론**
 
 본 과제 도메인은 Failbit Map, DRAM EDS Test Grade 0-7 양자화 이미지, wafer-level defect zone 해석, 대량 wafer image operating pipeline 입니다. 이 도메인 위에 Computer Vision, Object Detection, Self-Supervised Representation Learning, Clustering, MLOps / Data Pipeline Engineering 을 결합해 하나의 운영 흐름으로 구성했습니다. 핵심 모델·방법론으로는 ConvNeXtV2, ROI YOLO 2-stage refinement, ConvNeXtV2 TAPT, Global InfoNCE, MoCo Queue, hard-negative mining, HDBSCAN grouping, chip-CNN object-id map reconstruction, cross-anchor robustness check 를 채택했습니다.
 
-Backbone 선정 과정에서는 Transformer 계열이 wafer 전체 구조를 보는 데 강점이 있으나, 본 과제의 결함이 특정 zone 또는 국소 영역에 나타나는 경우가 많다는 점을 고려해 CNN 계열 ConvNeXtV2 의 sliding-window 기반 지역 특징 추출이 더 적합하다고 판단했습니다. 실제 비교에서도 MaxViT 와 동일한 weighted F1 0.87 을 보이면서 파라미터와 FLOPs 효율이 더 높아 최종 backbone 으로 선정했습니다.
+Backbone 선정 과정에서는 Transformer 계열이 wafer 전체 구조를 보는 데 강점이 있으나, 본 과제의 결함이 특정 zone 또는 국소 영역에 나타나는 경우가 많다는 점을 고려해 CNN 계열 ConvNeXtV2 의 sliding-window 기반 지역 특징 추출이 더 적합하다고 판단했습니다. 실제 비교 (ViT 0.81 / Swin 0.84 / EffNetV2 0.85 / MaxViT 0.87 / ConvNeXtV2 0.87 / +Optuna 0.92 / +ROI 0.95) 에서 ConvNeXtV2 는 MaxViT 와 동일한 weighted F1 0.87 을 보이면서 파라미터 **26% 감소 (119.5M → 88.6M)** 와 FLOPs **39% 감소 (74.2G → 45.1G)** 로 효율이 높아 최종 backbone 으로 선정했습니다.
 
 ㅁ **P2. Chip Multi-label Classification (CutMix → CutMix + Pair Mask → FCM-PM)**
 
