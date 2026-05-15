@@ -9,11 +9,11 @@
 | Synthetic Data Generation / Data Augmentation | Synthetic Dataset Generation, Data Augmentation, Mixup, CutMix, Noise Injection |
 | Model Optimization / Model Selection | Hyperparameter Optimization, Model Selection, Threshold Optimization, Calibration, Ensemble, Knowledge Distillation |
 | Data Engineering / MLOps | ETL Pipeline, Batch Processing, Object Storage Integration, Model Evaluation Pipeline, Experiment Tracking |
-| AI Application Engineering | Backend API, Web Application, Data Visualization, Access Control, Single Sign-On |
+| AI Systems Engineering | Backend API, Web Application, Data Visualization, Access Control, Single Sign-On |
 
 ## 2. 업무경력
 
-본인의 결정적 차별성은 **반도체 분석 현장에서 쌓은 이해를 AI 모델 구조와 학습 데이터 생성 체계에 직접 반영해 현업 문제를 개선** 하는 데 있습니다. 아래 3개 과제는 모두 이 기준에 맞춰 수행했습니다.
+본인의 주요 강점은 반도체 분석 현장에서 쌓은 이해를 AI 모델 구조와 학습 데이터 생성 체계에 직접 반영해 현업 문제를 개선하는 흐름에 있습니다. 아래 3개 과제는 모두 이 기준에 맞춰 수행했습니다.
 
 ㅁ **P1. Failbit Map AI 분류 시스템 (Known 2-stage + Unknown contrastive)**
 
@@ -23,14 +23,15 @@
 - 운영 상태:
   - 데이터 파이프라인 / Web App: **[양산 운영]**
   - Known 2-stage 분류: **[실전 현업 데이터, 검증 완료]**
-  - Unknown 검출: **[실전 운영 적용 및 현업 확인]**
-  - chip-CNN object-id map 보정 구조: **[추가 생성 데이터, 개발 중]**
-- 담당 역할: 본인 70% / 현업 엔지니어 20% / 관리자 10% 입니다.
+  - Unknown 검출: **[실전 현업 데이터, 검증 완료]**
+  - chip-CNN object-id map 보정 구조: **[추가 생성 chip 데이터, 개발 중]**
+- 담당 역할: 본인 60% / 현업 엔지니어 20% / 관리자 20% 입니다.
 - 수행 업무: Cython hex-to-grade 변환, 32-color palette-indexed PNG 저장, mapviewer 운영, ConvNeXtV2 backbone 선정 및 hyperparameter optimization, ROI YOLO 2-stage 보정, Unknown self-supervised embedding 및 HDBSCAN grouping, chip-CNN → wafer 좌표계 object-id map 기반 Stage 2 보정 구조 개발을 수행했습니다.
 - 성과: **[실전 현업 데이터]** Known weighted F1 **0.95** (16 class / 1,500 labeled samples / 4:1 stratified split) 를 달성했습니다. 단계별 개선은 0.78 baseline (초기 backbone 후보 ResNet 계열 reference) → 0.87 (ConvNeXtV2 backbone 교체) → 0.92 (+Optuna) → 0.95 (+ROI YOLO 2-stage) 순서이며, portfolio 상세 표 (P1 ㅁ 구현 성과) 와 동일 ladder 입니다.
 - 성과: **[실전 현업 데이터]** Unknown 은 5일 운영 데이터 10,000장 학습 + 별도 1일 운영 데이터 2,000장 적용 결과 13 후보 중 7개 실제 불량을 현업 확인받은 운영 검증 근거입니다.
 - 성과: **[양산 운영]** EDS Test → S3 → fail-map → mapviewer 1시간 주기 적재, 일 약 2만 장 wafer 처리, Cython hex-to-grade 약 **100배** 가속, 32-color palette PNG 저장 용량 약 **75%** 절감, 사내 failbitmap 서비스 12일 누적 **2,317 요청** (peak 1,801, 2026-03-07) 을 확인했습니다.
-- 보조 개발: **[추가 생성 데이터, 개발 중]** Unknown self-supervised 검출은 WM-811K 분포 기반으로 합성한 추가 생성 anchor 데이터 위에서 학습을 계속 돌리며 metric 을 누적 갱신하고 있습니다. baseline B0 Global InfoNCE only 의 ARI 0.823 에서 출발해 MoCo Queue 4096, NV-Retriever NEG 0.72, NeCo 0.2 구성요소를 순차 추가하고 Local DenseCL 을 제거한 NEW 4-tool recipe (3-seed 평균) 로 ARI **0.859 ± 0.018**, Completeness **0.9938**, Homogeneity **0.9424**, capture **1.000** (38 defect class 전부 발견), noise 1.48% 까지 끌어올렸고, KNN-softmax 후처리 (τ=0.5 post-reassign) 로 noise 를 **0.00%** 까지 추가 제거해 ARI 0.868 ± 0.013 을 확인했습니다. 별도 cross-anchor stress test (학습 anchor 와 분포가 다른 7,354 PNG 추가 생성 평가셋) 에서는 ARI 0.4437, capture 1.000, noise 4.73%, Completeness 0.9358, Homogeneity 0.7859 로 도메인 shift 영향을 정량 확인했고, anchor diversification 과 queue tuning 으로 추가 개선이 학습 진행 중에 있습니다. chip-CNN object-id map 보정 구조 역시 실전 운영 성과와 분리해 같은 흐름에서 후속 고도화를 이어가고 있습니다.
+- 후속 개선 및 지표 측정용: **[추가 생성 데이터, 개발 중]** Unknown 검출의 후속 개선과 보조 지표 측정을 위해 WM-811K 분포 기반 추가 생성 anchor 셋 (9,250 wafer / 43 defect class + Normal) 에서 contrastive 구성요소를 점진적으로 조합한 최종 recipe 로 defect class capture 43/43, ARI 0.859 ± 0.018, Completeness 0.9938, Homogeneity 0.9424 수준을 확인했습니다. 학습 anchor 와 분포가 다른 cross-anchor 평가에서는 capture 38/38, ARI 0.4437 로 도메인 shift 영향을 함께 점검하고 있습니다.
+- 후속 보정 구조: **[추가 생성 chip 데이터, 개발 중]** wafer 좌표 보정 지도 (object-id map) 기반 chip-CNN 구조는 V3 obj-only chipgrid 기준 val_f1 0.9946 / test_f1 0.9872, 5-seed 평균 val_f1 0.9838 ± 0.0092 로 추가 개발 중입니다.
 
 **과제 관련 도메인 / AI 기술 / 모델 / 방법론**
 
@@ -44,11 +45,11 @@ Backbone 선정 과정에서는 Transformer 계열이 wafer 전체 구조를 보
 
 - 과제 개요 및 규모: chip multi-label classification PoC 입니다. 학습은 single 4 class 에서 시작하고, 평가는 single 4 + 2-combo 6 + Normal + Invalid + OOD 4 로 구성한 **16+ class × 약 3,850 chip** 추가 생성 chip 데이터 기반 controlled synthetic benchmark 로 수행했습니다.
 - 운영 상태: **[추가 생성 chip 데이터, PoC, 양산 적용 후보 검증 중]** 입니다.
-- 담당 역할: 본인 90% / 관리자 10% 입니다.
+- 담당 역할: 본인 80% / 관리자 20% 입니다.
 - 수행 업무: CutMix 계열 선정, CutMix + Pair Mask background loss masking, FCM-PM (Full-Cover Mixup + Pair Mask) 합성 및 손실 마스킹 구조의 본 과제 신규 적용, val_margin / best-margin checkpoint selection, Label Smoothing, Temperature Scaling, Knowledge Distillation single-model compression 을 수행했습니다.
-- 성과: **[추가 생성 chip 데이터, PoC]** FCM-PM 대표 모델 bit F1 **0.9943**, Normal / Invalid / OOD negative false-positive **0건**을 확인했습니다.
-- 성과: **[추가 생성 chip 데이터, PoC]** Pair Mask 제거 시 FAR **100%** 로 전면 오판되어, FCM-PM 의 background loss masking 이 성패를 가르는 핵심 장치임을 확인했습니다.
-- 성과: **[추가 생성 chip 데이터, PoC]** KD single student 는 bit F1 **0.9872** / FAR **0.5%** / **1× inference cost (단일 모델 1회 추론 부하)** 의 운영 후보를 확보했습니다.
+- 성과: **[추가 생성 chip 데이터, PoC]** FCM-PM 대표 모델 bit F1 **0.9943**, Normal / Invalid / OOD negative 평가셋에서 false-positive 미검출을 확인했습니다.
+- 성과: **[추가 생성 chip 데이터, PoC]** Pair Mask 제거 시 negative 평가에서 운영 부적합 수준의 오탐 (Total FAR 100%) 이 확인되어, FCM-PM 의 background loss masking 이 주요 개선 요인임을 확인했습니다.
+- 성과: **[추가 생성 chip 데이터, PoC]** KD single student 는 1× inference cost 압축 후보로 검토 중이나, OOD 포함 Total FAR 리스크가 있어 제출 성과에서는 제외하고 후속 개선 대상으로 분리 관리합니다. P2 의 제출 성과는 FCM-PM 대표 모델 bit F1 0.9943 / Total FAR 0.00% 중심으로 보고합니다.
 
 **과제 관련 도메인 / AI 기술 / 모델 / 방법론**
 
@@ -60,15 +61,15 @@ Backbone 선정 과정에서는 Transformer 계열이 wafer 전체 구조를 보
 
 본 과제는 BBD/Overlay/CD 현업에서 형성한 trend 도메인 지식을 합성 episode generator 로 코드화하여 AI 학습이 가능한 데이터 자산으로 만드는 데이터 생성 중심 과제입니다.
 
-- 과제 개요 및 규모: **데이터 생성이 주 성과인 과제**입니다. BBD/Overlay/CD 현업 경험에서 형성된 trend 도메인 지식을 episode synthesis generator 로 코드화하고, Region 5종 / Noise 3종 / trend 불량 5종 (mean shift 평균 이동, standard deviation change 산포 변동, spike 순간 이상, drift 점진 이동, context pattern 문맥 이상) / Fleet enforcement floor 를 직접 설계했습니다.
+- 과제 개요 및 규모: **데이터 생성이 주 성과인 과제**입니다. BBD/Overlay/CD 현업 경험에서 형성된 trend 도메인 지식을 episode synthesis generator 로 코드화하고, Region 5종 / Noise 3종 / 일반 trend 불량 4종 (mean shift 평균 이동, standard deviation change 산포 변동, spike 순간 이상, drift 점진 이동) + context pattern 1종 / Fleet enforcement floor 를 직접 설계했습니다.
 - 운영 상태: **[합성 trend chart, PoC]** 이며, 실전 label 부족을 전제로 한 합성 데이터 기반 검증 단계입니다.
-- 담당 역할: 본인 90% / 관리자 10% 입니다.
-- 수행 업무: Region 5종 계측 밀도 코드화, Noise 3종 설비 모드 매핑, trend 불량 5종 형상 카탈로그, fleet_std 비례 anomaly 강도 하한 보정, 정상 / 이상 trend episode 생성, 생성 데이터 검증용 baseline 학습 안정화를 수행했습니다.
-- 성과: **[합성 trend chart, PoC]** normal 750 + abnormal 5종 각 150 = 총 **1,500 sample** 합성 trend chart 평가셋을 생성했습니다.
-- 성과: **[합성 trend chart, PoC]** 1차 Binary gate 는 Binary F1 **0.9967**, Abnormal Recall **0.9987** 로 안정 수렴해, 생성 데이터가 정상 / 이상 패턴을 학습 가능한 형태로 담고 있음을 확인했습니다. 2차 Type classifier 의 mean_shift ↔ drift 혼동 등 type-level accuracy 는 1차 binary 안정성과 분리해 **[합성 trend chart, PoC, 개발 중]** 으로 보고합니다.
+- 담당 역할: 본인 80% / 관리자 20% 입니다.
+- 수행 업무: Region 5종 계측 밀도 코드화, Noise 3종 통계 noise 설계, 일반 trend 불량 4종 + context 1종 형상 카탈로그, fleet/target baseline 통계 기반 anomaly 강도 하한 보정, 정상 / 이상 trend episode 생성, 생성 데이터 검증용 baseline 학습 안정화를 수행했습니다.
+- 성과: **[합성 trend chart, PoC]** train 7,000 + val 1,500 + test 1,500 = 총 10,000 scenarios 를 구성했고, PoC metric 은 test 평가셋 normal 750 + abnormal 5종 각 150 = 총 **1,500 sample** 기준으로 보고합니다.
+- 성과: **[합성 trend chart, PoC]** 1차 Binary gate 는 test split 1,500건, normal_threshold=0.9 기준 Binary F1 **0.9967**, Abnormal Recall **0.9987** (TN/FN/FP/TP=746/1/4/749) 로, 생성 데이터가 정상 / 이상 패턴을 학습 가능한 형태로 담고 있음을 PoC 로 확인했습니다. 2차 Type classifier 의 mean_shift ↔ drift 혼동 등 type-level accuracy 는 1차 binary 결과와 분리해 **[합성 trend chart, PoC, 개발 중]** 으로 보고합니다.
 
 **과제 관련 도메인 / AI 기술 / 모델 / 방법론**
 
-본 과제 도메인은 BBD/Overlay/CD trend 해석 경험, 설비 산포, 설비 hunting, 미세 drift, baseline 평탄도, spec-in 변동 사고 가능성입니다. 이에 맞춰 Synthetic Data Engineering, Time-series / Trend Episode Simulation, Baseline Model Validation 을 결합했습니다. 구체적으로는 계측 밀도를 `dense` / `sparse` / `very_sparse` / `thin` / `missing` 5단계로 코드화하고, 설비 산포 / hunting / drift 를 `Gaussian` / `Laplacian` / `correlated drift` 3 가지 통계 분포로 매핑한 뒤, `mean_shift` / `std` / `spike` / `drift` / `context` 5종 trend 불량 형상을 구성했습니다. 여기에 fleet_std 기반 enforcement floor 로 이상 강도 하한을 보장했고, 검증용 baseline 학습은 val-F1 median smoothing 과 val-loss spike guard 로 수렴을 안정화했습니다.
+본 과제 도메인은 BBD/Overlay/CD trend 해석 경험, 설비 산포, 설비 hunting, 미세 drift, baseline 평탄도, spec-in 변동 사고 가능성입니다. 이에 맞춰 Synthetic Data Engineering, Time-series / Trend Episode Simulation, Baseline Model Validation 을 결합했습니다. 구체적으로는 계측 밀도를 `dense` / `sparse` / `very_sparse` / `thin` / `missing` 5단계로 코드화하고, 설비 산포 / 일시 튐 / 상관 drift 성격을 `Gaussian` / `Laplacian` / `correlated drift` 3 가지 통계 noise 로 설계한 뒤, `mean_shift` / `std` / `spike` / `drift` 4종 일반 trend 불량과 `context` 1종을 구성했습니다. 여기에 fleet/target baseline 통계 기반 enforcement floor 로 이상 강도 하한을 보장했고, 검증 파이프라인에는 val-F1 median smoothing 과 val-loss spike guard 를 checkpoint 안정화 장치로 구성했습니다.
 
 BBD/Overlay/CD trend 판단 기준을 synthetic data generator 로 코드화해, 실전 label 부족 상황에서도 AI 검증을 시작할 수 있는 데이터 기반을 마련했습니다.

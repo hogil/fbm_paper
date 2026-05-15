@@ -931,6 +931,117 @@ def make_yolo_roi_figure(save_path: str):
     return save_path
 
 
+def make_roi_crop_only(save_path: str):
+    """
+    Single-panel ROI crop image:
+    raw wafer with ROI circle overlay (no chip pixel pattern, no YOLO box).
+    """
+    import numpy as np
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Rectangle, Circle
+
+    matplotlib.rcParams.update({"font.family": "DejaVu Sans", "font.size": 9})
+
+    def _normal_chip(ax, x0, y0, size):
+        ax.add_patch(Rectangle(
+            (x0 + 0.08 * size, y0 + 0.08 * size), size - 0.16 * size, size - 0.16 * size,
+            facecolor="#C8E0C8", edgecolor="#AAAAAA", lw=0.18))
+
+    def _defect_chip(ax, x0, y0, size):
+        ax.add_patch(Rectangle((x0, y0), size, size, facecolor="#F4F4F4", edgecolor="#666666", lw=0.35))
+        N = 5
+        cell = size / N
+        defect_cells = {(2, 0), (1, 1), (2, 1), (3, 1), (0, 2), (1, 2), (2, 2), (3, 2), (4, 2),
+                        (1, 3), (2, 3), (3, 3), (2, 4)}
+        for y in range(N):
+            for x in range(N):
+                color = "#D94040" if (x, y) in defect_cells else "#C8E0C8"
+                ax.add_patch(Rectangle(
+                    (x0 + x * cell + 0.12 * cell, y0 + (N - 1 - y) * cell + 0.12 * cell),
+                    cell - 0.24 * cell, cell - 0.24 * cell,
+                    facecolor=color, edgecolor="#DDDDDD", lw=0.12))
+        ax.add_patch(Rectangle((x0, y0), size, size, fill=False, ec="#444444", lw=0.8))
+
+    fig, ax = plt.subplots(1, 1, figsize=(4.0, 4.0), facecolor="white")
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 100)
+    ax.set_aspect("equal")
+    ax.axis("off")
+
+    S = 100
+    chip = 6
+    cx, cy, R = 50, 50, 40
+    center_pts = {(-2, -2), (-1, -2), (0, -2), (1, -2),
+                  (-2, -1), (-1, -1), (0, -1), (1, -1), (2, -1),
+                  (-2, 0), (-1, 0), (0, 0), (1, 0), (2, 0),
+                  (-2, 1), (-1, 1), (0, 1), (1, 1)}
+    for xi in range(0, S, chip):
+        for yi in range(0, S, chip):
+            ccx, ccy = xi + chip // 2, yi + chip // 2
+            d = np.sqrt((ccx - cx) ** 2 + (ccy - cy) ** 2)
+            if d > R:
+                continue
+            gx = round((ccx - cx) / chip)
+            gy = round((ccy - cy) / chip)
+            if (gx, gy) in center_pts:
+                _defect_chip(ax, xi + 0.5, yi + 0.5, chip - 1.3)
+            else:
+                _normal_chip(ax, xi + 0.5, yi + 0.5, chip - 1.3)
+    ax.add_patch(Circle((cx, cy), R, fill=False, ec="#333333", lw=1.4))
+    ax.add_patch(Circle((cx, cy), 18, fill=False, ec="#2563EB", lw=2.5))
+    ax.text(cx, cy + 22, "ROI", ha="center", va="center",
+            fontsize=12, fontweight="bold", color="#2563EB")
+    ax.set_title("Stage 2 ROI crop", fontsize=10, fontweight="bold", pad=6)
+
+    fig.savefig(save_path, dpi=180, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    return save_path
+
+
+def make_chip_yolo_input_only(save_path: str):
+    """
+    Single-panel chip input to YOLO image:
+    enlarged chip pixel pattern with YOLO bounding box + class label.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Rectangle
+
+    matplotlib.rcParams.update({"font.family": "DejaVu Sans", "font.size": 9})
+
+    fig, ax = plt.subplots(1, 1, figsize=(4.0, 4.0), facecolor="white")
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 100)
+    ax.set_aspect("equal")
+    ax.axis("off")
+
+    ax.add_patch(Rectangle((10, 10), 80, 80, facecolor="#F4F4F4", edgecolor="#666666", lw=0.5))
+    N = 5
+    cell = 80 / N
+    defect_cells = {(2, 0), (1, 1), (2, 1), (3, 1), (0, 2), (1, 2), (2, 2), (3, 2), (4, 2),
+                    (1, 3), (2, 3), (3, 3), (2, 4)}
+    for y in range(N):
+        for x in range(N):
+            color = "#D94040" if (x, y) in defect_cells else "#C8E0C8"
+            ax.add_patch(Rectangle(
+                (10 + x * cell + 0.08 * cell, 10 + (N - 1 - y) * cell + 0.08 * cell),
+                cell - 0.16 * cell, cell - 0.16 * cell,
+                facecolor=color, edgecolor="#DDDDDD", lw=0.2))
+
+    ax.add_patch(Rectangle((8, 8), 84, 84, fill=False, ec="#D62728", lw=2.5))
+    ax.add_patch(Rectangle((8, 90), 60, 8, facecolor="#D62728", edgecolor="none"))
+    ax.text(38, 94, "star mark 0.91", ha="center", va="center",
+            fontsize=10, fontweight="bold", color="white")
+    ax.set_title("Stage 2 chip input + YOLO box", fontsize=10, fontweight="bold", pad=6)
+
+    fig.savefig(save_path, dpi=180, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    return save_path
+
+
 def make_data_conversion_figure(save_path: str):
     """
     2-panel figure:
