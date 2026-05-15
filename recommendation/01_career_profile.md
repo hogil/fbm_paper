@@ -59,7 +59,7 @@
 
 (1) 과제 개요 및 규모 / 담당 역할 / 수행 업무 / 성과
 
-- 과제 개요 및 규모: 실전 abnormal label 이 부족한 상태에서 detector 를 먼저 고도화하기보다, 학습 가능한 trend abnormal 데이터를 만드는 데이터 생성 PoC 입니다. normal 750 + abnormal 5종 각 150, 총 1,500 sample 합성 trend chart 평가셋을 만들었습니다.
+- 과제 개요 및 규모: 실전 abnormal label 이 부족한 상태에서 detector 를 먼저 고도화하기보다, 학습 가능한 trend abnormal 데이터를 만드는 데이터 생성 PoC 입니다. normal 3,500 + 불량 5종 각 700 = 불량 3,500, 총 7,000 sample 합성 trend chart 평가셋을 만들었습니다.
 - 담당 역할: 본인 80% / 관리자 20%
 - 수행 업무: Region 5종(정상 / 희소 / 공핍 / 얇은 계측 / 결핍), Noise 3종(Gaussian noise=설비 산포 / Laplacian noise=hunting / correlation noise=drift), 불량 5종 trend 합성 generator, 정상 산포 기준 anomaly 강도 하한 보정, 1단계 정상/이상 분류와 2단계 5개 불량 type 분류 기준 모델 검증
 - 성과: 1단계 정상/이상 분류에서 Binary F1 0.9967, Abnormal Recall 0.9987, 5개 seed 반복 평가 0.9944~0.9988 을 확인했습니다. 이 수치는 실전 성능이 아니라 생성 데이터에 정상/이상 구분 신호가 있는지 확인한 참고 수치입니다.
@@ -95,6 +95,6 @@
 
 - 기간: 2025년 ~ 현재
 - 내용: trend episode 합성, Region/Noise/불량 type 코드화, 정상 산포 기준 anomaly 강도 하한 보정, 생성 데이터 확인용 기준 모델 학습 안정화
-- 리딩 규모: 2인 PoC, 본인 80% 담당. normal 750 + abnormal 5종 각 150, 총 1,500 sample 합성 trend chart 평가셋 규모
+- 리딩 규모: 2인 PoC, 본인 80% 담당. normal 3,500 + 불량 5종 각 700 = 불량 3,500, 총 7,000 sample 합성 trend chart 평가셋 규모
 - 담당 업무: 합성 generator 설계, 도메인 자산 코드화, 생성 데이터의 정상/이상 구분 신호 확인
 - 비중: 관리 5% / 설계 55% / 개발 40%
