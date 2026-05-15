@@ -79,7 +79,7 @@
 
 - 기간: 2024년 ~ 현재
 - 내용: fail-map 파이프라인, Web App, Known 2-stage, Unknown 자기지도 검출, chip-CNN → object-id map 기반 Stage 2 보정 구조
-- 리딩 규모: DRAM 전제품 라인 운영, 12일 누적 2,317 요청, Known/Unknown 분류 및 object-id map 추가 개발
+- 리딩 규모: 3인 협업, 본인 60% 담당. DRAM 전제품 라인, 일 약 2만 장 wafer 운영 데이터, Web App 12일 누적 2,317 요청 규모
 - 담당 업무: 데이터 파이프라인 구축, Web App 운영, AI 모델 설계, 개발 및 검증
 - 비중: 관리 10% / 설계 40% / 개발 50%
 
@@ -87,7 +87,7 @@
 
 - 기간: 2025년 ~ 현재
 - 내용: FCM-PM 적용, multi-label 평가셋 구성, Pair Mask 제거 비교, val_margin 기준 도입, ensemble 기반 오탐 안정성 및 KD 압축 가능성 검토
-- 리딩 규모: single 4 학습 → 16+ multi-label / OOD 평가, FCM-PM 대표 모델 / 4-bag ensemble / KD 압축 모델 성능-비용 비교
+- 리딩 규모: 2인 PoC, 본인 80% 담당. 16+ class, 약 3,850 chip 통제 합성 평가셋 규모
 - 담당 업무: 합성 및 손실 마스킹 구조 구성, 학습 및 평가 체계 구축, 모델 선택 기준 및 운영 가능성 검토
 - 비중: 관리 20% / 설계 40% / 개발 40%
 
@@ -95,6 +95,6 @@
 
 - 기간: 2025년 ~ 현재
 - 내용: trend episode 합성, Region/Noise/불량 type 코드화, 정상 산포 기준 anomaly 강도 하한 보정, 생성 데이터 확인용 기준 모델 학습 안정화
-- 리딩 규모: normal 750 + abnormal 5종 각 150 = 총 1,500 sample 합성 trend chart 평가셋 (데이터 생성 중심, 양산 미실시)
+- 리딩 규모: 2인 PoC, 본인 80% 담당. normal 750 + abnormal 5종 각 150, 총 1,500 sample 합성 trend chart 평가셋 규모
 - 담당 업무: 합성 generator 설계, 도메인 자산 코드화, 생성 데이터의 정상/이상 구분 신호 확인
 - 비중: 관리 5% / 설계 55% / 개발 40%

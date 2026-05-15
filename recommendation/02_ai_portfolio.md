@@ -2,9 +2,9 @@
 
 | 기간 | 과제명 | 리딩 규모 | 담당업무 | 과제관리 | 설계 | 개발비중 |
 |------|--------|-----------|----------|----------|------|----------|
-| 2024년 ~ 현재 | P1. Failbit Map Known & Unknown 불량 분석 아키텍처 | 3인 협업, 본인 기여도 60%<br>DRAM 전제품 라인 양산 운영<br>일 약 2만 장 wafer 처리 | S3 수집, Cython/Python 파싱, palette PNG / chip 좌표 JSON 생성, Web App 운영, Known / Unknown AI 모델 설계, 개발 및 검증 | 10% | 40% | 50% |
-| 2025년 ~ 현재 | P2. Chip Multi-label Classification | 2인 PoC, 본인 기여도 80%<br>16+ class × 약 3,850 chip<br>통제 합성 평가셋 | FCM-PM 합성 및 손실 마스킹 구조 구성, 학습 및 평가 체계 구축, 최종 모델 선택 기준과 KD 압축 가능성 검토 | 20% | 40% | 40% |
-| 2025년 ~ 현재 | P3. Domain Knowledge 기반 Trend Anomaly 데이터 생성 및 검증 PoC | 2인 PoC, 본인 기여도 80%<br>1,500 sample 합성 trend chart 데이터 생성 | 합성 generator 설계, 도메인 자산 코드화, 생성 데이터의 정상/이상 구분 신호 확인 | 5% | 55% | 40% |
+| 2024년 ~ 현재 | P1. Failbit Map Known & Unknown 불량 분석 아키텍처 | 3인 협업, 본인 60% 담당<br>DRAM 전제품 라인<br>일 약 2만 장 wafer 운영 데이터 | S3 수집, Cython/Python 파싱, palette PNG / chip 좌표 JSON 생성, Web App 운영, Known / Unknown AI 모델 설계, 개발 및 검증 | 10% | 40% | 50% |
+| 2025년 ~ 현재 | P2. Chip Multi-label Classification | 2인 PoC, 본인 80% 담당<br>16+ class<br>약 3,850 chip 통제 합성 평가셋 | FCM-PM 합성 및 손실 마스킹 구조 구성, 학습 및 평가 체계 구축, 최종 모델 선택 기준과 KD 압축 가능성 검토 | 20% | 40% | 40% |
+| 2025년 ~ 현재 | P3. Domain Knowledge 기반 Trend Anomaly 데이터 생성 및 검증 PoC | 2인 PoC, 본인 80% 담당<br>총 1,500 sample<br>합성 trend chart 평가셋 | 합성 generator 설계, 도메인 자산 코드화, 생성 데이터의 정상/이상 구분 신호 확인 | 5% | 55% | 40% |
 
 ## 2. 대표 과제 상세 기술서
 
