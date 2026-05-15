@@ -108,7 +108,7 @@ Unknown 검출은 실전 운영에서 13 후보 중 7개 실제 불량을 확인
 
 Selected contrastive recipe 는 Global contrastive learning 에 MoCo Queue, NV-Retriever negative sampling, NeCo 를 조합한 보조 검증 구성입니다.
 
-| # | Recipe | P1 capture | P2 noise | P3 Comp | P4 Hom | ARI | AMI | Sil |
+| # | Recipe | P1 capture (rate / cross-anchor count) | P2 noise | P3 Comp | P4 Hom | ARI | AMI | Sil |
 |---|--------|-----------:|---------:|--------:|-------:|----:|----:|----:|
 | 1 | Global InfoNCE only | 1.000 | 6.20% | 0.960 | 0.929 | 0.823 | 0.929 | 0.582 |
 | 2 | + Local DenseCL (LW=0.5) | 1.000 | 3.93% | 0.967 | 0.935 | 0.851 | 0.939 | 0.514 |
@@ -117,7 +117,7 @@ Selected contrastive recipe 는 Global contrastive learning 에 MoCo Queue, NV-R
 | 5 | + NeCo 0.2 | 1.000 | 0.96% | 0.980 | 0.940 | 0.856 | 0.950 | 0.610 |
 | 6 | Selected contrastive recipe | 1.000 | 1.48% | 0.994 | 0.942 | 0.859 ± 0.018 | 0.960 | 0.781 |
 | 7 | Selected recipe + τ=0.5 reassignment | 1.000 | 0.00% | 0.994 | 0.942 | 0.868 ± 0.013 | 0.960 | 0.781 |
-| 8 | Selected recipe cross-anchor 확인 | 38/38 | 4.73% | 0.936 | 0.786 | 0.444 | 0.851 | 0.521 |
+| 8 | Selected recipe cross-anchor 확인 | cross-anchor 38/38 | 4.73% | 0.936 | 0.786 | 0.444 | 0.851 | 0.521 |
 
 **ㅁ P2. Chip Multi-label Classification**
 
@@ -192,7 +192,7 @@ val_margin 은 `positive bits 평균 score - negative bits 최대 score` 로 정
 | 4 | CutMix only (random rect, no pair) | 0.9359 | 1.0000 | 0.4138 | 42.05% | 37.00% | 57.81% | bit/FAR 평가 확인, FAR 높음 |
 | 5 | CutMix + Pair (random rect + masked) | 0.9256 | 미산출 | 미산출 | 100.00% | 100.00% | 100.00% | bit/FAR 평가 확인, Pair Mask 단독이 아니라 FCM-PM 조합 필요성 확인 |
 | 6 | FCM-PM best (val_f1 / val_margin 동일 epoch) | 0.9964 | 0.9961 | 0.9999 | 0.83% | 약 1.00% | 약 0.78% | 요약 평가 0.9943 / per-class 2,000 갱신 평가 0.9964 |
-| 7 | Ensemble 4-bag | 0.9909 | 미산출 | 미산출 | 0.00% | 미산출 | 미산출 | k=3 기준 Total FAR 0.00% |
+| 7 | Ensemble 4-bag | 0.9909 | 미산출 | 미산출 | 0.00% | 미산출 | 미산출 | per-class 2,000 갱신 평가 k=3 기준 0.9909 / Total FAR 0.00%. 기존 요약 평가 기준 0.9953 과 평가 단위가 다름 |
 | 8 | KD distill 4-bag → student | 0.9872 | 미산출 | 미산출 | 12.86% | 약 0.00% | 미산출 | per-class 2,000 stress 평가 기준 FAR 12.86%; 기존 요약 평가 기준 FAR 0.5% 와 평가 단위가 다름 |
 
 `미산출`은 해당 평가 단위에서 single / 2combo 또는 세부 FAR breakdown 을 별도 집계하지 않은 항목입니다. 대표 판단은 bit_F1 과 Total FAR 기준으로 수행했습니다.
@@ -277,4 +277,4 @@ _검증용 baseline 학습 그룹 (생성 데이터 학습 가능성 확인)_
 | **[합성 trend chart, PoC]** | 1차 Binary gate | Binary F1 **0.9967**, Abnormal Recall **0.9987**. 생성 데이터 학습 가능성 확인용 참고 수치입니다. |
 | **[합성 trend chart, PoC, 개발 중]** | 2차 Type classifier | mean_shift ↔ drift 혼동 등으로 type-level accuracy 는 추가 개발 중 (1차 binary 안정성과 분리하여 보고합니다) |
 
-BBD/Overlay/CD trend 판단 기준을 synthetic data generator 로 코드화해, 실전 label 부족 상황에서도 AI 검증을 시작할 수 있는 데이터 기반을 마련했습니다.
+BBD/Overlay/CD trend 판단 기준을 synthetic data generator 로 코드화해, 실전 label 부족 상황에서도 AI 검증을 시작할 수 있는 데이터 기반을 마련했습니다. 이 데이터 생성 체계는 초보자 trend 누락 위험 감소, 매뉴얼 chart 점검 시간 단축, 양산 모니터링 자동화 기반 마련을 목표로 합니다.
