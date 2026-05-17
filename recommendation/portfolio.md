@@ -525,7 +525,7 @@ positive bits     negative bits
 
 | 항목 | 내용 |
 |------|------|
-| 과제명 | Trend episode 데이터 생성 기반 Anomaly-detection 검증 PoC |
+| 과제명 | Trend Episode 데이터 생성 기반 Anomaly-detection 검증 PoC |
 | 수행기간 | 2026년 1월 ~ 현재 |
 | 참여인원 | 본인 / 관리자 / 동료 엔지니어 (공동 연구자) |
 
