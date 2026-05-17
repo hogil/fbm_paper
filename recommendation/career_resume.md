@@ -17,7 +17,7 @@
 
 **※ 제출 대표 성과 기준**
 
-본 문서에서 제출 대표 성과로 읽어야 할 수치는 P1 양산 운영 파이프라인 (일 약 2만 장 / 1시간 주기, Known weighted F1 0.95, Unknown 13 후보 중 7 실제 불량 확인) 과 P2 FCM-PM val_margin 단일 모델 (bit_F1 0.9943 / Total FAR 0.00%) 입니다. Unknown 후속 metric, chip-CNN object-id map, KD는 개발 중 또는 심화 질의 대비 항목으로 분리해 관리합니다.
+본 문서에서 제출 대표 성과로 읽어야 할 수치는 P1 양산 운영 파이프라인 (일 약 2만 장 / 1시간 주기, Known weighted F1 0.95, Unknown 13 후보 중 7 실제 불량 확인) 과 P2 FCM-PM val_margin 단일 모델 (bit_F1 0.9943 / Total FAR 0.00%) 입니다. Unknown 후속 metric, chip-CNN object-id map, Knowledge Distillation (KD) 은 개발 중 또는 심화 질의 대비 항목으로 분리해 관리합니다.
 
 **핵심 요약**
 
@@ -43,7 +43,7 @@
 - **[양산 적용 단계]** 2025년 5월부터 DRAM 전제품 라인 Failbit Map 을 120일치씩 누적 처리 중이며, 일 약 2만 wafer 규모로 가동됩니다.
 - **[현업 데이터 평가 완료]** Known 2-stage 분류는 16-class / 1,500 labeled / weighted F1 **0.95** 평가 완료, Unknown 검출은 특정 제품 실전 데이터 1만 장 학습 + 2천 장 eval 에서 13 후보 group 중 **7개 실제 불량 현업 확인** 완료입니다.
 - **[전수 자동 적용 단계 확장 계획]** 전제품 / 전수 wafer 상시 자동 추론으로 확장하려면 추가 GPU 자원이 필요하며, AI 센터 GPU 할당 담당자 안내 기준 **2026년 9월** GPU 제공이 예정되어 있습니다. GPU 할당 이후에는 현재 검증된 Known / Unknown 모델을 전수 자동 추론 흐름으로 단계 확장할 계획입니다.
-- **[추가 생성 데이터 / 공개 anchor 기반 후속 방법론 개발 중]** (1) Stage 2 ROI-YOLO 대체 후보: 기존 양산 2-stage 의 Stage 1 wafer-level CNN 은 그대로 두고, Stage 2 의 ROI-YOLO 자리를 chip-CNN object-id map 으로 대체할 후속 모듈을 개발 중입니다. 어느 모듈을 deploy 할지는 validation 검증 결과 후 운영 절차에 따라 결정합니다. chip 단위 결과를 wafer 좌표계로 재구성하는 흐름은 `c_{u,v}=crop(x,pos_{u,v})` (256×256 입력), `q_{u,v}=softmax(h_phi(c_{u,v}))`, `M_obj(u,v)=argmax_k q_{u,v,k}` 로 정리되며, M_obj 가 Stage 2 의 posterior p_chip_obj(y | crop(x)) 로 들어갑니다. ROI-YOLO 는 chip 위치를 알 수 없다는 전제 위에서 detection 을 푸는 모듈이라 candidate bounding box 다수에 좌표 회귀와 class 분류를 동시에 학습해야 하지만, chip-CNN object-id map 은 chip 좌표가 fail-map 파이프라인에서 이미 확정된 상태에서 classification 만 수행합니다. 푸는 문제가 단순해진 만큼 chip-level 정확도가 더 높고 (val_f1 **0.9946**) latency 도 짧다는 점이 교체 동기입니다. (2) Unknown 신규 recipe: 추가 anchor 셋 기반 contrastive recipe (MoCo Queue / NV-Retriever / NeCo 등) 와 cross-anchor 일반화 개선을 별도 트랙으로 개발 중입니다. 본 후속 트랙의 정량 metric (chip-CNN obj-id map val_f1 **0.9946** / test_f1 0.9872 / 5-seed 평균 0.9838 ± 0.0092, Unknown cross-anchor ARI 0.4437 등) 은 위 현업 데이터 평가 성과와 섞지 않고 분리 관리합니다.
+- **[추가 생성 데이터 / 공개 anchor 기반 후속 방법론 개발 중]** (1) Stage 2 ROI-YOLO 대체 후보: 기존 양산 2-stage 의 Stage 1 wafer-level CNN 은 그대로 두고, Stage 2 의 ROI-YOLO 자리를 chip-CNN object-id map 으로 대체할 후속 모듈을 개발 중입니다. 어느 모듈을 deploy 할지는 validation 검증 결과 후 운영 절차에 따라 결정합니다. chip 단위 결과를 wafer 좌표계로 재구성하는 흐름은 `c_{u,v}=crop(x,pos_{u,v})` (256×256 입력), `q_{u,v}=softmax(h_phi(c_{u,v}))`, `M_obj(u,v)=argmax_k q_{u,v,k}` 로 정리되며, M_obj 가 Stage 2 의 posterior p_chip_obj(y | crop(x)) 로 들어갑니다. ROI-YOLO 는 chip 위치를 모르는 상태에서 box / 좌표 / class / NMS 를 한꺼번에 학습해야 하지만, chip-CNN object-id map 은 fail-map 이 chip 좌표를 이미 확정해 둔 자리에 들어가 chip crop 분류만 하면 됩니다. 학습이 분류 한 가지로 좁아지면서 chip 단위 정확도가 더 잘 나오고 (val_f1 **0.9946**) latency 도 짧아진 부분이 chip-CNN 으로 교체를 가져간 이유입니다. (2) Unknown 신규 recipe: 추가 anchor 셋 기반 contrastive recipe (MoCo Queue / NV-Retriever / NeCo 등) 와 cross-anchor 일반화 개선을 별도 트랙으로 개발 중입니다. 본 후속 개발 트랙의 정량 metric 은 위 현업 데이터 평가 성과와 혼용하지 않고 별도 관리합니다. chip-CNN object-id map 과 Unknown cross-anchor 일반화 평가는 대표 성과가 아닌 심화 질의 대비용 보조 지표로 구분하여 관리합니다.
 
 **P1 대표 성과 / 후속 개발 / 한계 및 관리**
 
