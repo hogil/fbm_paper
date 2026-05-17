@@ -51,10 +51,10 @@ Failbit Map, DRAM EDS Test Grade 0-7 양자화 이미지, wafer-level failure zo
 
 **(1) 과제 개요 / 담당 역할 / 수행 업무 / 성과**
 
-- 과제 개요 및 규모: **데이터 생성 자체가 주 성과인 PoC**. 본인 BBD담당 / Overlay담당 / CD담당 9년 trend 판정 경험을 Region 5종 (dense / sparse / very_sparse / thin / missing), Noise 3분포 (Gaussian / Laplacian / Correlated), Anomaly 5종 (mean_shift / standard_deviation / spike / drift / context), fleet enforcement floor 두 식의 generator parameter 로 직접 코드화. **normal 3,500 + abnormal 3,500 = 총 7,000개** trend sample 자산.
+- 과제 개요 및 규모: **데이터 생성 자체가 주 성과인 PoC**. 본인 BBD담당 / Overlay담당 / CD담당 9년 trend 판정 경험을 계측 밀도 Region 5종 (dense / sparse / very_sparse / thin / missing), Noise 3분포 (Gaussian / Laplacian / Correlated), Anomaly 5종 (mean_shift / standard_deviation / spike / drift / context), 같은 설비군의 산포 통계를 기준으로 합성 normal 의 산포에 상한과 하한을 같이 두는 두 가지 수식을 generator parameter 로 직접 코드화. **normal 3,500 + abnormal 3,500 = 총 7,000개** trend sample 생성.
 - 수행기간: 2026년 1월 ~ 현재
 - 담당 역할: 본인 70% / 관리자 20% / 동료 엔지니어 (공동 연구자) 10%
-- 수행 업무: Region 5단계 계측 밀도 코드화, Noise 3분포 (현업 설비 상태변동 / 산포 / spike 패턴을 통계 분포로 1:1 매핑), 일반 trend 불량 4종 + context 1종 형상 카탈로그, enforcement floor 두 식 (`target_baseline_std = max(baseline_std, 0.01)` 로 최소 0.01σ 보장, `target_std ≤ fleet_within_std × 1.2` 로 fleet 분포 정렬), 정상 / 이상 trend episode 생성, val-F1 median smoothing + val-loss spike guard 검증 baseline 학습 안정화까지 본인이 직접 코드화. 두 식의 임계값은 정상 산포에 묻혀 놓치는 케이스와 일시 튐을 정상으로 잡는 케이스 사이 경계를 봐 온 담당 경험에서 잡은 값입니다. 동료 엔지니어는 AI 모델 실행, 데이터 정리, 실험 결과 취합을 공동 수행.
+- 수행 업무: Region 5단계 계측 밀도 코드화, Noise 3분포 (현업 설비 상태변동 / 산포 / spike 패턴을 통계 분포로 1:1 매핑), 일반 trend 불량 4종 + context 1종 형상 카탈로그, 합성 normal 산포에 상한과 하한을 같이 두는 두 가지 수식 (`target_baseline_std = max(baseline_std, 0.01)` 로 최소 0.01σ 하한 보장, `target_std ≤ fleet_within_std × 1.2` 로 같은 설비군 산포에 맞춰 상한 정렬), 정상 / 이상 trend episode 생성, val-F1 median smoothing + val-loss spike guard 검증 baseline 학습 안정화까지 본인이 직접 코드화. 두 식의 임계값은 정상 산포에 묻혀 놓치는 케이스와 일시 튐을 정상으로 잡는 케이스 사이 경계를 봐 온 담당 경험에서 잡은 값입니다. 동료 엔지니어는 AI 모델 실행, 데이터 정리, 실험 결과 취합을 공동 수행.
 - 성과: **[합성 trend chart, PoC]** normal 3,500 + abnormal 3,500 = 총 7,000개 trend sample 자산, test split 1,500 (normal 750 / abnormal 5종 각 150) 기준 1차 Binary gate baseline **Binary F1 0.9967 / Abnormal Recall 0.9987** (TN/FN/FP/TP = 746/1/4/749, threshold=0.9). 생성 데이터가 학습 가능한 정상 / 이상 패턴을 담고 있음을 확인한 PoC 단계이며, 실제 현업 trend log 일반화 성능과는 분리해 해석합니다.
 
 **(2) 과제 관련 도메인 / AI 기술 / 모델 / 방법론**

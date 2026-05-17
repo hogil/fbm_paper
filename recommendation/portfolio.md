@@ -544,7 +544,7 @@ positive bits     negative bits
 
 | NO | 성명 | Knox Id | 소속 | 역할 | 기여도 |
 |----|------|---------|------|------|--------|
-| 1 | 최호길 | 개인정보 비공개 | 메모리제조센터 QIE그룹 | trend episode 합성 generator 설계, Region 5종 / Noise 3종 / trend 불량 4종 + context 1종 parameter 코드화, 정상 산포 기준 enforcement floor 식 설계, 1차 Binary gate 검증 PoC 설계 / 구현 | 70% |
+| 1 | 최호길 | 개인정보 비공개 | 메모리제조센터 QIE그룹 | trend episode 합성 generator 설계, Region 5종 / Noise 3종 / trend 불량 4종 + context 1종 parameter 코드화, 합성 normal 산포의 상한 / 하한을 같이 잡는 두 가지 수식 설계, 1차 Binary gate 검증 PoC 설계 / 구현 | 70% |
 | 2 | 관리자 | 개인정보 비공개 | 관리조직 (공식 기록 대조) | 방향성, 일정, 리뷰 매니징 | 20% |
 | 3 | 동료 엔지니어 (공동 연구자) | 개인정보 비공개 | 관련 엔지니어 조직 (공식 기록 대조) | AI 모델 실행, 데이터 정리, 실험 결과 취합 | 10% |
 
@@ -566,7 +566,7 @@ P3 의 본인 기여는 데이터를 만들어 내는 쪽입니다. 본인이 BB
 
 본인이 잡은 흐름은 (1) **담당 경험을 generator parameter 로 코드화**, (2) **합성 normal 이 실전 baseline 통계 안에 들어가도록 정합**, (3) **baseline 분류기로 학습 가능성 검증** 세 단계입니다.
 
-1단계는 §개인 기여 단락에 정리한 그대로 — 영역 분리 / Noise 분포 / 불량 형태별 강도 구간을 generator parameter 로 코드화. 2단계는 합성 normal 이 실전 baseline 통계 안에 들어가면서도 abnormal 강도가 정상 산포에 묻히지 않도록 두 식 (`target_std ≤ fleet_within_std × 1.2`, `target_baseline_std = max(baseline_std, 0.01)`) 을 enforcement floor 로 결합했습니다. 다른 설비 평균 산포 안에 합성 normal 을 가두면서 abnormal 강도는 최소 0.01σ 이상으로 띄워 정상 산포에 묻히지 않게 잡은 식입니다. 3단계는 1차 Binary gate (정상 / 이상) baseline 으로 만든 데이터의 학습 가능성을 점검했고, 본 baseline 은 운영 후보가 아닌 검증 도구로만 두었습니다.
+1단계는 §개인 기여 단락에 정리한 그대로 — 영역 분리 / Noise 분포 / 불량 형태별 강도 구간을 generator parameter 로 코드화. 2단계는 합성 normal 이 실전 baseline 통계 안에 들어가면서도 abnormal 강도가 정상 산포에 묻히지 않도록 두 가지 수식 (`target_std ≤ fleet_within_std × 1.2` 로 상한, `target_baseline_std = max(baseline_std, 0.01)` 로 하한) 을 같이 두어 합성 normal 의 산포를 위아래로 가두었습니다. 다른 설비 평균 산포 안에 합성 normal 을 가두면서 abnormal 강도는 최소 0.01σ 이상으로 띄워 정상 산포에 묻히지 않게 잡은 식입니다. 3단계는 1차 Binary gate (정상 / 이상) baseline 으로 만든 데이터의 학습 가능성을 점검했고, 본 baseline 은 운영 후보가 아닌 검증 도구로만 두었습니다.
 
 전체 흐름을 도식으로 정리하면 다음과 같습니다.
 
@@ -586,9 +586,9 @@ P3 의 본인 기여는 데이터를 만들어 내는 쪽입니다. 본인이 BB
 │ Anomaly 5종: mean_shift / std / spike / drift / context                   │
 └──────────────────────────────────┬────────────────────────────────────────┘
                                    ▼
-┌─ Step 4-5: Enforcement Floor + Rendering ────────────────────────────────┐
+┌─ Step 4-5: 산포 상한 / 하한 두 수식 + Rendering ─────────────────────────┐
 │ target_baseline_std = max(baseline_std, 0.01)  ← 최소 σ 하한               │
-│ target_std ≤ fleet_within_std × 1.2            ← fleet 분포 정렬          │
+│ target_std ≤ fleet_within_std × 1.2            ← 같은 설비군 산포 정렬    │
 │ → 합성 normal 은 실재 baseline 통계 안, abnormal 강도는 정상 산포 분리    │
 │ Rendering: 224×224 PNG, normal 3.5K + abnormal 3.5K = 7,000 trend sample     │
 └──────────────────────────────────┬────────────────────────────────────────┘
