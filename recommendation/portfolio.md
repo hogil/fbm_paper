@@ -41,7 +41,7 @@
 
 - **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**: 본인은 wafer 단위 분석 경험을 바탕으로 현업 엔지니어 교육을 거쳐 Failbit Map 의미와 분석 흐름을 확보한 뒤 AI 설계에 착수했습니다. raw log → wafer 이미지 변환 / 저장 / 조회 파이프라인 (fail-map) 과 사내 운영 뷰어 web app 을 직접 설계 / 구현했고, 그 위에 ConvNeXtV2 wafer-level classifier + ROI YOLO cascade 보정 + self-supervised contrastive embedding + HDBSCAN grouping 을 묶어 양산 운영 시스템을 구성했습니다. 후속 chip-CNN object-id map (Stage 2 ROI-YOLO 자리 대체 후보) 도 본인이 직접 설계 / 구현 중입니다.
 
-- **본인의 기술적 해결책이 과제 성패에 미친 영향**: wafer 한 장 약 1,000만 cell 의 hex 값을 Grade 0~7 로 풀어내는 변환 루프를 Cython 으로 재구성해 약 **100배** 가속을 확보했고, 32색 palette indexed PNG 양자화로 저장 용량 약 **75%** 절감을 같이 묶어 **일 약 2만 장 / 1시간 주기** 양산 운영 적재 흐름을 가능하게 했습니다. **[실전 현업 데이터]** Known 2-stage 는 16 class / 1,500 labeled / 4:1 stratified split 에서 weighted F1 **0.95** 까지 끌어올렸고, Unknown 검출은 13개 후보 group 중 **7개 불량 확인**으로 운영 검출력이 검증되었습니다. **[추가 생성 chip 데이터, 개발 중]** chip-CNN object-id map 은 fail-map 이 확정한 chip 좌표 자리에 들어가 detection 단계 없이 chip crop 분류만 수행해 val_f1 **0.9946** 까지 측정되었고, 양산 deploy 여부는 validation 후 운영 절차에 따라 결정합니다.
+- **본인의 기술적 해결책이 과제 성패에 미친 영향**: wafer 한 장 약 1,000만 cell 의 hex 값을 Grade 0~7 로 풀어내는 변환 루프를 Cython 으로 재구성해 약 **100배** 가속을 확보했고, 32색 palette indexed PNG 양자화로 저장 용량 약 **75%** 절감을 같이 묶어 **일 약 2만 장 / 1시간 주기** 양산 운영 적재 흐름을 가능하게 했습니다. **[실전 현업 데이터]** Known 2-stage 는 16 class / 1,500 labeled / 4:1 stratified split 에서 weighted F1 **0.95** 까지 끌어올렸고, Unknown 검출은 13개 후보 group 중 **7개 불량 확인**으로 운영 검출력이 검증되었습니다. **[추가 생성 chip 데이터, 개발 중]** chip-CNN object-id map 은 chip crop 좌표가 자동 확정된 자리에 분류만 수행해 val_f1 **0.9946** 까지 측정되었습니다. **[Unknown 추가 생성 데이터, 개발 중]** Unknown 측도 현업 데이터와 유사하게 구성한 합성 평가셋에서 신규 class capture **1.000** (38/38) / noise **0.00%** / Completeness **0.9938** / Silhouette **0.781** 까지 같이 측정 중입니다. 양산 deploy 여부는 validation 후 운영 절차에 따라 결정합니다.
 
 **ㅁ 문제정의**
 
@@ -103,7 +103,7 @@
 +------------------------------------------------------------------------------+
 ```
 
-**[데이터]** 위 파이프라인의 [SOURCE] / [PIPELINE] 두 단계에 해당합니다. raw EDS Test log (wafer 당 약 1,000만 cell) 의 Failbit hex 표현을 Cython 변환 루프로 약 100배 가속해 Grade(0~7) 양자화하고, 32색 palette indexed PNG 양자화로 저장 용량을 약 75% 줄여 6400×6400 wafer 이미지와 32×32 chip grid (1,024 chip / wafer, chip 당 200×200 pixel), chip positions JSON 을 산출합니다. chip positions JSON 은 Stage 2 ROI YOLO 와 후속 chip-CNN object-id map 입력 좌표로 그대로 재사용됩니다.
+**[데이터]** 위 파이프라인의 [SOURCE] / [PIPELINE] 두 단계에 해당합니다. raw EDS Test log (wafer 당 약 1,000만 cell) 의 Failbit hex 표현을 Cython 변환 루프로 약 100배 가속해 Grade(0~7) 로 양자화합니다. 여기서 중요한 도메인 판단은 **본 wafer image 가 자연 장면이 아닌 EDS Test 계측 결과의 8단계 이산 값** 이라는 점입니다. RGB 자연 이미지였다면 256³ 색공간 손실 압축이 불가피하지만, Grade 0~7 8단계 이산 값은 32색 palette indexed PNG 로 무손실 양자화가 가능합니다. 본인은 이 도메인 특성을 직접 활용해 저장 용량을 약 **75%** 절감하면서 원래 measurement value 를 그대로 보존했습니다. 결과로 6400×6400 wafer 이미지 + 32×32 chip grid (1,024 chip / wafer, chip 당 200×200 pixel) + chip positions JSON 이 산출되고, chip positions JSON 은 Stage 2 ROI YOLO 와 후속 chip-CNN object-id map 입력 좌표로 그대로 재사용됩니다.
 
 **[알고리즘]** 모델 선택과 결합 구조는 본 과제 데이터 특성에 맞춰 다음과 같이 결정했습니다.
 
