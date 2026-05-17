@@ -19,7 +19,7 @@
 2. P2 는 현업 single failure chip 원천 기반 FCM-PM + Pair Mask loss 로 2-combo label 부족을 풀고, **bit_F1 과 false alarm 을 동시에 잡은** multi-label 방법론입니다.
 3. P3 는 본인 BBD / Overlay / CD 담당 trend 판정 경험을 generator parameter 로 코드화해, **AI 학습이 가능한 trend 데이터 자산 자체를 만든** 것이 주 성과인 PoC 입니다 (1차 Binary gate 검증까지 확보).
 
-ㅁ **P1. Failbit Map AI 분류 시스템 (Known 2-stage + Unknown contrastive)**
+ㅁ **P1. Failbit Map Known & Unknown 불량 분석 아키텍처**
 
 **(1) 과제 개요 / 담당 역할 / 수행 업무 / 성과**
 

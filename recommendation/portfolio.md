@@ -2,7 +2,7 @@
 
 | 기간 | 과제명 | 리딩 규모 | 담당업무 | 과제관리 | 설계 | 개발비중 |
 |------|--------|-----------|----------|----------|------|----------|
-| 2024년 10월 ~ 현재 | P1. Failbit Map AI 분류 시스템 | 3인 협업, 본인 60% 리딩. DRAM 전제품 라인 양산 운영, 일 약 2만 장 wafer 처리 | 본인이 FBM raw log 적재 / Cython 파싱 / palette PNG 와 chip 좌표 JSON 생성을 짜고, 운영 뷰어 쪽과 연결한 뒤 Known 불량 및 Unknown 불량 AI 모델을 설계 / 학습 / 검증까지 끌고 갔습니다. | 20% | 35% | 45% |
+| 2024년 10월 ~ 현재 | P1. Failbit Map Known & Unknown 불량 분석 아키텍처 | 3인 협업, 본인 60% 리딩. DRAM 전제품 라인 양산 운영, 일 약 2만 장 wafer 처리 | 본인이 FBM raw log 적재 / Cython 파싱 / palette PNG 와 chip 좌표 JSON 생성을 짜고, 운영 뷰어 쪽과 연결한 뒤 Known 불량 및 Unknown 불량 AI 모델을 설계 / 학습 / 검증까지 끌고 갔습니다. | 20% | 35% | 45% |
 | 2025년 3월 ~ 현재 | P2. Chip Multi-label Classification | 2인 PoC, 본인 80% 리딩. 16+ class × 약 3,850 chip controlled synthetic benchmark | chip single / 2-combo 합성, Pair Mask loss masking, FCM-PM 설계, val_margin 기반 best-model 선택, 대표 모델 검증까지 본인이 직접 진행. | 20% | 40% | 40% |
 | 2026년 1월 ~ 현재 | P3. Trend Episode 데이터 생성 기반 Anomaly-detection 검증 PoC | 3인 PoC, 본인 70% 리딩. normal 3,500 + abnormal 3,500 = 총 7,000개 trend sample 구성 | 현업에서 BBD / Overlay / CD 담당으로 **9년간** trend 이상 감지를 해 오며 확인한 전형적인 불량 패턴과 정상 chart 산포 / noise 환경을 episode generator parameter 로 코드화했습니다. | 20% | 45% | 35% |
 
@@ -14,13 +14,13 @@
 
 ## 2. 대표 과제 상세 기술서
 
-**ㅁ P1. Failbit Map AI 분류 시스템**
+**ㅁ P1. Failbit Map Known & Unknown 불량 분석 아키텍처**
 
 **ㅁ 과제 기본정보**
 
 | 항목 | 내용 |
 |------|------|
-| 과제명 | Failbit Map 대량 데이터 파이프라인 + single-label Known 2-stage 분류 + Unknown self-supervised 검출 |
+| 과제명 | Failbit Map Known & Unknown 불량 분석 아키텍처 |
 | 수행기간 | 2024년 10월 ~ 현재 |
 | 참여인원 | 본인 / 현업 엔지니어 / 관리자 |
 
