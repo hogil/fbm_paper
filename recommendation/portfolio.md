@@ -513,35 +513,7 @@ positive bits     negative bits
 
 **ㅁ 기술적 해결 방안**
 
-작업 흐름은 크게 세 단계로 정리했습니다. 먼저 trend 판정 경험을 generator parameter 에 반영하고, 합성 normal 산포는 상한 / 하한 두 수식으로 실전 baseline 안에 들어오도록 조정하며 abnormal 은 정상 산포에 묻히지 않게 분리합니다. 마지막으로 1차 Binary gate baseline 학습으로 현업 데이터 적용을 위한 model 을 만들었습니다.
-
-```
-+--------------------------------------------------------------------------+
-|  [SOURCE]  9-year BBD / Overlay / CD trend-judgment experience           |
-|  criteria (scatter / hunting / drift / spec-out risk) -> generator       |
-|  parameters: this coding step is the core asset of the project           |
-+----------------------------------+---------------------------------------+
-                                   v
-+--------------------------------------------------------------------------+
-|  [SYNTHESIZE]  encode domain distribution + bounded synthetic-normal     |
-|  (Region density 5 / Noise 3 / Anomaly 5, parameter detail in            |
-|   [기술 지표] - 도메인 코드화 / 정상성 보정 lines below)                  |
-|  -> 224x224 PNG, 3,500 normal + 3,500 abnormal = 7,000 samples           |
-+----------------------------------+---------------------------------------+
-                                   v
-+--------------------------------------------------------------------------+
-|  [VALIDATE]  Binary gate baseline (normal / abnormal)                    |
-|  - F1 0.9967 (TN/FN/FP/TP = 746/1/4/749), normal threshold 0.9           |
-|  - 5-seed best F1 0.9987 (TN/FN/FP/TP = 748/0/2/750)                     |
-|  - training stabilizers: val-F1 median smoothing + val-loss spike guard  |
-+----------------------------------+---------------------------------------+
-                                   v
-+--------------------------------------------------------------------------+
-|  [OUTPUT]  synthetic dataset is learnable (PoC confirmed)                |
-|  Current stage: ready for real production trend chart application        |
-|  Next: validate with real production trend charts                        |
-+--------------------------------------------------------------------------+
-```
+**[데이터]** trend chart 판정 경험을 generator parameter 로 옮겨 합성 trend sample 약 7,000개 (normal 3,500 + abnormal 3,500) 를 만들었습니다. 계측 밀도 Region 5단계 (dense / sparse / very_sparse / thin / missing), Noise 3분포 (Gaussian / Laplacian / Correlated), Anomaly 5종 (mean shift / standard deviation / spike / drift / context) 을 generator parameter 에 반영했습니다.
 
 Trend 합성 데이터 생성 설계 (계측 밀도, Noise, Anomaly 수식):
 
@@ -557,6 +529,40 @@ Trend 합성 데이터 생성 설계 (계측 밀도, Noise, Anomaly 수식):
 | **Spike** | **Drift** | **Context** |
 | <img src="./figures/trend_spike.png" width="200" /> | <img src="./figures/trend_drift.png" width="200" /> | <img src="./figures/trend_context.png" width="200" /> |
 
+**[알고리즘]** 합성 trend sample 을 normal / abnormal 두 class 로 학습하는 1차 Binary gate baseline 분류기로 시작했습니다. P3 는 데이터 생성이 주 성과인 PoC 라 모델은 단순 baseline 으로 두고, 전체 단계는 아래 logic flow 와 같습니다.
+
+```
++--------------------------------------------------------------------------+
+|  [SOURCE]  9-year BBD / Overlay / CD trend-judgment experience           |
+|  criteria (scatter / hunting / drift / spec-out risk) -> generator       |
+|  parameters: this coding step is the core asset of the project           |
++--------------------------------------------------------------------------+
+                                    |
+                                    v
++--------------------------------------------------------------------------+
+|  [SYNTHESIZE]  encode domain distribution + bounded synthetic-normal     |
+|  (Region density 5 / Noise 3 / Anomaly 5)                                |
+|  -> 224x224 PNG, 3,500 normal + 3,500 abnormal = 7,000 samples           |
++--------------------------------------------------------------------------+
+                                    |
+                                    v
++--------------------------------------------------------------------------+
+|  [VALIDATE]  Binary gate baseline (normal / abnormal)                    |
+|  - F1 0.9967 (TN/FN/FP/TP = 746/1/4/749), normal threshold 0.9           |
+|  - 5-seed best F1 0.9987 (TN/FN/FP/TP = 748/0/2/750)                     |
++--------------------------------------------------------------------------+
+                                    |
+                                    v
++--------------------------------------------------------------------------+
+|  [OUTPUT]  현업 데이터 적용을 위한 model 확보 (PoC confirmed)             |
++--------------------------------------------------------------------------+
+```
+
+**[최적화]** 합성 normal 산포가 실전 baseline 통계 안에 들어오게 하면서 abnormal 강도는 정상 산포에 묻히지 않도록 두 가지 수식으로 제어했습니다.
+
+- **정상성 하한 보장**: `target_baseline_std = max(baseline_std, 0.01)` — baseline 산포가 너무 작아질 때 최소 0.01σ 로 묶어 합성 normal 이 무리하게 평탄해지지 않도록 했습니다.
+- **정상성 상한 정렬**: `target_std ≤ fleet_within_std × 1.2` — 같은 설비군 산포 대비 1.2 배 이내로 상한을 두어 합성 normal 이 실전보다 과도하게 흔들리는 케이스를 차단했습니다.
+- **학습 안정화**: val-F1 median smoothing 과 val-loss spike guard 를 같이 두어 일시 spike 에 checkpoint 선택이 흔들리지 않도록 보강했습니다.
 
 **ㅁ 구현 성과**
 
