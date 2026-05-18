@@ -419,7 +419,7 @@ FCM-PM 은 chip grid 를 complementary partition 으로 나누어 두 single fai
 
 **(2) checkpoint 선택 — val_margin**
 
-val_margin 은 positive bit 평균 score 와 negative bit 최대 score 의 차이로 정의했습니다. 가장 위험한 false-positive 후보가 selection 기준에 직접 반영되므로, val_f1 보다 test bit_F1 과의 일관성이 높았습니다.
+val_margin 은 positive bit 평균 score 와 negative bit 최대 score 의 차이로 정의했습니다. val_f1 보다 test bit_F1 과의 일관성이 높았습니다.
 
 ```
        [chip image]
