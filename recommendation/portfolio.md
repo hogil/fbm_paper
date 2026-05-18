@@ -588,8 +588,8 @@ Trend 합성 데이터 생성 설계 (계측 밀도, Noise, Anomaly 수식):
 - **학습 stack**: ConvNeXtV2-Tiny (ImageNet-22k→1k pretrained) backbone + AdamW + **FocalLoss** (FN 최소화 목적 운영 gate 에 맞는 손실) + **EMA** (Exponential Moving Average) 로 weight 흔들림 억제.
 - **checkpoint 안정화**: val-F1 median smoothing + val-loss spike guard 로 일시 spike 에 best checkpoint 선택이 흔들리지 않도록 보강했습니다.
 - **normal_threshold sweep**: binary gate 의 FN / FP trade-off 를 sweep 해 **normal_threshold = 0.9** 채택 (보수적 gate 로 불량 chart 가 normal 로 빠져나가지 않도록).
-- **5-seed strict one-factor 검증**: seed (42, 1, 2, 3, 4) 평균 Binary F1 **0.9975** / best **0.9993** 으로 seed 안정성을 확인했습니다.
-- **2-stage 운영 구조**: 1차 binary gate → 2차 anomaly_type classifier (mean_shift / standard_deviation / spike / drift / context) 로 운영 판정과 원인 분석을 분리했습니다.
+- **5-seed 검증**: seed 변화에 따른 학습 안정성을 확인했습니다.
+- **후속 확장 방향**: Binary gate 이후 anomaly type 세분화 분류로 이어지는 구조입니다.
 
 **ㅁ 구현 성과**
 
