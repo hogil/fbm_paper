@@ -34,7 +34,7 @@
 
 - **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**: 본인은 wafer 단위 분석 경험을 바탕으로 현업 엔지니어 교육을 거쳐 Failbit Map 의미와 분석 흐름을 확보한 뒤 AI 설계에 착수했습니다. raw log → wafer 이미지 변환 / 저장 / 조회 파이프라인 (fail-map) 과 사내 운영 뷰어 web app 을 직접 설계 / 구현해 양산 운영에 들어가게 했고, 그 위에 ConvNeXtV2 wafer-level classifier + ROI YOLO cascade 보정 + self-supervised contrastive embedding + HDBSCAN grouping 을 묶어 Known / Unknown 분석 시스템까지 설계 / 학습 / 검증을 마쳤습니다 (AI 모델의 전수 자동 추론 적용은 AI 센터 GPU 할당 (**2026년 9월**) 일정에 맞춰 단계 확장 예정). 후속 chip-CNN object-id map (Stage 2 ROI-YOLO 자리 대체 후보) 도 본인이 직접 설계 / 구현 중입니다.
 
-- **본인의 기술적 해결책이 과제 성패에 미친 영향**: wafer 한 장 약 1,000만 cell 의 hex 값을 Grade 0-7 로 풀어내는 변환 루프를 Cython 으로 재구성해 약 **100배** 가속을 확보했고, 32색 palette indexed PNG 양자화로 저장 용량 약 **75%** 절감을 같이 묶어 **일 약 2만 장 / 1시간 주기** 양산 운영 적재 흐름을 가능하게 했습니다. **[실전 현업 데이터 — Known]** ConvNeXtV2 backbone 교체와 ROI YOLO 2-stage cascade 결합으로 weighted F1 **0.78 → 0.95** ladder 를 달성했습니다 (4단계 단계별 효과는 §[최적화] 참고). **[실전 현업 데이터 — Unknown]** self-supervised contrastive embedding 과 HDBSCAN grouping 으로 13개 후보 group 중 **7개 불량 확인**까지 검증했습니다 (TAPT 한 ConvNeXtV2 backbone + 4-tool contrastive recipe 의 구성요소 풀이는 §[알고리즘] 참고). **[추가 생성 chip 데이터, 개발 중]** chip-CNN object-id map 은 이미지 생성 시 chip 좌표를 같이 만들어 두어 crop 추출이 단순하고, 약 256x256 crop 안에서는 불량 비율이 wafer 전체보다 커서 chip-CNN 분류가 빠르게 수렴합니다 (val_f1 **0.9946**). 그 결과를 wafer 좌표계로 합쳐 전체 F1 도 함께 향상되는 구조입니다. **[Unknown 추가 생성 데이터, 개발 중]** Unknown synthetic benchmark 는 실전 운영 성과와 분리한 심화 질의 대비용 후속 검증 트랙으로 관리하며, 대표 성과는 실전 운영 데이터에서 13개 후보 group 중 7개 불량을 현업 확인한 결과로 고정합니다 (recipe ablation 수치는 §[구현 성과] 참고).
+- **본인의 기술적 해결책이 과제 성패에 미친 영향**: wafer 한 장 약 1,000만 cell 의 hex 값을 Grade 0-7 로 풀어내는 변환 루프를 Cython 으로 재구성해 약 **100배** 가속을 확보했고, 32색 palette indexed PNG 양자화로 저장 용량 약 **75%** 절감을 같이 묶어 **일 약 2만 장 / 1시간 주기** 양산 운영 적재 흐름을 가능하게 했습니다. **[실전 현업 데이터 — Known]** ConvNeXtV2 backbone 교체와 ROI YOLO 2-stage cascade 결합으로 weighted F1 **0.78 → 0.95** ladder 를 달성했습니다. **[실전 현업 데이터 — Unknown]** self-supervised contrastive embedding 과 HDBSCAN grouping 으로 13개 후보 group 중 **7개 불량 확인**까지 검증했습니다. chip-CNN object-id map 과 Unknown synthetic benchmark 는 대표 성과와 분리한 후속 개발 / 심화 질의 대비 항목으로 관리합니다.
 
 **ㅁ 문제정의**
 
@@ -405,15 +405,9 @@ softmax 대신 sigmoid multi-label head 를 쓴 이유는 single failure 와 2-c
 
 **[알고리즘]** 합성 / 선택 / 추론 세 단계로 본 과제 데이터 특성에 맞춰 본인이 직접 설계했습니다. Pair Mask 는 합성의 보강 augmentation 으로 (1) 합성 단계 안에서 같이 다룹니다.
 
-**(1) 합성 — CutMix 계열 채택과 Full-Cover Mixup 확장**
+**(1) 합성 — FCM-PM**
 
-Grade 0-7 양자화 chip 이미지를 다루는 본 과제에서는 생성 방식 선택이 곧 label 의미 보존 문제였습니다.
-
-- **Mixup 배제**: 입력과 label 을 함께 보간하면 Grade 0-7 사이에 실재하지 않는 중간 grade 가 만들어져 분류기가 그 값을 noise 로 학습할 위험이 있습니다.
-- **Diffusion 보류**: Diffusion 으로 본 과제 수준의 chip 이미지를 생성하려면 충분한 실제 2-combo 분포가 학습 데이터로 먼저 쌓여 있어야 하는데, 본 과제는 그 데이터 자체가 부족한 상황이라 운영 적용 후보로 두지 않았습니다.
-- **CutMix 계열 채택**: 영역 단위로 원값을 보존해 붙이는 CutMix 계열이 양자화 의미 보존 측면에서 적합하다고 본인이 판단해 채택했습니다 (자문: 연세대학교 인공지능학과 박은병 교수).
-- **Full-Cover Mixup 확장**: 일반 CutMix 는 일부 직사각형 영역만 잘라 붙입니다. chip 내부 어디에 failure 가 올지 모르는 본 과제에서는 failure signal 이 잘릴 위험이 남아, chip 전체 grid 를 cover 하는 Full-Cover Mixup 으로 확장했습니다 (현업 Overlay dynamic sampling 경험에서 wafer 전 영역을 빠짐없이 cover 해야 sampling 누락이 없다는 아이디어를 가져옴).
-- **Pair Mask 보강 augmentation**: FCM mixed chip 만 학습하면 A / B 가 항상 섞여 들어가 single class 단독 패턴을 보는 학습 신호가 약해질 수 있어, B 영역을 mask 처리한 추가 augmentation chip 을 같이 학습시키는 paired forward 를 두었습니다 (`loss = loss(mixed, A+B label) + w · loss(masked, A-only label)`). FCM 이 multi-label 학습의 메인 축이고, Pair Mask 는 그 부작용을 같은 학습 루프 안에서 잡아주는 보강 장치입니다. Pair Mask 제거 시 Total FAR 이 100% 로 치솟는 ablation 이 본 설계의 직접 근거입니다.
+Grade 0-7 양자화 chip 이미지는 pixel 보간 방식보다 원값을 보존하는 CutMix 계열이 적합합니다 (자문: 연세대학교 인공지능학과 박은병 교수). 다만 일반 CutMix 는 failure signal 이 특정 crop 에서 잘리거나 background 가 failure 로 오학습되는 문제가 있어, chip 전체 grid 를 cover 하는 Full-Cover Mixup 과 paired augmentation 인 Pair Mask 를 결합했습니다. Pair Mask 는 A-only / B-only 학습 chip 을 함께 넣어 single failure 단독 패턴을 유지하고 background false-positive 를 줄입니다. Pair Mask 제거 시 Total FAR 이 **100%** 까지 상승해, background loss 분리가 핵심임을 확인했습니다.
 
 FCM-PM 학습 augmentation 을 실제 chip 이미지에 적용한 예시입니다 (`complement` 모드, `n_groups=2`, pair-fill white — per-class 50 group2 SOTA iter26F: bit_F1 0.9953 / Total FAR 0.00%). 실제 운영 학습은 GRID=8 (총 64 cell) 이고, 아래 예시는 셀 분포가 한눈에 보이도록 GRID 만 4 (16 cell, 그룹당 8 cell) 로 줄였습니다 (1행 6열).
 
