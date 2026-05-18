@@ -377,21 +377,17 @@ FAR = FP_negative / N_negative
 |:-------------:|:----:|:-------:|:-----------:|
 | <img src="./figures/chip_eval_bank_boundary_selected.png" width="160" /> | <img src="./figures/chip_eval_fork_selected.png" width="160" /> | <img src="./figures/chip_eval_scratch_selected.png" width="160" /> | <img src="./figures/chip_eval_scratch_rot_selected.png" width="160" /> |
 
-single 4 class 의 모든 2-조합으로 만든 2-combo 평가 chip 6종 (2행 3열, 본인 생성 평가셋):
+single 4 class 의 모든 2-조합으로 만든 2-combo 평가 chip 6종 (1행 6열, 본인 생성 평가셋):
 
-| bb + fork | bb + scratch | bb + scratch_rot |
-|:---------:|:------------:|:----------------:|
-| <img src="./figures/chip_combo_bb_fork_selected.png" width="160" /> | <img src="./figures/chip_combo_bb_scratch_selected.png" width="160" /> | <img src="./figures/chip_combo_bb_scratch_rot_selected.png" width="160" /> |
-| **fork + scratch** | **fork + scratch_rot** | **scratch + scratch_rot** |
-| <img src="./figures/chip_combo_fork_scratch_selected.png" width="160" /> | <img src="./figures/chip_combo_fork_scratch_rot_selected.png" width="160" /> | <img src="./figures/chip_combo_scratch_scratch_rot_selected.png" width="160" /> |
+| bb + fork | bb + scratch | bb + scratch_rot | fork + scratch | fork + scratch_rot | scratch + scratch_rot |
+|:---------:|:------------:|:----------------:|:--------------:|:------------------:|:---------------------:|
+| <img src="./figures/chip_combo_bb_fork_selected.png" width="130" /> | <img src="./figures/chip_combo_bb_scratch_selected.png" width="130" /> | <img src="./figures/chip_combo_bb_scratch_rot_selected.png" width="130" /> | <img src="./figures/chip_combo_fork_scratch_selected.png" width="130" /> | <img src="./figures/chip_combo_fork_scratch_rot_selected.png" width="130" /> | <img src="./figures/chip_combo_scratch_scratch_rot_selected.png" width="130" /> |
 
-Normal / Invalid / OOD negative 평가셋 예시 (2행 3열, 본인 생성 평가셋):
+Normal / Invalid / OOD negative 평가셋 예시 (1행 6열, 본인 생성 평가셋):
 
-| Normal | Invalid | OOD Starburst |
-|:------:|:-------:|:-------------:|
-| <img src="./figures/chip_eval_normal_selected.png" width="160" /> | <img src="./figures/chip_eval_invalid_selected.png" width="160" /> | <img src="./figures/chip_ood_starburst_selected.png" width="160" /> |
-| **OOD CenterDonut** | **OOD CrossScratch** | **OOD DiagonalSmear** |
-| <img src="./figures/chip_ood_centerdonut_selected.png" width="160" /> | <img src="./figures/chip_ood_crossscratch_selected.png" width="160" /> | <img src="./figures/chip_ood_diagonalsmear_selected.png" width="160" /> |
+| Normal | Invalid | OOD Starburst | OOD CenterDonut | OOD CrossScratch | OOD DiagonalSmear |
+|:------:|:-------:|:-------------:|:---------------:|:----------------:|:-----------------:|
+| <img src="./figures/chip_eval_normal_selected.png" width="130" /> | <img src="./figures/chip_eval_invalid_selected.png" width="130" /> | <img src="./figures/chip_ood_starburst_selected.png" width="130" /> | <img src="./figures/chip_ood_centerdonut_selected.png" width="130" /> | <img src="./figures/chip_ood_crossscratch_selected.png" width="130" /> | <img src="./figures/chip_ood_diagonalsmear_selected.png" width="130" /> |
 
 softmax 대신 sigmoid multi-label head 를 쓴 이유는 single failure 와 2-combo failure 가 mutually exclusive 가 아니기 때문입니다. FCM-PM 합성은 포함된 failure label 의 union 을 target 으로 두고, Pair Mask 는 B 영역이 mask 처리된 추가 augmentation chip 을 같이 학습시켜 single class 단독 패턴을 다시 한 번 보게 하면서 background false-positive 차단까지 같이 잡습니다. FAR 는 Normal / Invalid / OOD negative set 에서 별도로 계산해 운영 false-positive 위험을 직접 보게 했습니다.
 
