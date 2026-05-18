@@ -18,10 +18,10 @@
 
 **(1) 과제 개요 / 담당 역할 / 수행 업무 / 성과**
 
-- 과제 개요: DRAM 전제품 라인 Failbit Map raw log 변환 파이프라인 + 사내 운영 뷰어 web app + Known 2-stage 분류 + Unknown self-supervised 검출을 결합한 양산 운영 AI 시스템.
+- 과제 개요: DRAM 전제품 라인 Failbit Map raw log 변환 파이프라인 + 사내 운영 뷰어 web app + Known 2-stage 분류 + Unknown self-supervised 검출을 결합한 AI 시스템 (운영 뷰어는 양산 운영, Known / Unknown 모델은 GPU 할당 대기 단계).
 - 수행기간: 2024년 10월 ~ 현재
 - 담당 역할: 본인 60% / 현업 엔지니어 20% / 관리자 20%
-- 수행 업무 및 성과: raw log → wafer image 변환 파이프라인과 사내 인증 연동 운영 뷰어 web app 을 직접 구현했고, Known 2-stage (CNN 분류 + ROI YOLO 보정) 로 실전 16 class weighted F1 **0.95** 까지 도달했습니다. Unknown 은 self-supervised embedding + HDBSCAN 으로 후보 group 을 좁혀 현업 검토 결과 실제 불량을 분리해 냈고, 2025년 5월부터 DRAM 전제품 라인에서 양산 운영 중입니다.
+- 수행 업무 및 성과: raw log → wafer image 변환 파이프라인과 사내 인증 연동 운영 뷰어 web app 을 직접 구현해 운영 뷰어는 2025년 5월부터 DRAM 전제품 라인에서 양산 운영 중입니다. Known 2-stage (CNN 분류 + ROI YOLO 보정) 로 실전 16 class weighted F1 **0.95** 까지 도달했고, Unknown 은 self-supervised embedding + HDBSCAN 으로 후보 group 을 좁혀 현업 검토 결과 실제 불량을 분리해 냈습니다. Known / Unknown 모델의 전수 자동 추론 적용은 AI 센터 GPU 할당 일정 (2026년 9월) 에 맞춰 단계 확장할 계획입니다.
 
 **(2) 과제 관련 도메인 / AI 기술 / 모델 / 방법론**
 
