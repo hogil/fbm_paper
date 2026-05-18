@@ -1,22 +1,18 @@
-"""Generate FCM-PM demo chips that match the per-class 50 group2 SOTA recipe.
+"""Generate FCM-PM demo chips with complementary partition (group of 2).
 
-Reference: `D:/project/known-cnn/chip_multilabel/_train_chip_variant.py:1131-1224`
-(`cutmix_mode == "complement"`). iter26F (group2 SOTA at per-class 50) = BASE19C
-with white-fill: complement mode + GRID=8 + n_groups=2 + pair=masked + label=1.0.
+User intent: chip 을 격자 P / ~P 두 그룹 (complementary) 으로 나누고,
+한쪽 group 멤버가 P 를 차지하면 다른 group 멤버는 ~P (남은 그리드) 를 차지하게
+한다. 두 mixed chip 의 같은 chip pixel 을 합치면 원본 chip 이 복원된다.
 
-For a pair (anchor, partner) and one random partition of GRID×GRID cells into
-groups G0 / G1, complement produces:
-  mix_i   = partner base + anchor cells of group_i overlaid     (label = anchor ∪ partner)
-  mask_i  = mix_i with the OTHER group cells white-filled       (label = anchor only)
+배치:
+- mixed_A (label A ∪ B): A at P, B at ~P  (A 의 선택 그리드 = P)
+- mixed_B (label A ∪ B): A at ~P, B at P  (A 의 선택 그리드 = ~P, complementary)
+  -> A 측 cell coverage: mixed_A 의 P + mixed_B 의 ~P = full A
+  -> B 측 cell coverage: mixed_A 의 ~P + mixed_B 의 P = full B
 
-To show both A-only and B-only masks at independent cell positions, we call
-complement twice:
-  - run 1: anchor=A, partner=B, partition P_A → use mix_0 + mask_0
-  - run 2: anchor=B, partner=A, partition P_B (independent) → use mix_0 + mask_0
-
-Outputs (1 row × 6 cols panel):
-  chip A | chip B | FCM mixed (A label set) | FCM mixed (B label set)
-        | Pair Mask (A-only)               | Pair Mask (B-only)
+- masked_A (label A only): A at P, ~P 흰색       (mixed_A 에서 A 부분만 추출)
+- masked_B (label B only): B at ~P, P 흰색       (mixed_A 에서 B 부분만 추출)
+  -> 두 mask 의 visible cell 도 P ∪ ~P = 전체 그리드, mask 위치는 서로 다름.
 """
 
 from __future__ import annotations
@@ -27,8 +23,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 FIGURES = Path(r"D:/project/fbm_paper/recommendation/figures")
 SEED = 20260518
-GRID = 4           # demo-friendly (실제 iter26F SOTA 는 GRID=8)
-N_GROUPS = 2       # group2 SOTA
+GRID = 4
 WHITE = np.array([255, 255, 255], dtype=np.uint8)
 
 CHIP_A = FIGURES / "chip_eval_scratch_selected.png"
@@ -63,34 +58,37 @@ def cell_rect(idx: int, grid: int, H: int, W: int) -> tuple[int, int, int, int]:
     return y0, y1, x0, x1
 
 
-def complement_one_side(anchor: np.ndarray, partner: np.ndarray, grid: int, n_groups: int,
-                         rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray]:
-    """Run complement mode for a single anchor and return (mix_0, mask_0).
-
-    mix_0  = partner base + anchor's group-0 cells overlaid  (label = anchor ∪ partner)
-    mask_0 = mix_0 with group-1+ cells white-filled          (label = anchor only)
-    """
-    H, W = anchor.shape[:2]
+def fcm_pair_complementary(a: np.ndarray, b: np.ndarray, grid: int, rng: np.random.Generator):
+    H, W = a.shape[:2]
     n_cells = grid * grid
-    cells_per_group = n_cells // n_groups
+    half = n_cells // 2
     perm = rng.permutation(n_cells)
-    groups = [perm[i * cells_per_group:(i + 1) * cells_per_group].tolist()
-              for i in range(n_groups)]
-    leftover = perm[cells_per_group * n_groups:].tolist()
-    if leftover:
-        groups[-1].extend(leftover)
+    P_idx = perm[:half].tolist()
+    notP_idx = perm[half:].tolist()
+    P_rects = [cell_rect(int(ci), grid, H, W) for ci in P_idx]
+    notP_rects = [cell_rect(int(ci), grid, H, W) for ci in notP_idx]
 
-    mix = partner.copy()
-    for ci in groups[0]:
-        y0, y1, x0, x1 = cell_rect(int(ci), grid, H, W)
-        mix[y0:y1, x0:x1] = anchor[y0:y1, x0:x1]
+    # mixed_A: A at P (kept), B overlaid at ~P
+    mixed_a = a.copy()
+    for y0, y1, x0, x1 in notP_rects:
+        mixed_a[y0:y1, x0:x1] = b[y0:y1, x0:x1]
 
-    mask = mix.copy()
-    for j in range(1, n_groups):
-        for ci in groups[j]:
-            y0, y1, x0, x1 = cell_rect(int(ci), grid, H, W)
-            mask[y0:y1, x0:x1] = WHITE
-    return mix, mask
+    # mixed_B: B at P (kept), A overlaid at ~P  -> A is at ~P, B is at P
+    mixed_b = b.copy()
+    for y0, y1, x0, x1 in notP_rects:
+        mixed_b[y0:y1, x0:x1] = a[y0:y1, x0:x1]
+
+    # masked_A (label A-only): A at P, ~P white
+    masked_a = a.copy()
+    for y0, y1, x0, x1 in notP_rects:
+        masked_a[y0:y1, x0:x1] = WHITE
+
+    # masked_B (label B-only): B at ~P, P white (DIFFERENT mask position from masked_A)
+    masked_b = b.copy()
+    for y0, y1, x0, x1 in P_rects:
+        masked_b[y0:y1, x0:x1] = WHITE
+
+    return mixed_a, mixed_b, masked_a, masked_b
 
 
 def label_panel(img: np.ndarray, text: str) -> np.ndarray:
@@ -114,8 +112,7 @@ def main() -> None:
     b = load_rgb(CHIP_B)
     assert a.shape == b.shape, f"shape mismatch: {a.shape} vs {b.shape}"
 
-    mixed_a, masked_a = complement_one_side(a, b, GRID, N_GROUPS, rng)
-    mixed_b, masked_b = complement_one_side(b, a, GRID, N_GROUPS, rng)
+    mixed_a, mixed_b, masked_a, masked_b = fcm_pair_complementary(a, b, GRID, rng)
 
     save_rgb(OUT_A, a)
     save_rgb(OUT_B, b)
@@ -140,7 +137,7 @@ def main() -> None:
         panel[:, x0:x0 + W] = p
     save_rgb(OUT_PANEL, panel)
 
-    print(f"GRID={GRID} N_GROUPS={N_GROUPS} pair_fill=white (iter26F group2 SOTA, per-class 50)")
+    print(f"GRID={GRID}  half={GRID*GRID//2}  complementary partition: P + ~P = full grid")
     print(f"wrote: a, b, mixed_a, mixed_b, masked_a, masked_b, panel ({OUT_PANEL.name})")
 
 
