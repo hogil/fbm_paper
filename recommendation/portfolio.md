@@ -371,31 +371,36 @@ val_margin = mean_{k in P+}(p_k) - max_{j in P-}(p_j)
 FAR = FP_negative / N_negative
 ```
 
-**학습 원천 single 4 class 예시 chip**
+학습 원천 single 4 class 예시 chip:
 
-| bank_boundary | fork | scratch | scratch_rot |
-| --- | --- | --- | --- |
-| ![single bank_boundary](figures/chip_eval_bank_boundary_selected.png) | ![single fork](figures/chip_eval_fork_selected.png) | ![single scratch](figures/chip_eval_scratch_selected.png) | ![single scratch_rot](figures/chip_eval_scratch_rot_selected.png) |
+<p align="left">
+  <img src="./figures/chip_eval_bank_boundary_selected.png" width="160" />
+  <img src="./figures/chip_eval_fork_selected.png" width="160" />
+  <img src="./figures/chip_eval_scratch_selected.png" width="160" />
+  <img src="./figures/chip_eval_scratch_rot_selected.png" width="160" />
+</p>
 
-**single 4 class 의 모든 2-조합으로 만든 2-combo 평가 chip 6 종**
+single 4 class 의 모든 2-조합으로 만든 2-combo 평가 chip 6종:
 
-| bb + fork | bb + scratch | bb + scratch_rot |
-| --- | --- | --- |
-| ![combo bb fork](figures/chip_combo_bb_fork_selected.png) | ![combo bb scratch](figures/chip_combo_bb_scratch_selected.png) | ![combo bb scratch_rot](figures/chip_combo_bb_scratch_rot_selected.png) |
+<p align="left">
+  <img src="./figures/chip_combo_bb_fork_selected.png" width="130" />
+  <img src="./figures/chip_combo_bb_scratch_selected.png" width="130" />
+  <img src="./figures/chip_combo_bb_scratch_rot_selected.png" width="130" />
+  <img src="./figures/chip_combo_fork_scratch_selected.png" width="130" />
+  <img src="./figures/chip_combo_fork_scratch_rot_selected.png" width="130" />
+  <img src="./figures/chip_combo_scratch_scratch_rot_selected.png" width="130" />
+</p>
 
-| fork + scratch | fork + scratch_rot | scratch + scratch_rot |
-| --- | --- | --- |
-| ![combo fork scratch](figures/chip_combo_fork_scratch_selected.png) | ![combo fork scratch_rot](figures/chip_combo_fork_scratch_rot_selected.png) | ![combo scratch scratch_rot](figures/chip_combo_scratch_scratch_rot_selected.png) |
+Normal / Invalid / OOD negative 평가셋 예시:
 
-**Normal / Invalid / OOD negative 평가셋 예시**
-
-| Normal | Invalid | OOD CenterDonut |
-| --- | --- | --- |
-| ![normal](figures/chip_eval_normal_selected.png) | ![invalid](figures/chip_eval_invalid_selected.png) | ![ood centerdonut](figures/chip_ood_centerdonut_selected.png) |
-
-| OOD CrossScratch | OOD DiagonalSmear | OOD Starburst |
-| --- | --- | --- |
-| ![ood crossscratch](figures/chip_ood_crossscratch_selected.png) | ![ood diagonalsmear](figures/chip_ood_diagonalsmear_selected.png) | ![ood starburst](figures/chip_ood_starburst_selected.png) |
+<p align="left">
+  <img src="./figures/chip_eval_normal_selected.png" width="130" />
+  <img src="./figures/chip_eval_invalid_selected.png" width="130" />
+  <img src="./figures/chip_ood_starburst_selected.png" width="130" />
+  <img src="./figures/chip_ood_centerdonut_selected.png" width="130" />
+  <img src="./figures/chip_ood_crossscratch_selected.png" width="130" />
+  <img src="./figures/chip_ood_diagonalsmear_selected.png" width="130" />
+</p>
 
 softmax 대신 sigmoid multi-label head 를 쓴 이유는 single failure 와 2-combo failure 가 mutually exclusive 가 아니기 때문입니다. FCM-PM 합성은 포함된 failure label 의 union 을 target 으로 두고, Pair Mask 는 B 영역이 mask 처리된 추가 augmentation chip 을 같이 학습시켜 single class 단독 패턴을 다시 한 번 보게 하면서 background false-positive 차단까지 같이 잡습니다. FAR 는 Normal / Invalid / OOD negative set 에서 별도로 계산해 운영 false-positive 위험을 직접 보게 했습니다.
 
