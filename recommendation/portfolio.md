@@ -502,7 +502,7 @@ positive bits     negative bits
 
 **[본인이 독자적으로 수행한 핵심 모듈]**
 
-- **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**: 본인이 BBD담당 / Overlay담당 / CD담당으로 **9년간** trend chart 를 직접 판정해 온 경험을 generator parameter 로 옮겼습니다. 먼저 **Noise 3분포** (Gaussian / Laplacian / Correlated) 와 **계측 밀도 Region 5단계** (dense / sparse / very_sparse / thin / missing) 를 본인이 정의해 합성 normal baseline 을 실전 환경에 맞춰 구현하고, normal 산포 상한 / 하한 두 가지 수식까지 직접 설계했습니다. 그 위에 **mean shift / standard deviation / spike / drift / context** 5종 불량을 어느 강도에서 실제 불량으로 이어지는지 기준을 정해 generator parameter 로 코드화했습니다. 동료 엔지니어 공동 수행 영역은 §인력표 참고.
+- **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**: 본인이 BBD담당 / Overlay담당 / CD담당으로 **9년간** trend chart 를 직접 판정해 온 경험을 generator parameter 로 옮겼습니다. 먼저 **Noise 3분포** (Gaussian / Laplacian / Correlated) 와 **계측 밀도 Region 5단계** (dense / sparse / very_sparse / thin / missing) 를 본인이 정의해 합성 normal baseline 을 실전 환경에 맞춰 구현하고, normal 산포 상한 / 하한 두 가지 수식까지 직접 설계했습니다. 그 위에 **mean shift / standard deviation / spike / drift / context** 5종 불량을 어느 강도에서 실제 불량으로 이어지는지 기준을 정해 generator parameter 로 코드화했습니다.
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**: 실전 abnormal label 이 부족해 막혀 있던 anomaly 검증을 본인 담당 경험을 반영한 trend 합성 데이터로 풀었습니다. **normal 3,500 + abnormal 3,500 = 총 7,000개** trend sample 을 만들어 AI 학습이 가능한 상태를 갖췄고, 1차 Binary gate baseline 에서 **Binary F1 0.9967 / Abnormal Recall 0.9987** (test 1,500 / threshold=0.9) 로 생성 데이터만으로도 정상과 이상이 안정적으로 구분되는 것을 확인했습니다. 현재 **현업 데이터 적용 직전** 단계까지 진행했습니다.
 
