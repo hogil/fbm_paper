@@ -550,7 +550,7 @@ positive bits     negative bits
 
 **[본인이 독자적으로 수행한 핵심 모듈]**
 
-- **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**: 본인이 BBD담당 / Overlay담당 / CD담당으로 **9년간** trend chart 를 직접 판정해 온 업무 경험에서 **mean shift** (평균 변동), **standard deviation** (산포 변동), **spike** (순간 튐), **drift** (미세 이동), **context** (다른 legend 대비 튀는 경우) 5종 불량이 어느 강도에서 실제 spec out 으로 이어지는지 알고 있었고, 그 판단 기준을 synthetic trend episode generator 의 parameter 로 직접 코드화했습니다. **Noise 3분포** (Gaussian / Laplacian / Correlated) 와 **계측 밀도 Region 5단계** (dense / sparse / very_sparse / thin / missing) 도 본인이 정의해 합성 normal baseline 을 실전 환경에 가깝게 구현했고, 합성 normal 산포에 상한 / 하한을 같이 두는 두 가지 수식까지 본인이 설계했습니다. 동료 엔지니어는 AI 모델 실행, 데이터 정리, 실험 결과 취합을 공동 수행했습니다.
+- **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**: 본인이 BBD담당 / Overlay담당 / CD담당으로 **9년간** trend chart 를 직접 판정해 온 경험을 generator parameter 로 옮겼습니다. 먼저 **Noise 3분포** (Gaussian / Laplacian / Correlated) 와 **계측 밀도 Region 5단계** (dense / sparse / very_sparse / thin / missing) 를 본인이 정의해 합성 normal baseline 을 실전 환경에 맞춰 구현하고, normal 산포 상한 / 하한 두 가지 수식까지 직접 설계했습니다. 그 위에 **mean shift / standard deviation / spike / drift / context** 5종 불량을 어느 강도에서 실제 불량으로 이어지는지 기준을 정해 generator parameter 로 코드화했습니다. 동료 엔지니어는 AI 모델 실행, 데이터 정리, 실험 결과 취합을 공동 수행했습니다.
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**: 실전 abnormal label 부족으로 사실상 막혀 있던 anomaly 검증을, 본인 담당 경험을 generator parameter 로 코드화한 합성 데이터 자산으로 풀었습니다. **normal 3,500 + abnormal 3,500 = 총 7,000개** trend sample 자산을 확보해 AI 학습이 가능하게 만들었고, 1차 Binary gate baseline 에서 **Binary F1 0.9967 / Abnormal Recall 0.9987** (test 1,500 / threshold=0.9) 로 생성 데이터가 학습 가능한 정상 / 이상 패턴을 담고 있음을 확인했습니다. L1 trend 모니터링의 수작업 부담과 초보자 누락, spec out 위험을 줄이는 1차 스크리닝 기반으로 **현업 데이터 적용 직전** 단계까지 진행했습니다.
 
