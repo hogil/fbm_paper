@@ -482,7 +482,7 @@ positive bits     negative bits
   | 9 | Knowledge Distillation (single student, baseline) | 0.9265 | 0.9785 | TBD | 0.00% | 0.00% | 0.00% | 1x | 1x |
   | 10 | Knowledge Distillation (single student, sweep best) | **0.9470** | TBD | TBD | **0.00%** | 0.00% | 0.00% | 1x | 1x |
 
-  본 표는 per class 2000 chip synthetic benchmark 기준의 ablation 정리이며, 제출 대표 성과는 row 7 의 FCM-PM + val_margin 단일 모델 bit_F1 **0.9943** / Total FAR **0.00%** 로 고정합니다.
+  본 표는 주요 학습 recipe 별 성능 차이를 비교한 결과입니다. 제출 대표 성과는 FCM-PM + val_margin 단일 모델의 bit_F1 **0.9943** / Total FAR **0.00%** 입니다.
 
 - **현업 임팩트**: 실제 chip 불량률 계산 및 trend 분석이 가능해지고, P1 chip-CNN object-id map 후속 단계 기반으로 이어집니다.
 
