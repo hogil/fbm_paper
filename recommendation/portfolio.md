@@ -103,7 +103,7 @@ P1 end-to-end 파이프라인은 raw log → wafer 이미지 변환 → 좌표 J
 먼저 Transformer 와 CNN 을 같은 split 에서 비교했습니다.
 
 - **도메인 판단**: ViT, Swin 같은 전역 attention 기반 backbone 은 wafer 전체 구조를 보는 데 강합니다. 다만 본 과제의 결함은 특정 zone 이나 국소 chip 영역에 몰리는 경우가 많아, CNN 계열의 local receptive field 와 계층적 feature extraction 이 더 어울린다고 판단했습니다 (자문: 연세대학교 인공지능학과 전해곤 교수).
-- **비교 결과**: 동일 4:1 stratified split 에서 Optuna sweep 으로 hyperparameter 를 정렬한 뒤 측정했습니다. 결과는 ViT 0.81 / Swin 0.84 / EffNetV2 0.85 / MaxViT 0.87 / ConvNeXtV2 0.87 입니다.
+- **비교 결과**: 동일 4:1 stratified split / 동일 학습 조건으로 backbone 만 바꿔 baseline 성능을 측정했습니다. 결과는 ViT 0.81 / Swin 0.84 / EffNetV2 0.85 / MaxViT 0.87 / ConvNeXtV2 0.87 이며, 채택한 ConvNeXtV2 위에서 Optuna hyperparameter 튜닝과 ROI YOLO 2-stage cascade 를 추가해 weighted F1 0.92 → 0.95 까지 끌어올렸습니다.
 - **최종 선택**: ConvNeXtV2 는 MaxViT 와 동일한 F1 0.87 을 유지하면서 파라미터 26% (119.5M → 88.6M), FLOPs 39% (74.2G → 45.1G) 감소가 따라와 양산 inference 비용 측면에서 최종 backbone 으로 채택했습니다.
 
 **(2) Stage 2 ROI 보정 — cascade gate 와 보정 결정 로직**
