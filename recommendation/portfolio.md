@@ -155,7 +155,7 @@ chip 좌표마다 crop → class 확률 → argmax 로 32×32 object-id map `M_o
 
 이 map 이 Stage 2 ROI-YOLO 출력을 대체하는 chip 단위 posterior 입니다.
 
-**[최적화]** Known 2-stage 의 성능은 실전 현업 데이터 (16 class / 1,500 labeled / 4:1 stratified split) 위에서 baseline 부터 단계별로 다음과 같이 향상시켰습니다.
+**[최적화]** Known 2-stage 성능을 실전 현업 데이터 (16 class / 1,500 labeled / 4:1 stratified split) 로 baseline 부터 단계별로 다음과 같이 향상시켰습니다.
 
 - **baseline**: 일반 ImageNet 사전학습 CNN 으로 시작한 1차 학습이 weighted F1 **0.78** 정도였습니다. 16 class 중 center 영역처럼 결함이 겹치는 영역의 class 들이 서로 헷갈리는 사례가 가장 컸습니다.
 - **backbone 교체**: ViT / Swin / EffNetV2 / MaxViT / ConvNeXtV2 를 동일 split 에서 비교한 뒤, 본 과제 결함이 국소 영역에 몰리는 특성에 맞는 ConvNeXtV2 로 교체해 **0.87** 까지 향상시켰습니다.
