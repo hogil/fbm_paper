@@ -442,7 +442,7 @@ positive bits     negative bits
 
 **(3) 추론 단계 보강 — Threshold gate / Ensemble / Knowledge Distillation**
 
-운영 환경 약 80% Normal 분포에 대응해 max-prob < 0.55 입력을 Normal 로 강제하는 threshold gate 로 false-positive 를 추가 억제했습니다. bit-level majority voting ensemble 은 현업 분포 shift 에 대비한 안정성 점검용이고, Knowledge Distillation single student 는 ensemble 판단을 1× 추론 비용으로 압축하기 위한 후속 후보입니다. 두 항목의 정량 비교는 §[구현 성과] ablation 표 row 8~10 에 있습니다.
+운영 환경 약 80% Normal 분포에 대응해 max-prob < 0.55 입력을 Normal 로 강제하는 threshold gate 로 false-positive 를 줄였습니다. bit-level majority voting ensemble 은 현업 분포 shift 에 대비한 안정성 점검용이고, Knowledge Distillation single student 는 ensemble 판단을 1× 추론 비용으로 압축하기 위한 후속 후보입니다. 두 항목의 정량 비교는 §[구현 성과] ablation 표 row 8~10 에 있습니다.
 
 **[최적화]** 합성 단계에서는 CutMix → CutMix + Pair → FCM-PM 순서로 단계별 효과를 직접 측정했고, false-positive 와 bit_F1 의 trade-off 가 어디서 깨지는지를 아래 ablation 표로 추적했습니다.
 
