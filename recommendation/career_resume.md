@@ -32,7 +32,7 @@
 
 **(2) 과제 관련 도메인 / AI 기술 / 모델 / 방법론**
 
-Failbit Map, DRAM EDS Test Grade 0-7 양자화 이미지, wafer-level failure zone 해석 도메인 위에 ConvNeXtV2 wafer 분류 + ROI YOLO 2-stage 보정 + self-supervised contrastive embedding + HDBSCAN grouping + chip-CNN object-id map 후속을 결합했습니다. backbone 은 본 과제 결함이 국소 영역에 몰리는 특성상 CNN 계열의 local receptive field 가 더 어울린다고 판단해 ConvNeXtV2 채택 (MaxViT 와 동일 F1 0.87 에 파라미터 **26%** / FLOPs **39%** 감소, 자문: 연세대학교 인공지능학과 전해곤 교수). Stage 2 는 wafer 신뢰도가 낮은 difficult sample 만 처리합니다. 우선 헷갈리는 영역을 ROI 로 잘라낸 다음, 그 ROI 안에서 YOLO 가 chip 단위 object detection (bbox + class) 으로 다시 분류하고, 출력 box 들의 majority class 로 최종 결과를 정합니다. 이렇게 신뢰도가 충분한 wafer 는 Stage 2 를 건너뛰기 때문에 throughput 부담 없이, 헷갈리는 sample 만 다시 분류해 정확도를 끌어올립니다.
+Failbit Map, DRAM EDS Test Grade 0-7 양자화 이미지, wafer-level failure zone 해석 도메인 위에 ConvNeXtV2 wafer 분류 + ROI YOLO 2-stage 보정 + self-supervised contrastive embedding + HDBSCAN grouping + chip-CNN object-id map 후속을 결합했습니다. backbone 은 본 과제 결함이 국소 영역에 몰리는 특성상 CNN 계열의 local receptive field 가 더 어울린다고 판단해 ConvNeXtV2 채택 (MaxViT 와 동일 F1 0.87 에 파라미터 **26%** / FLOPs **39%** 감소, 자문: 연세대학교 인공지능학과 전해곤 교수). Stage 2 는 wafer 신뢰도가 낮은 difficult sample 만 처리합니다. 우선 헷갈리는 영역을 ROI 로 잘라낸 다음, 그 ROI 안에서 YOLO 가 chip 단위 object detection (bbox + class) 으로 다시 분류하고, 출력 box 들의 majority class 로 최종 결과를 정합니다. 이렇게 신뢰도가 충분한 wafer 는 Stage 2 를 건너뛰기 때문에 throughput 부담 없이, 헷갈리는 sample 만 다시 분류해 정확도를 향상시킵니다.
 
 ㅁ **P2. Chip Multi-label Classification (FCM-PM, val_margin)**
 
