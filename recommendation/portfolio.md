@@ -46,7 +46,7 @@
 
 **ㅁ 기술적 해결 방안**
 
-본인이 직접 잡은 P1 end-to-end 파이프라인은 raw log → wafer 이미지 변환 → 좌표 JSON → 운영 뷰어 노출 → Known 분류 / Unknown 검출 → 현업 검증 까지입니다. 단계별 모듈은 아래와 같습니다.
+P1 end-to-end 파이프라인은 raw log → wafer 이미지 변환 → 좌표 JSON → 운영 뷰어 노출 → Known 분류 / Unknown 검출 → 현업 검증 까지로 설계했습니다. 단계별 모듈은 아래와 같습니다.
 
 ```
 +------------------------------------------------------------------------------+
@@ -94,7 +94,7 @@
 +------------------------------------------------------------------------------+
 ```
 
-**[데이터]** 위 파이프라인의 [SOURCE] / [PIPELINE] 두 단계에 해당합니다. raw EDS Test log (wafer 당 약 1,000만 cell) 의 Failbit hex 표현을 Cython 변환 루프로 약 100배 가속해 Grade(0-7) 로 양자화합니다. **본 wafer image 는 자연 현상의 다양한 색채 이미지가 아닌 EDS Test 의 8단계 이산 측정값** 이라 32색 palette indexed PNG 로 **무손실** 양자화가 가능했고, 이 도메인 특성을 활용해 저장 용량을 약 **75%** 절감했습니다. 결과로 6400×6400 wafer 이미지 + 32×32 chip grid (1,024 chip / wafer, chip 당 200×200 pixel) + chip positions JSON 이 산출되고, chip positions JSON 은 Stage 2 ROI YOLO 와 후속 chip-CNN object-id map 입력 좌표로 그대로 재사용됩니다.
+**[데이터]** raw EDS Test log (wafer 당 약 1,000만 cell) 의 Failbit hex 표현을 Cython 변환 루프로 약 100배 가속해 Grade(0-7) 로 양자화합니다. **본 wafer image 는 자연 현상의 다양한 색채 이미지가 아닌 EDS Test 의 8단계 이산 측정값** 이라 32색 palette indexed PNG 로 **무손실** 양자화가 가능했고, 이 도메인 특성을 활용해 저장 용량을 약 **75%** 절감했습니다. 결과로 6400×6400 wafer 이미지 + 32×32 chip grid (1,024 chip / wafer, chip 당 200×200 pixel) + chip positions JSON 이 산출되고, chip positions JSON 은 Stage 2 ROI YOLO 와 후속 chip-CNN object-id map 입력 좌표로 그대로 재사용됩니다.
 
 **[알고리즘]** 모델 선택과 결합 구조는 본 과제 데이터 특성에 맞춰 다음과 같이 결정했습니다.
 
