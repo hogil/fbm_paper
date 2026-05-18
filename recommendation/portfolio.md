@@ -609,11 +609,11 @@ positive bits     negative bits
 
 trend 합성 원리 (baseline + anomaly 산식 / 사내 도면 별도 첨부):
 
-<p align="left">
-  <img src="./figures/p3_trend_generation_formula.png" alt="trend 합성 원리 (사내 첨부 예정)" width="640" />
-</p>
+| Trend 생성 수식 / 도면 (사내 자료) |
+|:----------------------------------:|
+| <img src="./figures/p3_trend_generation_formula.png" alt="trend 합성 원리 (사내 첨부 예정)" width="640" /> |
 
-> ※ 위 이미지는 사내 보고서에 실릴 trend 생성 수식 / 도면 자리표시자입니다. 실제 제출 시 사내 자료로 교체합니다.
+> ※ 위 칸은 사내 보고서에 실릴 trend 생성 수식 / 도면 자리표시자입니다. 실제 제출 시 사내 자료로 교체합니다.
 
 합성 trend chart 예시 (정상 + 일반 trend 불량 4종 + context 1종):
 
