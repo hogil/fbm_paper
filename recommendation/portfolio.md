@@ -578,11 +578,18 @@ Trend 합성 데이터 생성 설계 (계측 밀도, Noise, Anomaly 수식):
 
 **[최적화]: 성능 향상을 위해 본인이 직접 시도한 기술적 해법**
 
-합성 normal 산포가 실전 baseline 통계 안에 들어오게 하면서 abnormal 강도는 정상 산포에 묻히지 않도록 두 가지 수식으로 제어했습니다.
+합성 normal 산포가 실전 baseline 통계 안에 들어오게 하면서 abnormal 강도는 정상 산포에 묻히지 않도록 데이터 측 + 학습 측 두 축으로 제어했습니다.
 
+데이터 측 정상성 제어
 - **정상성 하한 보장**: `target_baseline_std = max(baseline_std, 0.01)` — baseline 산포가 너무 작아질 때 최소 0.01σ 로 묶어 합성 normal 이 무리하게 평탄해지지 않도록 했습니다.
 - **정상성 상한 정렬**: `target_std ≤ fleet_within_std × 1.2` — 같은 설비군 산포 대비 1.2 배 이내로 상한을 두어 합성 normal 이 실전보다 과도하게 흔들리는 케이스를 차단했습니다.
-- **학습 안정화**: val-F1 median smoothing 과 val-loss spike guard 를 같이 두어 일시 spike 에 checkpoint 선택이 흔들리지 않도록 보강했습니다.
+
+학습 측 안정화 및 stack 선택
+- **학습 stack**: ConvNeXtV2-Tiny (ImageNet-22k→1k pretrained) backbone + AdamW + **FocalLoss** (FN 최소화 목적 운영 gate 에 맞는 손실) + **EMA** (Exponential Moving Average) 로 weight 흔들림 억제.
+- **checkpoint 안정화**: val-F1 median smoothing + val-loss spike guard 로 일시 spike 에 best checkpoint 선택이 흔들리지 않도록 보강했습니다.
+- **normal_threshold sweep**: binary gate 의 FN / FP trade-off 를 sweep 해 **normal_threshold = 0.9** 채택 (보수적 gate 로 불량 chart 가 normal 로 빠져나가지 않도록).
+- **5-seed strict one-factor 검증**: seed (42, 1, 2, 3, 4) 평균 Binary F1 **0.9975** / best **0.9993** 으로 seed 안정성을 확인했습니다.
+- **2-stage 운영 구조**: 1차 binary gate → 2차 anomaly_type classifier (mean_shift / standard_deviation / spike / drift / context) 로 운영 판정과 원인 분석을 분리했습니다.
 
 **ㅁ 구현 성과**
 
