@@ -357,41 +357,41 @@ softmax 대신 sigmoid multi-label head 를 쓴 이유는 single failure 와 2-c
 +--------------------------------------------------------------------------+
 |  SOURCE: real production single-failure chips, 4 classes (Grade 0..7)    |
 |  - chip-wise train / test split first -> no synthesis leakage            |
-+----------------------------------+---------------------------------------+
-                                   v
++--------------------------------------------------------------------------+
+                                    |
+                                    v
 +--------------------------------------------------------------------------+
 |  Step 1-2: pick CutMix family + diagnose its limits                      |
 |  - Mixup / Diffusion blend pixels -> Grade meaning lost -> not usable    |
-|  - CutMix is region-based -> Grade preserved (advice: Prof. Eunbyung Park)|
+|  - CutMix is region-based -> Grade preserved (advice: Prof. E. Park)     |
 |  - random CutMix issue: signal cut + background -> false positives rise  |
-+----------------------------------+---------------------------------------+
-                                   |
-                +------------------+------------------+
-                v                                     v
-+----------------------------------+  +----------------------------------------+
-|  Step 3a: Full-Cover Mixup       |  |  Step 3b: Pair Mask                    |
-|  - GRID x GRID grid cut          |  |  - mask B-pasted cells (corner /       |
-|  - some cells overwritten by B   |  |    white / noise fill) on a paired     |
-|    at the same cell positions    |  |    augmentation chip                   |
-|    -> full chip cover, no gap    |  |  - paired chip carries A label only    |
-|  - sanity ratio >= max(d_i)-0.01 |  |    -> B class not activated on bg fill |
-+----------------+-----------------+  +----------------+-----------------------+
-                 +---------------+--------------------+
-                                 v
++--------------------------------------------------------------------------+
+                                    |
+                +-------------------+-------------------+
+                v                                       v
++-----------------------------------+  +-----------------------------------+
+|  Step 3a: Full-Cover Mixup        |  |  Step 3b: Pair Mask               |
+|  - GRID x GRID grid cut           |  |  - mask B-pasted cells with       |
+|  - half cells overwritten by B    |  |    corner / white / noise fill    |
+|    -> full chip cover, no gap     |  |  - paired chip with A label only  |
+|  - sanity ratio >= max(d_i)-0.01  |  |    -> B class blocked on bg fill  |
++-----------------------------------+  +-----------------------------------+
+                |                                       |
+                +-------------------+-------------------+
+                                    v
 +--------------------------------------------------------------------------+
 |  Step 4-5: FCM-PM training + val_margin checkpoint selection             |
 |  - val_margin = mean(pos bit score) - max(neg bit score)                 |
 |  - Spearman(epoch, test_f1): val_margin +0.56 vs val_f1 -0.10            |
 |  - target pos 0.85 / neg 0.15 (symmetric)                                |
-+----------------------------------+---------------------------------------+
-                                   v
++--------------------------------------------------------------------------+
+                                    v
 +--------------------------------------------------------------------------+
 |  Step 6: Inference-stage operational safeguards                          |
-|  - max-prob gate: max-prob < 0.55 -> force Normal (ops mix is ~80% Normal)|
+|  - max-prob gate: max-prob < 0.55 -> Normal (ops mix is ~80% Normal)     |
 |  - bit-level majority voting (vote_majority_bits, 3 models):             |
-|    bit_F1 0.9941 / Total FAR 0.00%, lifts cells where one model wobbles  |
-|  - Knowledge Distillation: compresses the ensemble vote into a single    |
-|    student at 1x latency / throughput / params, deploy candidate         |
+|    bit_F1 0.9941 / Total FAR 0.00%                                       |
+|  - Knowledge Distillation: compress ensemble -> single student (1x cost) |
 +--------------------------------------------------------------------------+
 ```
 
