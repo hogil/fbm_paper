@@ -2,13 +2,13 @@
 
 | 기간 | 과제명 | 리딩 규모 | 담당업무 | 과제관리 | 설계 | 개발비중 |
 |------|--------|-----------|----------|----------|------|----------|
-| 2024년 10월 ~ 현재 | P1. Failbit Map Known 불량 및 Unknown 불량 분석 아키텍처 | 3인 협업, 본인 60% 리딩. 운영 뷰어는 DRAM 전제품 라인 양산 운영 (일 약 2만 wafer 처리), Known / Unknown 모델은 GPU 할당 대기 | FBM raw log 적재 / Cython 파싱 / palette PNG / chip 좌표 JSON 생성 모듈을 구성하고, 운영 뷰어와 연결한 뒤 Known 불량 및 Unknown 불량 AI 모델을 설계 / 학습 / 검증까지 했습니다. | 20% | 35% | 45% |
+| 2024년 10월 ~ 현재 | P1. Failbit Map Known & Unknown 불량 분석 아키텍처 | 3인 협업, 본인 60% 리딩. 운영 뷰어는 DRAM 전제품 라인 양산 운영 (일 약 2만 wafer 처리), Known / Unknown 모델은 GPU 할당 대기 | FBM raw log 적재 / Cython 파싱 / palette PNG / chip 좌표 JSON 생성 모듈을 구성하고, 운영 뷰어와 연결한 뒤 Known 불량 및 Unknown 불량 AI 모델을 설계 / 학습 / 검증까지 했습니다. | 20% | 35% | 45% |
 | 2025년 3월 ~ 현재 | P2. Chip Multi-label Classification (FCM-PM, val_margin) | 2인 PoC, 본인 80% 리딩. 16+ class × 약 3,850 chip controlled synthetic benchmark | chip single / 2-combo 합성, Pair Mask loss masking, FCM-PM 설계, val_margin 기반 best-model 선택, 대표 모델 검증까지 직접 진행했습니다. | 20% | 40% | 40% |
 | 2026년 1월 ~ 현재 | P3. Trend Episode 데이터 생성 기반 Anomaly-detection 검증 PoC | 3인 PoC, 본인 70% 리딩. normal 3,500 + abnormal 3,500 = 총 7,000개 trend sample 구성 | BBD / Overlay / CD 담당 **9년** trend 판정 경험을 바탕으로 episode generator 의 계측 밀도, noise 분포, 5종 anomaly pattern 을 직접 설계해 합성 trend sample 약 7,000개를 구성했습니다. | 20% | 45% | 35% |
 
 ## 2. 대표 과제 상세 기술서
 
-**ㅁ P1. Failbit Map Known 불량 및 Unknown 불량 분석 아키텍처**
+**ㅁ P1. Failbit Map Known & Unknown 불량 분석 아키텍처**
 
 **ㅁ 과제 기본정보**
 

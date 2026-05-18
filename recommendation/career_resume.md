@@ -14,7 +14,7 @@
 
 ## 2. 업무경력
 
-ㅁ **P1. Failbit Map Known 불량 및 Unknown 불량 분석 아키텍처**
+ㅁ **P1. Failbit Map Known & Unknown 불량 분석 아키텍처**
 
 **(1) 과제 개요 / 담당 역할 / 수행 업무 / 성과**
 
