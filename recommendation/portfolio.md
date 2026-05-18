@@ -452,7 +452,7 @@ positive bits     negative bits
 
 **ㅁ 구현 성과**
 
-**[정량적/정성적 성과]** (P2 성과는 **[현업 failure chip 원천 + 도메인 확률분포 기반 생성/검증]** 위에서 측정한 값입니다. 아래 성과 항목별 데이터 출처는 inline 라벨로 분리 표기합니다.)
+**[정량적/정성적 성과]**
 
 - **기술 지표** (단계별 적용 효과):
   - 학습 ladder: BCE+Label Smoothing → Focal / ASL loss 변형 → 단순 CutMix → **FCM-PM (Full-Cover Mixup + Pair Mask) + val_margin best-model selection** 순으로 단계별 적용해 bit_F1 0.1093 → **0.9943** / Total FAR 99.47% → **0.00%** 까지 향상시켰습니다.
