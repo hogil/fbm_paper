@@ -464,16 +464,15 @@ positive bits     negative bits
 
   | # | Recipe (per class 2000) | bit_F1 | single | 2combo | FAR | NI-FAR | OOD-FAR | Throughput | Params |
   |---|--------|--------|--------|--------|-----|--------|---------|------------|--------|
-  | 1 | BCE + Label Smoothing | 0.1093 | TBD | TBD | 99.47% | 99.65% | 98.91% | 1x | 1x |
-  | 2 | Sigmoid Focal Loss | 0.7980 | TBD | TBD | 45.72% | TBD | TBD | 1x | 1x |
-  | 3 | Asymmetric Loss (ASL) | 0.6435 | TBD | TBD | 100.0% | TBD | TBD | 1x | 1x |
-  | 4 | CutMix (random rectangle) | 0.9359 | TBD | TBD | 42.05% | 37.00% | 57.81% | 1x | 1x |
-  | 5 | CutMix + Pair Mask | 0.9256 | TBD | TBD | 100.0% | TBD | TBD | 1x | 1x |
+  | 1 | BCE + Label Smoothing | 0.1093 | 0.1896 | 0.0668 | 99.47% | 99.65% | 98.91% | 1x | 1x |
+  | 2 | Sigmoid Focal Loss | 0.7980 | 0.8724 | 0.7050 | 45.72% | 35.55% | 77.50% | 1x | 1x |
+  | 3 | Asymmetric Loss (ASL) | 0.6435 | 0.5379 | 0.7320 | 100.0% | 100.0% | 100.0% | 1x | 1x |
+  | 4 | CutMix (random rectangle) | 0.9359 | 0.9566 | 0.9070 | 42.05% | 37.00% | 57.81% | 1x | 1x |
+  | 5 | CutMix + Pair Mask | 0.9256 | 0.8538 | 0.9682 | 100.0% | 100.0% | 100.0% | 1x | 1x |
   | 6 | FCM-PM + val_f1 selection | **0.9652** | 1.0000 | 0.9517 | 0.15% | 0.00% | 0.62% | 1x | 1x |
   | 7 | **FCM-PM + val_margin selection (제출 대표)** | **0.9943** | **0.9918** | **0.9894** | **0.00%** | 0.00% | 0.00% | 1x | 1x |
   | 8 | vote_majority_bits Ensemble※ (champion) | **0.9941** | **1.0000** | **0.9893** | **0.00%** | 0.00% | 0.00% | 1/3x | 3x |
-  | 9 | Knowledge Distillation (single student, baseline) | 0.9265 | 0.9785 | TBD | 0.00% | 0.00% | 0.00% | 1x | 1x |
-  | 10 | Knowledge Distillation (single student, sweep best) | **0.9470** | TBD | TBD | **0.00%** | 0.00% | 0.00% | 1x | 1x |
+  | 9 | Knowledge Distillation (single student) | **0.9470** | 0.9363 | 0.9187 | **0.00%** | 0.00% | 0.00% | 1x | 1x |
 
   본 표는 주요 학습 recipe 별 성능 차이를 비교한 결과입니다. 제출 대표 성과는 FCM-PM + val_margin 단일 모델의 bit_F1 **0.9943** / Total FAR **0.00%** 입니다.
 
@@ -502,7 +501,7 @@ positive bits     negative bits
 
 **[본인이 독자적으로 수행한 핵심 모듈]**
 
-- **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**: 본인이 BBD담당 / Overlay담당 / CD담당으로 **9년간** trend chart 를 직접 판정해 온 경험을 generator parameter 로 옮겼습니다. 먼저 **Noise 3분포** (Gaussian / Laplacian / Correlated) 와 **계측 밀도 Region 5단계** (dense / sparse / very_sparse / thin / missing) 를 본인이 정의해 합성 normal baseline 을 실전 환경에 맞춰 구현하고, normal 산포 상한 / 하한 두 가지 수식까지 직접 설계했습니다. 그 위에 **mean shift / standard deviation / spike / drift / context** 5종 불량을 어느 강도에서 실제 불량으로 이어지는지 기준을 정해 generator parameter 로 코드화했습니다.
+- **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**: BBD담당 / Overlay담당 / CD담당으로 **9년간** trend chart 를 직접 판정해 온 경험을 generator parameter 에 적용했습니다. 먼저 **Noise 3분포** (Gaussian / Laplacian / Correlated) 와 **계측 밀도 Region 5단계** (dense / sparse / very_sparse / thin / missing) 를 본인이 정의해 합성 normal baseline 을 실전 환경에 맞춰 구현하고, normal 산포 상한 / 하한 두 가지 수식까지 직접 설계했습니다. 그 위에 **mean shift / standard deviation / spike / drift / context** 5종 불량을 어느 강도에서 실제 불량으로 이어지는지 기준을 정해 generator parameter 로 코드화했습니다.
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**: 실전 abnormal label 이 부족해 막혀 있던 anomaly 검증을 본인 담당 경험을 반영한 trend 합성 데이터로 풀었습니다. **normal 3,500 + abnormal 3,500 = 총 7,000개** trend sample 을 만들어 AI 학습이 가능한 상태를 갖췄고, 1차 Binary gate baseline 에서 **Binary F1 0.9967 / Abnormal Recall 0.9987** (test 1,500 / threshold=0.9) 로 생성 데이터만으로도 정상과 이상이 안정적으로 구분되는 것을 확인했습니다. 현재 **현업 데이터 적용 직전** 단계까지 진행했습니다.
 
