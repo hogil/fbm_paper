@@ -466,7 +466,7 @@ positive bits     negative bits
 
 **(4) 학습 hyperparameter sweep — grid 분할 / pos / neg target**
 
-합성 단계에서는 CutMix → CutMix + Pair → FCM-PM 순서로 단계별 효과를 직접 측정했고, false-positive 와 bit_F1 의 trade-off 가 어디서 깨지는지를 **[구현 성과]** ablation 표로 추적했습니다.
+합성은 CutMix → CutMix + Pair → FCM-PM 순서로 직접 비교했고, false-positive 와 bit_F1 의 trade-off 가 어느 조합에서 깨지는지는 **[구현 성과]** ablation 표를 보면 됩니다.
 
 - **cover grid sweep**: chip 분할 그룹 수 (partition count) 와 그룹 내 cell 세분화 배수 (grid multiplier) 를 범위로 sweep, **partition=3 / multiplier=1 조합이 bit_F1 0.9960** 으로 최적이었습니다.
 - **분할 선택 근거**: partition 수를 늘리면 chip 이 더 잘게 분할되어 공간 다양성은 증가하지만, partition≥4 부터는 failure 영역 자체가 너무 잘게 쪼개져 학습 모델이 failure 형태를 인식하기 어려워지면서 **분류 정확도가 오히려 감소합니다**. partition=3 부근이 본 과제 데이터에 최적이었습니다.
