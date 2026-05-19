@@ -6,7 +6,7 @@
 | Deep Learning | ConvNeXtV2 Backbone (FCMAE pretrained), Fine-tuning, Loss Function Design (BCE / Focal / Asymmetric Loss / Pair Mask), Label Smoothing, LinearLR Warmup + Cosine Annealing |
 | Self-Supervised Learning | Global InfoNCE, Local DenseCL, MoCo Queue, NV-Retriever Negative Similarity Filter, NeCo, Task-Adaptive Pretraining (TAPT) |
 | Unsupervised Learning / Anomaly Detection | HDBSCAN Clustering, Novelty Candidate Grouping, Out-of-Distribution Detection, Trend Anomaly Detection |
-| Synthetic Data Generation | Domain-Distribution-based Pixel Sampling, Alpha-mask Region Synthesis, Smoothstep Probability Transition, Pink-noise Baseline, Full-Cover Mixup (FCM), Pair Mask Loss Masking, CutMix, Trend Episode Simulation, Multi-noise Injection (Gaussian / Laplacian / Correlated) |
+| Synthetic Data Generation | Domain-Distribution-based Pixel Sampling, Full-Cover Mixup (FCM), Pair Mask Loss Masking, CutMix, Trend Episode Simulation |
 | Model Optimization / Selection | Optuna Hyperparameter Sweep, Margin-based Checkpoint Selection (val_margin), Threshold Gating (max-prob), Temperature Scaling, Bit-level Majority Voting Ensemble, Knowledge Distillation, Cascade Confidence Gate, EMA |
 | Data Engineering | EDS Raw Log ETL Pipeline, Batch Image Processing (~20k wafer / day), Chip Positions JSON Indexing, Model Evaluation Pipeline |
 | High-Performance Computing | Cython JIT Acceleration (~100x speed-up), Numba JIT, pyvips Large-scale Image Encoding, Palette-indexed PNG Compression (~75%) |
