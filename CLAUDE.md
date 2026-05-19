@@ -201,10 +201,10 @@
 | 3 | ASL (T4 asymmetric, no cutmix) | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | ladder BG |
 | 4 | CutMix only (random rect, no pair) | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | ladder BG |
 | 5 | CutMix + Pair (random rect + masked) | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | ladder BG |
-| 6 | FCM-PM best val_f1 (run112 ep=20) | 0.9652 | 1.0000 | 0.9517 | 0.15 | 0.00 | 0.62 | 1x | 1x | 1x | val_f1 best |
-| 7 | FCM-PM best val_margin (run116J) | 0.9943 | - | - | 0.00 | 0.00 | 0.00 | 1x | 1x | 1x | REPORT 기준 bit_F1/FAR만 제출 |
-| 8 | Ensemble 4-bag g=2/2/3/4 (A+C+J+F) thr=0.3 | 0.9615 | 1.0000 | 0.9475 | 0.00 | 0.00 | 0.00 | 4x | 1/4x | 4x | teacher / 상한 확인 |
-| 9 | KD distill 4-bag → student | TBD | TBD | TBD | TBD | TBD | TBD | 1x | 1x | 1x | deployable student 후보 |
+| 6 | FCM-PM best val_f1 | 0.9652 | 1.0000 | 0.9517 | 0.15 | 0.00 | 0.62 | 1x | 1x | 1x | val_f1 best |
+| 7 | FCM-PM best val_margin  | 0.9943 | - | - | 0.00 | 0.00 | 0.00 | 1x | 1x | 1x | REPORT 기준 bit_F1/FAR만 제출 |
+| 8 | Ensemble | 0.9615 | 1.0000 | 0.9475 | 0.00 | 0.00 | 0.00 | 4x | 1/4x | 4x | teacher / 상한 확인 |
+| 9 | KD distill  | TBD | TBD | TBD | TBD | TBD | TBD | 1x | 1x | 1x | deployable student 후보 |
 
 ### Rule 10: 다이어그램은 텍스트 (이미지 새로 생성 X)
 - workflow / architecture flow 는 ASCII 또는 텍스트 박스
