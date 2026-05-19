@@ -4,7 +4,7 @@
 |-----------|------------------------|
 | Computer Vision | Wafer-level Image Classification, ROI-based Object Detection (YOLO), Chip Multi-label Classification, Trend Chart Classification |
 | Deep Learning (Architecture & Training) | Pretrained Backbone Transfer Learning, Loss Function Design (BCE / Focal / Asymmetric Loss / Positive & Negative Target Tuning), LR Scheduling (Warmup + Cosine), EMA, Optuna Hyperparameter Sweep |
-| Self-Supervised Learning | Global InfoNCE, Local DenseCL, MoCo Queue, NV-Retriever Negative Similarity Filter, NeCo, Task-Adaptive Pretraining (TAPT) |
+| Self-Supervised Learning | Global InfoNCE, Local DenseCL, MoCo Queue, NV-Retriever Negative Similarity Filter, NeCo |
 | Unsupervised Learning / Anomaly Detection | HDBSCAN Clustering, Novelty Candidate Grouping, Out-of-Distribution Detection, Trend Anomaly Detection |
 | Synthetic Data Generation | Domain-Distribution-based Pixel Sampling, FCM-PM (Full-Cover CutMix + Pair Mask), Trend Episode Simulation |
 | Model Selection / Inference Optimization | Margin-based Checkpoint Selection (val_margin), Threshold Gating (max-prob), Temperature Scaling, Bit-level Majority Voting Ensemble, Knowledge Distillation, Cascade Confidence Gate |
