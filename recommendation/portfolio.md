@@ -18,7 +18,7 @@
 | 수행기간 | 2024년 10월 ~ 현재 |
 | 참여인원 | 본인 / 현업 엔지니어 / 관리자 |
 
-**P1 핵심 요약**: Cython 변환 약 **100배** 가속, palette PNG 용량 약 **75%** 절감, 일 약 **2만 wafer / 1시간 주기** 처리, Known 2-stage weighted F1 **0.95**, Unknown 13 후보 중 **7건 실제 불량 검증**.
+**P1 핵심 요약**: 대량 Failbit Map 조회 한계 (한 번에 약 48매) 와 담당자 수작업 판정 부담을 줄이기 위해 EDS raw log → wafer image 운영 파이프라인 (Cython 약 **100배** 가속 / palette PNG 약 **75%** 절감 / 일 약 **2만 wafer / 1시간 주기** 처리) 을 먼저 구축하고, 그 위에 Known 2-stage 분류 (weighted F1 **0.95**) 와 Unknown self-supervised grouping (13 후보 중 **7건 실제 불량** 확인) 을 결합한 운영형 AI 시스템입니다. 본 과제는 **DS AI BP Festival Good Challenger** 와 **MTC 고등급 제안 1등급** 수상으로 사내 성과를 인정받았습니다.
 
 **ㅁ 과제 참여 인력 및 역할**
 
