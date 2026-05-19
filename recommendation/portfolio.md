@@ -328,7 +328,7 @@ BCE / Focal / ASL 단순 loss 변형만으로는 2-combo recall 과 false alarm 
 
 - **데이터**: 데이터 수집 경로, 전처리 기법 및 피처 엔지니어링 근거
 
-현업 EDS Failbit Map 에서 관찰되는 single failure 형태를 기준으로 4 class 를 구성하고, 두 failure 가 동시에 나타나는 조합 상황을 모사하기 위해 2-combo 6 종을 도메인 분포에 맞춰 합성해 학습 / 평가 데이터를 만들었습니다. 합성 chip 은 defect 영역을 alpha-mask (라인 / 격자 모양, [0, 1] continuous) 로 잡고 smoothstep 으로 외곽까지 확률을 부드럽게 떨어뜨린 뒤, 그 확률에 따라 grade 0-7 픽셀을 categorical sampling 하는 방식이며, 비-defect 영역은 pink-noise baseline 으로 채워 chip 경계 seam 을 제거했습니다. negative 측은 Normal (정상 chip 분포 모사) + Invalid + OOD wafer-pattern + OOD synthetic 까지 같이 둬, single 4 + 2-combo 6 + negative 6 = 16+ class × 약 3,850 chip 규모의 controlled benchmark 가 나왔습니다.
+현업 EDS Failbit Map 에서 관찰되는 single failure 형태를 기준으로 4 class 를 구성하고, 두 failure 가 동시에 나타나는 조합 상황을 모사하기 위해 2-combo 6 종을 도메인 분포에 맞춰 합성해 학습 / 평가 데이터를 만들었습니다. 합성 chip 은 failure 영역을 alpha-mask (라인 / 격자 모양, [0, 1] continuous) 로 잡고 smoothstep 으로 외곽까지 확률을 부드럽게 떨어뜨린 뒤, 그 확률에 따라 grade 0-7 픽셀을 categorical sampling 하는 방식이며, 비-failure 영역은 pink-noise baseline 으로 채워 chip 경계 seam 을 제거했습니다. negative 측은 Normal (정상 chip 분포 모사) + Invalid + OOD wafer-pattern + OOD synthetic 까지 같이 둬, single 4 + 2-combo 6 + negative 6 = 16+ class × 약 3,850 chip 규모의 controlled benchmark 가 나왔습니다.
 
 data leakage 방지를 위해 single failure chip 원천을 chip 단위로 먼저 train / test 로 split 한 뒤, 2-combo 와 Pair Mask 합성은 train 원천 chip 만 사용했습니다. test 원천 chip 은 합성 과정에서 완전히 배제해, train / test 사이 chip 단위 누수가 없도록 정리했습니다.
 
