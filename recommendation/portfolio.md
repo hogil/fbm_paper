@@ -73,8 +73,8 @@ raw EDS Test log (wafer 당 약 1,000만 cell) 의 Failbit hex 표현을 Cython 
                                     v
 +------------------------------------------------------------------------------+
 |  [PIPELINE]  fail-map conversion module (designed/implemented by author)     |
-|  - Cython hex -> Grade(0..7) loop  -> ~100x speed-up                         |
-|  - 32-color palette indexed PNG    -> ~75% storage reduction                 |
+|  - Cython hex -> Grade(0..7) loop + Numba JIT  -> ~100x speed-up             |
+|  - 32-color palette indexed PNG via pyvips    -> ~75% storage reduction      |
 |  - output wafer image: 6400 x 6400 palette PNG (8-bit, 32 colors)            |
 |  - chip grid 32 x 32 (1,024 chips / wafer, 200 x 200 px per chip)            |
 |  - chip positions JSON -> coordinates fixed (reused by chip-CNN downstream)  |
@@ -83,7 +83,8 @@ raw EDS Test log (wafer 당 약 1,000만 cell) 의 Failbit hex 표현을 Cython 
                                     v
 +------------------------------------------------------------------------------+
 |  [VIEWER]  internal viewer Web App (bulk wafer query + analysis utilities)   |
-|  - SAML SSO + in-house authentication integration                            |
+|  - FastAPI backend + Vanilla JS / WebGL2 frontend                            |
+|  - RBAC + SAML SSO + in-house authentication integration                     |
 |  - ~20,000 wafers / day, 1-hour batch interval                               |
 |  - replaces manual ~48-wafer-per-query workflow with bulk + analysis tools   |
 +------------------------------------------------------------------------------+
