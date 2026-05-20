@@ -299,7 +299,7 @@ Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 metric 이 
 
 - **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**
 
-본인은 본 과제에서 데이터 생성, 모델 아키텍처, loss 설정, augmentation, best-model selection, ensemble 과 Knowledge Distillation 압축까지 Chip Multi-label Classification 전 영역을 단독으로 담당했습니다.
+본인은 본 과제에서 데이터 생성, 모델 아키텍처, loss 설정, augmentation, best-model selection 까지 Chip Multi-label Classification 전 영역을 단독으로 담당했습니다.
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**
 
