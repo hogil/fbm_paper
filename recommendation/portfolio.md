@@ -50,7 +50,7 @@ wafer Failbit Map 분석이 한 번에 약 48매까지 로드되어 제품 / 시
 
 - **과제 수행 시 해결해야 했던 기술적 / 환경적 제약 조건**
 
-데이터 측면은 wafer 당 약 1,000만 cell 의 hex → Grade 변환이 Python loop 로 처리 시간이 오래 걸리고 데이터 용량도 커서 적재 / 조회 비용 압박이 있었습니다. 학습 측면은 Known 의 label 이 16 class / 1,500 장 으로 supervised 학습 데이터가 부족했고, 16 class 중 center 영역처럼 일부 class 들의 불량 위치가 겹쳐 분류기가 오분류하는 문제도 있었습니다. Unknown 측면은 운영 환경에 다수의 unknown failure group 과 noise group 이 존재해 supervised 정량 metric 이 현 상황에는 맞지 않았습니다. 운영 측면에서는 일 약 2만 장 wafer 의 1시간 주기 적재와 운영 뷰어 응답성을 만족시키면서 모델 / 적재 / 조회 비용까지 낮춰야 했습니다.
+데이터 측면은 wafer 당 약 1,000만 cell 의 hex → Grade 변환이 Python loop 로 처리 시간이 오래 걸리고 데이터 용량도 커서 적재 / 조회 비용 압박이 있었습니다. 학습 측면은 Known 의 label 이 16 class / 1,500 장 으로 supervised 학습 데이터가 부족했고, 16 class 중 center 영역처럼 일부 class 들의 불량 위치가 겹치는 경우 오분류하는 문제가 발생했습니다. Unknown 측면은 운영 환경에 다수의 unknown failure group 과 noise group 이 존재해 supervised 정량 metric 이 현 상황에는 맞지 않았습니다. 운영 측면에서는 일 약 2만 장 wafer 의 1시간 주기 적재와 운영 뷰어 응답성을 만족시키면서 모델 / 적재 / 조회 비용까지 낮춰야 했습니다.
 
 **ㅁ 기술적 해결 방안**
 
