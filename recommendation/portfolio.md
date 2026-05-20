@@ -164,7 +164,7 @@ id_{u,v}   = classify(c_{u,v})           -- chip class id
 M_obj      = place id_{u,v} on (u,v) grid    -- 32x32 object-id map
 ```
 
-각 chip 좌표 `(u, v)` 의 crop 을 chip-CNN 분류기로 분류해 chip 별 id 를 얻고, 이 id 들을 좌표 grid 에 배치하면 wafer 한 장의 **32×32 object-id map** 이 됩니다. chip-CNN 분류기를 학습시키고 wafer 단위로 이 object-id map 을 산출하는 구조로 ROI-YOLO 를 최종 대체합니다.
+각 chip 좌표 `(u, v)` 의 crop 을 chip-CNN 으로 분류해 chip 별 id 를 얻고, 이 id 들을 좌표 grid 에 배치하면 wafer 한 장의 **32×32 object-id map** 이 됩니다. chip-CNN 을 학습시키고 wafer 단위로 이 object-id map 을 산출하는 구조로 ROI-YOLO 를 최종 대체합니다.
 
 - **최적화**: 성능 향상을 위해 본인이 직접 시도한 기술적 해법
 
