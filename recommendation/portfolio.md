@@ -241,7 +241,6 @@ SOTA recipe ablation 은 별도 synthetic benchmark 트랙 (**[구현 성과]** 
 |  c_{u,v}  = crop(x, pos_{u,v})            <- chip crop at coord (u, v)   |
 |  id_{u,v} = classify(c_{u,v})             <- chip class id               |
 |  M_obj    = place id_{u,v} on (u,v) grid  <- 32x32 object-id map         |
-|  metrics  val_f1 0.9946 / test_f1 0.9872 / 5-seed 0.9838 +/- 0.0092      |
 +---------------------------------+----------------------------------------+
                                    v
 +--------------------------------------------------------------------------+
