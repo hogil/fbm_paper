@@ -194,7 +194,7 @@ SOTA recipe ablation 은 별도 synthetic benchmark 트랙 (**[구현 성과]** 
 |                  / ConvNeXtV2 0.87                                       |
 |  - vs MaxViT: params -26%, FLOPs -39%                                    |
 |  - ladder 0.78 -> 0.87 (backbone) -> 0.92 (Optuna) -> 0.95 (cascade)     |
-+----------------------------------+---------------------------------------+
++---------------------------------+----------------------------------------+
                                    |
                                    v
        +-----------------------------------------------------+
@@ -237,7 +237,7 @@ SOTA recipe ablation 은 별도 synthetic benchmark 트랙 (**[구현 성과]** 
 +--------------------------------------------------------------------------+
 |  INPUT: wafer 6400 x 6400 PNG + chip positions JSON (32 x 32 grid)       |
 |  chip coordinates created at image-generation time -> no detection step  |
-+----------------------------------+---------------------------------------+
++---------------------------------+----------------------------------------+
                                    v
 +--------------------------------------------------------------------------+
 |  chip-CNN object-id map reconstruction                                   |
@@ -245,7 +245,7 @@ SOTA recipe ablation 은 별도 synthetic benchmark 트랙 (**[구현 성과]** 
 |  q_{u,v}   = softmax(h(c_{u,v}))           <- chip classification only   |
 |  M_obj(u,v) = argmax_k q_{u,v,k}           <- 32x32 object-id map        |
 |  metrics   val_f1 0.9946 / test_f1 0.9872 / 5-seed 0.9838 +/- 0.0092     |
-+----------------------------------+---------------------------------------+
++---------------------------------+----------------------------------------+
                                    v
 +--------------------------------------------------------------------------+
 |  M_obj feeds Stage 2 posterior p_chip_obj(y | crop(x))                   |
@@ -372,7 +372,7 @@ Normal / Invalid / OOD negative eval 생성 이미지 예시:
 
 - **알고리즘**: 선정한 모델 아키텍쳐와 선택 사유 (Logic Flow 중심)
 
-본 과제는 chip 한 장에 single failure 와 2-combo failure 가 동시에 나타날 수 있어, mutually exclusive 분류기인 softmax 대신 **sigmoid multi-label head** 를 채택했습니다. backbone 은 P1 backbone scan 에서 검증된 **ConvNeXtV2 (FCMAE pretrained, 384 input)** 를 그대로 사용해 wafer-level 분류 기반과 일관성을 유지했습니다. 전체 단계 logic flow 는 아래와 같고, 단계별 성능 향상 기법은 **[최적화]** 에 정리합니다.
+본 과제는 chip 한 장에 single failure 와 2-combo failure 가 동시에 나타날 수 있어, mutually exclusive 분류기인 softmax 대신 **sigmoid multi-label head** 를 채택했습니다. backbone 은 P1 backbone scan 에서 검증된 **ConvNeXtV2 (FCMAE pretrained)** 를 가져와 chip 이미지로 downstream task fine-tuning 을 다시 수행해 wafer-level 분류 기반과 일관성을 유지했습니다. 전체 단계 logic flow 는 아래와 같고, 단계별 성능 향상 기법은 **[최적화]** 에 정리합니다.
 
 ```
 +--------------------------------------------------------------------------+
