@@ -34,7 +34,7 @@
 
 - **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**
 
-본인은 현업 경험을 바탕으로 분석 담당자로부터 Failbit Map 분석법을 교육받고 설계했습니다. 본 과제에서 raw log → wafer 이미지 변환 / 저장 / 조회 파이프라인 (fail-map), 사내 운영 뷰어 web app, Known 2-stage 분류, Unknown self-supervised 검출, 후속 chip-CNN object-id map 보정 구조까지 전 영역의 설계 / 구현 / 검증을 직접 주도한 담당자이며, AI 모델의 전수 자동 추론은 AI 센터 GPU 할당 (**2026년 9월**) 후 전면 적용합니다.
+본인은 현업 경험을 바탕으로 분석 담당자로부터 Failbit Map 분석법을 교육받고 설계했습니다. 본 과제에서 raw log → wafer 이미지 변환 / 저장 / 조회 파이프라인 (fail-map), 사내 운영 뷰어 web app, Known 2-stage 분류, Unknown self-supervised 검출, 후속 chip-CNN object-id map 보정 구조까지 설계 / 구현 / 검증을 했습니다. AI 모델의 전수 자동 추론은 AI 센터 GPU 할당 (**2026년 9월**) 후 전면 적용합니다.
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**
 
