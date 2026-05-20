@@ -311,7 +311,7 @@ Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 metric 이 
 
 - **기존 방식의 한계 및 AI 도입의 구체적 배경**
 
-한 chip 에 여러 failure 가 같이 나타나면 test 수치만으로는 구분이 어렵고 Failbit Map 이미지로 봐야 패턴이 드러납니다. 운영에서는 single 4 class 와 2-combo 6 종이 동시에 검출되어야 하고, Normal / Invalid / OOD 까지 false alarm 없이 분리해야 했기 때문에, 이미지 기반 multi-label classification 으로 자동 구분하면서도 false alarm 을 동시에 잡아내는 AI 도입이 필요했습니다.
+한 chip 에 여러 failure 가 같이 나타나면 test 수치만으로는 구분이 어렵고 Failbit Map 이미지로 봐야 패턴이 드러납니다. 현업 운영은 multi failure 가 검출되어야 하고 false positive 가 없어야 하기 때문에 multi-label classification 을 사용해야 했습니다.
 
 - **과제 수행 시 해결해야 했던 기술적 / 환경적 제약 조건**
 
