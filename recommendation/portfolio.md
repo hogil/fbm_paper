@@ -38,7 +38,7 @@
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**
 
-raw log → wafer image 파이프라인에서 wafer 한 장 약 1,000만 cell 의 hex 값을 Grade 0-7 로 풀어내는 변환 루프를 Cython 으로 재구성해 속도를 약 **100배** 증가시켰고, 32색 palette indexed PNG 양자화로 저장 용량 약 **75%** 절감을 통해 **일 약 2만 장 / 1시간 주기** 양산 운영 적재 흐름을 가능하게 했습니다. Known 2-stage 는 ConvNeXtV2 backbone 교체와 ROI YOLO cascade 결합으로 **[실전 현업 데이터]** weighted F1 **0.78 → 0.95** ladder 를 달성했고, Unknown 측은 self-supervised contrastive embedding 과 HDBSCAN grouping 으로 **[실전 현업 데이터]** 13개 후보 group 중 **7개 불량 확인**까지 검증했습니다. chip-CNN object-id map 과 Unknown synthetic benchmark 는 현재 후속 개발 단계입니다.
+raw log → wafer image 파이프라인에서 wafer 한 장 약 1,000만 cell 의 hex 값을 Grade 0-7 로 풀어내는 변환 루프를 Cython 으로 재구성해 속도를 약 **100배** 증가시켰고, 32색 palette indexed PNG 양자화로 저장 용량 약 **75%** 절감을 통해 **일 약 2만 장 / 1시간 주기** 양산 운영 적재 흐름을 가능하게 했습니다. Known 2-stage 는 ConvNeXtV2 backbone 교체와 ROI YOLO cascade 결합으로 **[실전 현업 데이터]** weighted F1 **0.78 → 0.95** ladder 를 달성했고, Unknown 측면은 self-supervised contrastive embedding 과 HDBSCAN grouping 으로 **[실전 현업 데이터]** 13개 후보 group 중 **7개 불량 확인**까지 검증했습니다. chip-CNN object-id map 과 Unknown synthetic benchmark 는 현재 후속 개발 단계입니다.
 
 **ㅁ 문제정의**
 
@@ -50,7 +50,7 @@ wafer Failbit Map 분석이 한 번에 약 48매까지 로드되어 제품 / 시
 
 - **과제 수행 시 해결해야 했던 기술적 / 환경적 제약 조건**
 
-데이터 측은 hex → Grade 변환이 wafer 당 약 1,000만 cell 의 Python loop 로 wafer 한 장 처리 시간이 오래 걸렸고, 메모리 제약으로 동시 조회가 약 48매까지 되어 적재 / 조회 비용 압박이 있었습니다. 학습 측은 Known 의 label 이 16 class / 1,500 장 으로 supervised 학습 데이터가 부족하고, Unknown 측은 운영 환경에 다수의 noise group 이 존재해 supervised 정량 metric 이 현업에 맞지 않다고 판단하여, 실제 데이터로 grouping 한 뒤 진성 불량 개수를 보는 방법으로 검출력을 확인했습니다. 운영 측면에서는 일 약 2만 장 wafer 의 1시간 주기 적재와 운영 뷰어 응답성을 만족시키면서 모델 / 적재 / 조회 비용까지 낮춰야 했습니다.
+데이터 측면은 hex → Grade 변환이 wafer 당 약 1,000만 cell 의 Python loop 로 wafer 한 장 처리 시간이 오래 걸렸고, 메모리 제약으로 동시 조회가 약 48매까지 되어 적재 / 조회 비용 압박이 있었습니다. 학습 측면은 Known 의 label 이 16 class / 1,500 장 으로 supervised 학습 데이터가 부족하고, Unknown 측면은 운영 환경에 다수의 noise group 이 존재해 supervised 정량 metric 이 현업에 맞지 않다고 판단하여, 실제 데이터로 grouping 한 뒤 진성 불량 개수를 보는 방법으로 검출력을 확인했습니다. 운영 측면에서는 일 약 2만 장 wafer 의 1시간 주기 적재와 운영 뷰어 응답성을 만족시키면서 모델 / 적재 / 조회 비용까지 낮춰야 했습니다.
 
 **ㅁ 기술적 해결 방안**
 
@@ -320,7 +320,7 @@ SOTA recipe ablation 은 별도 synthetic benchmark 트랙 (**[구현 성과]** 
 
 - **과제 수행 시 해결해야 했던 기술적 / 환경적 제약 조건**
 
-학습 데이터 측은 2-combo label 이 현업에서 충분히 확보되지 않아 합성으로 보강해야 했고, 일반 CutMix 는 일부 영역만 잘라 붙이는 방식이라 failure signal 이 잘려 버리거나 background 가 failure 로 학습되어 Normal / Invalid / OOD negative 평가에서 false-positive 가 운영에 쓰기 어려운 수준까지 올라갔습니다. 평가 측은 작은 validation set 의 best epoch plateau 와 OOD / negative false-positive 억제를 같이 잡아야 했고, 운영 측은 압축 후보의 1× inference cost 제약 안에서 답을 만들어야 했기 때문에, 데이터 합성 설계 / loss 제어 / best-model selection / 추론 단계 보강을 단일 학습 구조 안에서 함께 풀어야 했습니다.
+학습 데이터 측면은 2-combo label 이 현업에서 충분히 확보되지 않아 합성으로 보강해야 했고, 일반 CutMix 는 일부 영역만 잘라 붙이는 방식이라 failure signal 이 잘려 버리거나 background 가 failure 로 학습되어 Normal / Invalid / OOD negative 평가에서 false-positive 가 운영에 쓰기 어려운 수준까지 올라갔습니다. 평가 측면은 작은 validation set 의 best epoch plateau 와 OOD / negative false-positive 억제를 같이 잡아야 했고, 운영 측면은 압축 후보의 1× inference cost 제약 안에서 답을 만들어야 했기 때문에, 데이터 합성 설계 / loss 제어 / best-model selection / 추론 단계 보강을 단일 학습 구조 안에서 함께 풀어야 했습니다.
 
 **ㅁ 기술적 해결 방안**
 
@@ -328,7 +328,7 @@ SOTA recipe ablation 은 별도 synthetic benchmark 트랙 (**[구현 성과]** 
 
 - **데이터**: 데이터 수집 경로, 전처리 기법 및 피처 엔지니어링 근거
 
-현업 EDS Failbit Map 에서 관찰되는 single failure 형태를 기준으로 4 class 를 구성하고, 두 failure 가 동시에 나타나는 조합 상황을 모사하기 위해 2-combo 6 종을 도메인 분포에 맞춰 합성해 학습 / 평가 데이터를 만들었습니다. 합성 chip 은 failure 영역의 grade 0-7 픽셀을 확률 분포 기반 categorical sampling 으로 생성하고, noise 와 밀도까지 도메인 통계에 맞춰 control 했습니다. negative 측은 Normal / Invalid / OOD 까지 같이 두어 약 3,850 chip 의 controlled benchmark 를 갖췄습니다.
+현업 EDS Failbit Map 에서 관찰되는 single failure 형태를 기준으로 4 class 를 구성하고, 두 failure 가 동시에 나타나는 조합 상황을 모사하기 위해 2-combo 6 종을 도메인 분포에 맞춰 합성해 학습 / 평가 데이터를 만들었습니다. 합성 chip 은 failure 영역의 grade 0-7 픽셀을 확률 분포 기반 categorical sampling 으로 생성하고, noise 와 밀도까지 도메인 통계에 맞춰 control 했습니다. negative 측면은 Normal / Invalid / OOD 까지 같이 두어 약 3,850 chip 의 controlled benchmark 를 갖췄습니다.
 
 data leakage 방지를 위해 single failure chip 원천을 chip 단위로 먼저 train / test 로 split 한 뒤, 2-combo 와 Pair Mask 합성은 train 원천 chip 만 사용했습니다. test 원천 chip 은 합성 과정에서 완전히 배제해, train / test 사이 chip 단위 누수가 없도록 정리했습니다.
 
@@ -546,7 +546,7 @@ trend 이상 감지는 단순 수작업 판단만으로는 한계가 있고, 설
 
 - **과제 수행 시 해결해야 했던 기술적 / 환경적 제약 조건**
 
-학습 데이터 측은 실전 abnormal data 의 양과 label 균형 확보가 어려워, trend domain knowledge 를 합성 데이터 parameter 로 옮기는 단계가 먼저 풀려야 뒤 학습 / 검증이 가능했습니다. 합성 정상성 측은 normal 산포가 실전 baseline 통계 안에 들어와야 하고 abnormal 강도가 정상 산포에 묻히지 않도록 데이터 측 / 학습 측 제약을 동시에 잡아야 했습니다.
+학습 데이터 측면은 실전 abnormal data 의 양과 label 균형 확보가 어려워, trend domain knowledge 를 합성 데이터 parameter 로 옮기는 단계가 먼저 풀려야 뒤 학습 / 검증이 가능했습니다. 합성 정상성 측면은 normal 산포가 실전 baseline 통계 안에 들어와야 하고 abnormal 강도가 정상 산포에 묻히지 않도록 데이터 측면 / 학습 측면 제약을 동시에 잡아야 했습니다.
 
 **ㅁ 기술적 해결 방안**
 

@@ -25,7 +25,7 @@
 
 **(2) 과제 관련 도메인 / AI 기술 / 모델 / 방법론**
 
-Failbit Map / DRAM EDS Test Grade 이미지 / wafer-level failure zone 해석 도메인 위에 두 갈래 모델 구조를 적용했습니다. Known 측은 ConvNeXtV2 분류 + ROI YOLO 2-stage cascade 보정 (신뢰도가 낮은 wafer 만 Stage 2 로 보내 운영 부담을 늘리지 않으면서 정확도 향상) 으로 구성했고, backbone 은 결함이 국소 영역에 몰리는 특성을 고려해 CNN 계열을 채택했습니다 (자문: 연세대학교 인공지능학과 전해곤 교수). Unknown 측은 self-supervised contrastive embedding + HDBSCAN grouping 으로 라벨 없는 wafer 에서 신규 결함 후보 group 을 검출했습니다. 후속으로 chip-CNN object-id map 보정 구조도 직접 설계 / 구현 중입니다.
+Failbit Map / DRAM EDS Test Grade 이미지 / wafer-level failure zone 해석 도메인 위에 두 갈래 모델 구조를 적용했습니다. Known 측면은 ConvNeXtV2 분류 + ROI YOLO 2-stage cascade 보정 (신뢰도가 낮은 wafer 만 Stage 2 로 보내 운영 부담을 늘리지 않으면서 정확도 향상) 으로 구성했고, backbone 은 결함이 국소 영역에 몰리는 특성을 고려해 CNN 계열을 채택했습니다 (자문: 연세대학교 인공지능학과 전해곤 교수). Unknown 측면은 self-supervised contrastive embedding + HDBSCAN grouping 으로 라벨 없는 wafer 에서 신규 결함 후보 group 을 검출했습니다. 후속으로 chip-CNN object-id map 보정 구조도 직접 설계 / 구현 중입니다.
 
 ㅁ **P2. Chip Multi-label Classification (FCM-PM, val_margin)**
 
