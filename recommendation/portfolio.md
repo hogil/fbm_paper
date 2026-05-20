@@ -299,7 +299,7 @@ Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 metric 이 
 
 - **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**
 
-본인은 chip multi-label failure 검출 과제 전체 — 생성 데이터 설계, FCM-PM 학습 구조, val_margin 기반 best-model selection, Temperature Scaling, max-prob threshold gate, bit-level majority voting ensemble, Knowledge Distillation 압축까지 개발했습니다. Normal / Invalid / OOD negative 평가셋도 현업 분포에 가깝게 본인이 직접 설계했습니다.
+본인은 chip multi-label failure 검출 과제 전체 — 현업 실제 데이터와 유사한 데이터 생성, FCM-PM 학습 구조, val_margin 기반 best-model selection, Temperature Scaling, max-prob threshold gate, bit-level majority voting ensemble, Knowledge Distillation 압축까지 개발했습니다.
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**
 
