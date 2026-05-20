@@ -525,7 +525,7 @@ positive bits     negative bits
 
 - **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**
 
-본인은 P3 trend anomaly 검증 PoC 의 전 영역을 담당했습니다. BBD / Overlay / CD 담당 **10년간** trend chart 를 직접 판정해 온 본인 경험을 generator parameter 에 그대로 옮긴 것이 본 과제 차별성의 핵심입니다.
+본인은 P3 trend anomaly 검증 PoC 의 전 영역을 담당했습니다. BBD / Overlay / CD 담당 **10년간** trend chart 를 직접 판정해 온 본인 경험을 generator parameter 에 그대로 옮긴 것이 과제 내 본인 차별성의 핵심입니다.
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**
 
