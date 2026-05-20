@@ -303,7 +303,7 @@ Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 metric 이 
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**
 
-기존 BCE / Focal / ASL 단순 loss 변형만으로는 2-combo bit_F1 향상과 false alarm 억제를 동시에 만족시키기 어려웠던 한계를, FCM (Full-Cover CutMix) 으로 single 만 가지고 2-combo prediction 성능을 향상시키고 val_margin best-model selection 으로 false positive 를 감소시켰습니다. 최종 단일 모델 **bit_F1 0.9927 / Total FAR 0.00%** 를 controlled benchmark 위에서 달성했습니다. bit-level majority voting ensemble 은 single model 의 현업 불안정성에 대비해 함께 개발했고, Knowledge Distillation single student 는 ensemble 판단을 single model 수준 추론 비용으로 압축하기 위해 이어서 개발했습니다.
+기존 BCE / Focal / ASL 단순 loss 변형만으로는 2-combo bit_F1 향상과 false alarm 억제를 동시에 만족시키기 어려웠던 한계를, FCM (Full-Cover CutMix) 으로 single 만 가지고 2-combo prediction 성능을 향상시키고 val_margin best-model selection 으로 false positive 를 감소시켰습니다. 최종 단일 모델 **bit_F1 0.9927 / Total FAR 0.00%** 를 달성했습니다. bit-level majority voting ensemble 은 single model 의 현업 불안정성에 대비해 함께 개발했고, Knowledge Distillation single student 는 ensemble 판단을 single model 수준 추론 비용으로 압축하기 위해 이어서 개발했습니다.
 
 **ㅁ 문제정의**
 
