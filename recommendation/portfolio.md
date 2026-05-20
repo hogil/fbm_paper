@@ -34,11 +34,11 @@
 
 - **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**
 
-본인은 wafer 단위 분석 경험을 바탕으로 현업 엔지니어로부터 Failbit Map 분석법을 직접 교육받고 AI 설계에 착수했습니다. raw log → wafer 이미지 변환 / 저장 / 조회 파이프라인 (fail-map) 과 사내 운영 뷰어 web app 을 직접 설계 / 구현해 양산 운영에 들어가게 했고, 그 위에 ConvNeXtV2 wafer-level classifier + ROI YOLO cascade 보정 + self-supervised contrastive embedding + HDBSCAN grouping 을 묶어 Known / Unknown 분석 시스템까지 설계 / 학습 / 검증을 마쳤고, AI 모델의 전수 자동 추론은 AI 센터 GPU 할당 (**2026년 9월**) 후 전면 적용합니다. 후속 chip-CNN object-id map (Stage 2 ROI-YOLO 자리 대체 후보) 도 본인이 직접 설계 / 구현 중입니다.
+본인은 wafer 단위 분석 경험을 바탕으로 현업 엔지니어로부터 Failbit Map 분석법을 직접 교육받고 AI 설계에 착수했고, 본 과제에서 raw log → wafer 이미지 변환 / 저장 / 조회 파이프라인 (fail-map), 사내 운영 뷰어 web app, Known 2-stage 분류, Unknown self-supervised 검출, 후속 chip-CNN object-id map 보정 구조까지 전 영역의 설계 / 구현 / 검증을 직접 주도한 담당자입니다. AI 모델의 전수 자동 추론은 AI 센터 GPU 할당 (**2026년 9월**) 후 전면 적용합니다.
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**
 
-wafer 한 장 약 1,000만 cell 의 hex 값을 Grade 0-7 로 풀어내는 변환 루프를 Cython 으로 재구성해 속도를 약 **100배** 증가시켰고, 32색 palette indexed PNG 양자화로 저장 용량 약 **75%** 절감을 통해 **일 약 2만 장 / 1시간 주기** 양산 운영 적재 흐름을 가능하게 했습니다. **[실전 현업 데이터 — Known]** ConvNeXtV2 backbone 교체와 ROI YOLO 2-stage cascade 결합으로 weighted F1 **0.78 → 0.95** ladder 를 달성했습니다. **[실전 현업 데이터 — Unknown]** self-supervised contrastive embedding 과 HDBSCAN grouping 으로 13개 후보 group 중 **7개 불량 확인**까지 검증했습니다. chip-CNN object-id map 과 Unknown synthetic benchmark 는 현재 후속 개발 단계입니다.
+raw log → wafer image 파이프라인에서 wafer 한 장 약 1,000만 cell 의 hex 값을 Grade 0-7 로 풀어내는 변환 루프를 Cython 으로 재구성해 속도를 약 **100배** 증가시켰고, 32색 palette indexed PNG 양자화로 저장 용량 약 **75%** 절감을 통해 **일 약 2만 장 / 1시간 주기** 양산 운영 적재 흐름을 가능하게 했습니다. Known 2-stage 는 ConvNeXtV2 backbone 교체와 ROI YOLO cascade 결합으로 **[실전 현업 데이터]** weighted F1 **0.78 → 0.95** ladder 를 달성했고, Unknown 측은 self-supervised contrastive embedding 과 HDBSCAN grouping 으로 **[실전 현업 데이터]** 13개 후보 group 중 **7개 불량 확인**까지 검증했습니다. chip-CNN object-id map 과 Unknown synthetic benchmark 는 현재 후속 개발 단계입니다.
 
 **ㅁ 문제정의**
 
