@@ -164,9 +164,7 @@ q_{u,v} = softmax(h_phi(c_{u,v}))
 M_obj(u,v) = argmax_k q_{u,v,k}
 ```
 
-chip 좌표마다 crop → class 확률 → argmax 로 32×32 object-id map `M_obj` 를 채웁니다.
-
-이 map 이 Stage 2 ROI-YOLO 출력을 대체하는 chip 단위 posterior 입니다.
+chip 좌표 `(u, v)` 마다 crop 을 잘라 분류기에 통과시켜 class 확률을 얻고 argmax 로 chip 별 id `M_obj(u, v)` 를 결정한 뒤, 이 id 들을 chip 좌표 위치에 그대로 배치하면 wafer 한 장의 **32×32 object-id map** 이 완성됩니다. 이 map 이 Stage 2 ROI-YOLO 출력을 대체하는 chip 단위 posterior 입니다.
 
 - **최적화**: 성능 향상을 위해 본인이 직접 시도한 기술적 해법
 
