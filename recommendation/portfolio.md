@@ -358,7 +358,7 @@ single 4 class 생성 이미지 예시:
 |:-------------:|:----:|:-------:|:-----------:|
 | <img src="./figures/chip_eval_bank_boundary_selected.png" width="160" /> | <img src="./figures/chip_eval_fork_selected.png" width="160" /> | <img src="./figures/chip_eval_scratch_selected.png" width="160" /> | <img src="./figures/chip_eval_scratch_rot_selected.png" width="160" /> |
 
-single 4 class 의 모든 2-조합으로 만든 2-combo 평가 chip 6종 (1행 6열, 본인 생성 평가셋):
+single 4 class 의 모든 2조합으로 만든 2-combo eval 이미지 예시:
 
 | bb + fork | bb + scratch | bb + scratch_rot | fork + scratch | fork + scratch_rot | scratch + scratch_rot |
 |:---------:|:------------:|:----------------:|:--------------:|:------------------:|:---------------------:|
