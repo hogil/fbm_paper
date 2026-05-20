@@ -299,7 +299,7 @@ Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 metric 이 
 
 - **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**
 
-본인은 chip multi-label failure 검출 과제 전체 — 현업 실제 데이터와 유사한 데이터 생성, FCM-PM 학습 구조, val_margin 기반 best-model selection, Temperature Scaling, max-prob threshold gate, bit-level majority voting ensemble, Knowledge Distillation 압축까지 개발했습니다.
+본인은 chip multi-label failure 검출 과제에서 현업 실제 chip 과 유사한 single / 2-combo 데이터 생성, FCM-PM (Full-Cover CutMix + Pair Mask) 학습 구조 설계, val_margin best-model selection, Temperature Scaling, max-prob threshold gate, bit-level majority voting ensemble, Knowledge Distillation 압축까지 단일 흐름으로 직접 설계 / 구현 / 검증했습니다.
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**
 
@@ -311,7 +311,7 @@ Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 metric 이 
 
 - **기존 방식의 한계 및 AI 도입의 구체적 배경**
 
-chip 단위 불량 검출은 기존에 EDS test 수치 자동 판정만으로 이루어졌습니다. EDS test 수치는 single failure 만 true positive 로 잡아 중복 failure 가 동시 발생하면 false negative 가 누적되었고, chip 갯수가 너무 많아 사람이 이미지로 직접 검사하는 것도 불가능했습니다. AI 기반 이미지 multi-label classification 으로 중복 failure 까지 자동 검출이 필요했습니다.
+chip 단위 불량 검출은 기존에 EDS test 수치 자동 판정만으로 이루어졌습니다. EDS test 수치는 single failure 만 true positive 로 잡아 중복 failure 가 발생하면 false negative 가 누적되었고, chip 갯수가 너무 많아 사람이 이미지로 직접 검사하는 것도 불가능했습니다. AI 기반 이미지 multi-label classification 으로 중복 failure 까지 자동 검출이 필요했습니다.
 
 - **과제 수행 시 해결해야 했던 기술적 / 환경적 제약 조건**
 
