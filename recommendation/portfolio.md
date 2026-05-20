@@ -121,7 +121,7 @@ raw EDS Test log (wafer 당 약 1,000만 cell) 의 Failbit hex 표현을 Cython 
 
 **(2) Stage 2 ROI 보정 — cascade gate 와 보정 결정 로직**
 
-Stage 1 만으로는 center 영역처럼 결함이 겹치는 영역의 class 들을 잘 분류하지 못하는 한계가 남아, wafer 신뢰도가 낮은 difficult sample 만 Stage 2 (ROI YOLO) 로 다시 보내도록 cascade gate 를 두었습니다. 신뢰도가 임계값 이상인 wafer 는 Stage 2 를 skip 하기 때문에 throughput 부담 없이, confidence 가 낮은 sample 만 다시 분류해 정확도를 향상시키는 구조입니다.
+Stage 1 만으로는 center 영역처럼 결함이 겹치는 영역의 class 들을 잘 분류하지 못하여, wafer 신뢰도가 낮은 difficult sample 만 Stage 2 (ROI YOLO) 로 다시 보내도록 cascade gate 를 두었습니다. 신뢰도가 임계값 이상인 wafer 는 Stage 2 를 skip 하기 때문에 throughput 부담 없이, confidence 가 낮은 sample 만 다시 분류해 정확도를 향상시키는 구조입니다.
 
 | Stage 1 (raw wafer) | Stage 2 ROI 영역 | Stage 2 chip 단위 box + class |
 |:-------------------:|:----------------:|:-----------------------------:|
