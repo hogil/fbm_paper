@@ -391,7 +391,7 @@ Normal / Invalid / OOD negative eval 생성 이미지 예시:
                 +-------------------+-------------------+
                 v                                       v
 +-----------------------------------+  +-----------------------------------+
-|  Step 3a: Full-Cover CutMix        |  |  Step 3b: Pair Mask               |
+|  Step 3a: Full-Cover CutMix       |  |  Step 3b: Pair Mask               |
 |  - GRID x GRID grid cut           |  |  - mask B-pasted cells with       |
 |  - half cells overwritten by B    |  |    corner / white / noise fill    |
 |    -> full chip cover, no gap     |  |  - paired chip with A label only  |
