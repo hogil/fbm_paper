@@ -161,7 +161,7 @@ chip-CNN object-id map 의 내부 흐름을 식으로 정리하면 다음과 같
 ```
 c_{u,v}    = crop(x, pos_{u,v})          -- chip crop at coord (u, v)
 q_{u,v}    = softmax(h_phi(c_{u,v}))     -- class probability per crop
-M_obj(u,v) = argmax_k q_{u,v,k}          -- chip-wise id, placed by coord = object-id map
+M_obj(u,v) = argmax_k q_{u,v,k}          -- per-chip class id; tiled by coord -> object-id map
 ```
 
 chip 좌표 `(u, v)` 마다 crop 을 잘라 분류기에 통과시켜 class 확률을 얻고 argmax 로 chip 별 id `M_obj(u, v)` 를 결정한 뒤, 이 id 들을 chip 좌표 위치에 그대로 배치하면 wafer 한 장의 **32×32 object-id map** 이 완성됩니다. chip-CNN 분류기를 학습시키고 wafer 단위로 이 object-id map 을 산출하는 구조로 ROI-YOLO 를 최종 대체합니다.
