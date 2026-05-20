@@ -303,7 +303,7 @@ Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 metric 이 
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**
 
-기존 BCE / Focal / ASL 단순 loss 변형만으로는 2-combo recall 과 false alarm 억제를 동시에 만족시키기 어려웠던 한계를, 현업 EDS Failbit Map 에서 관찰되는 single failure 형태를 기준으로 한 4 class 구성 + 부족한 2-combo 6 종 도메인 분포 기반 합성 + FCM-PM (Full-Cover CutMix + Pair Mask) + val_margin best-model selection 결합 설계로 풀었습니다. FCM-PM 위 Pair Mask 제거 ablation 에서 Total FAR 이 **100%** 까지 올라가 background loss masking 이 false-positive 억제의 핵심 요인임을 정량으로 확인했고, 최종 FCM-PM val_margin 단일 모델 **bit_F1 0.9927 / Total FAR 0.00%** 를 controlled benchmark 위에서 달성했습니다. bit-level majority voting ensemble 은 single model 의 현업 안정성에 대비해 함께 개발했고, Knowledge Distillation single student 는 ensemble 판단을 single model 수준 추론 비용으로 압축하기 위해 이어서 개발했습니다.
+기존 BCE / Focal / ASL 단순 loss 변형만으로는 2-combo recall 과 false alarm 억제를 동시에 만족시키기 어려웠던 한계를, 현업에서 확보한 single failure 4 class + 현업 확보가 어려운 2-combo 6 종 single 조합 합성 + FCM-PM (Full-Cover CutMix + Pair Mask) + val_margin best-model selection 결합 설계로 풀었습니다. FCM-PM 위 Pair Mask 제거 ablation 에서 Total FAR 이 **100%** 까지 올라가 background loss masking 이 false-positive 억제의 핵심 요인임을 정량으로 확인했고, 최종 FCM-PM val_margin 단일 모델 **bit_F1 0.9927 / Total FAR 0.00%** 를 controlled benchmark 위에서 달성했습니다. bit-level majority voting ensemble 은 single model 의 현업 안정성에 대비해 함께 개발했고, Knowledge Distillation single student 는 ensemble 판단을 single model 수준 추론 비용으로 압축하기 위해 이어서 개발했습니다.
 
 **ㅁ 문제정의**
 
@@ -315,7 +315,7 @@ Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 metric 이 
 
 - **과제 수행 시 해결해야 했던 기술적 / 환경적 제약 조건**
 
-학습 데이터 측면은 2-combo label 이 현업에서 충분히 확보되지 않아 합성으로 보강해야 했고, 일반 CutMix 는 일부 영역만 잘라 붙이는 방식이라 failure signal 이 잘려 버리거나 background 가 failure 로 학습되어 Normal / Invalid / OOD negative 평가에서 false-positive 가 운영에 쓰기 어려운 수준까지 올라갔습니다. 평가 측면은 작은 validation set 의 best epoch plateau 와 OOD / negative false-positive 억제를 같이 잡아야 했고, 운영 측면은 압축 후보의 1× inference cost 제약 안에서 답을 만들어야 했기 때문에, 데이터 합성 설계 / loss 제어 / best-model selection / 추론 단계 보강을 단일 학습 구조 안에서 함께 풀어야 했습니다.
+학습 데이터 측면은 2-combo 가 실제로는 발생하지만 현업에서 확보가 어려워 single 을 조합해 합성으로 보강해야 했고, 일반 CutMix 는 일부 영역만 잘라 붙이는 방식이라 failure signal 이 잘려 버리거나 background 가 failure 로 학습되어 Normal / Invalid / OOD negative 평가에서 false-positive 가 운영에 쓰기 어려운 수준까지 올라갔습니다. 평가 측면은 작은 validation set 의 best epoch plateau 와 OOD / negative false-positive 억제를 같이 잡아야 했고, 운영 측면은 압축 후보의 1× inference cost 제약 안에서 답을 만들어야 했기 때문에, 데이터 합성 설계 / loss 제어 / best-model selection / 추론 단계 보강을 단일 학습 구조 안에서 함께 풀어야 했습니다.
 
 **ㅁ 기술적 해결 방안**
 
@@ -323,9 +323,9 @@ Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 metric 이 
 
 - **데이터**: 데이터 수집 경로, 전처리 기법 및 피처 엔지니어링 근거
 
-현업 EDS Failbit Map 에서 관찰되는 single failure 형태를 기준으로 4 class 를 구성하고, 두 failure 가 동시에 나타나는 조합 상황을 모사하기 위해 2-combo 6 종을 도메인 분포에 맞춰 합성해 학습 / 평가 데이터를 만들었습니다. 합성 chip 은 failure 영역의 grade 0-7 픽셀을 확률 분포 기반 categorical sampling 으로 생성하고, noise 와 밀도까지 도메인 통계에 맞춰 control 했습니다. negative 측면은 Normal / Invalid / OOD 까지 같이 두어 약 3,850 chip 의 controlled benchmark 를 갖췄습니다.
+현업 EDS Failbit Map 에서 확보한 single failure 4 class 위에, 실제로는 발생하지만 현업에서 확보가 어려운 2-combo 6 종을 single 조합으로 도메인 분포에 맞춰 합성했습니다. 합성 2-combo 는 failure 영역의 grade 0-7 픽셀을 확률 분포 기반 categorical sampling 으로 생성하고, noise 와 밀도까지 도메인 통계에 맞춰 control 했습니다. negative 측면은 Normal / Invalid / OOD 까지 같이 두어 약 3,850 chip 의 controlled benchmark 를 갖췄습니다.
 
-현업에서는 single failure chip 만 확보 가능하고 2-combo 는 충분히 확보되지 않아 합성으로 보강했습니다. 학습은 single 원천 + 합성 2-combo 로 진행하고 평가는 single + 2-combo 까지 함께 두어 multi-label 검출력을 측정하며, single chip 원천을 chip 단위로 먼저 train / test 로 split 한 뒤 2-combo 합성은 train 원천 chip 에서만 진행해 train / test 누수를 차단했습니다.
+학습은 single only 로 두고 학습 중 FCM-PM 으로 2-combo augmentation 을 적용하며, 평가는 미리 생성한 2-combo eval set 까지 함께 두어 multi-label 검출력을 측정합니다. single chip 을 chip 단위로 먼저 train / test 로 split 한 뒤 평가용 2-combo 합성은 test 원천 single 만 사용해 train / test 누수를 차단했습니다.
 
 **[P2 수식 요약]**
 
