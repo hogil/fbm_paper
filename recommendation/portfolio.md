@@ -551,11 +551,11 @@ trend 이상 감지는 단순 수작업 판단만으로는 한계가 있고, 설
 
 trend chart 판정 경험을 generator parameter 로 옮겨 생성 trend sample 약 7,000개 (normal 3,500 + abnormal 3,500) 를 만들었습니다. 계측 밀도 Region 5단계 (dense / sparse / very_sparse / thin / missing), Noise 3분포 (Gaussian / Laplacian / Correlated), Anomaly 5종 (mean shift / standard deviation / spike / drift / context) 을 generator parameter 에 반영했습니다.
 
-Trend 생성 데이터 생성 설계 (계측 밀도, Noise, Anomaly 수식):
+Trend 데이터 생성 설계 (계측 밀도, Noise, Anomaly 수식):
 
-| Trend 생성 데이터 생성 설계 |
+| Trend 데이터 생성 설계 |
 |:---------------------------:|
-| <img src="./figures/p3_trend_generation_formula.png" alt="Trend 생성 데이터 생성 설계" width="900" /> |
+| <img src="./figures/p3_trend_generation_formula.png" alt="Trend 데이터 생성 설계" width="900" /> |
 
 생성 trend chart 예시 (정상 + 일반 trend 불량 4종 + context 1종):
 
