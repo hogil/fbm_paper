@@ -174,7 +174,7 @@ Known 2-stage 성능을 실전 현업 데이터 (16 class / 1,500 labeled / 4:1 
 - **Optuna hyperparameter sweep**: learning rate, weight decay, augmentation 강도, class weight, batch size 를 Bayesian sweep 으로 탐색하고, 학습률은 LinearLR warmup (시작 LR 을 base 의 0.05 부터 5 epoch 에 걸쳐 base 까지 올림) 뒤 CosineAnnealing (base → 1e-6) 으로 감쇠시키는 schedule 을 적용해 **0.92** 에 도달했습니다.
 - **2-stage cascade**: 16 class 중 center 영역처럼 일부 class 들의 불량 위치가 겹치는 경우 분류 성능이 저하되어, confidence 가 낮은 wafer 만 ROI YOLO 로 보내 2단계 분류했고 최종 weighted F1 **0.95** 까지 올라갔습니다.
 
-Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 metric 이 의미가 없는 것으로 판단했습니다. 현업 데이터로는 production 학습 결과로 13 후보 group 중 7건 진성 불량을 확인해 운영 검출력을 검증했고, 정확한 metric 측정이 필요한 부분은 별도 생성 평가셋으로 SOTA recipe ablation 을 관리하고 있습니다. production 학습은 TAPT 한 ConvNeXtV2 backbone 위에 다음을 얹은 구조입니다.
+Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 metric 이 의미가 없는 것으로 판단했습니다. 현업 데이터로는 production 학습 결과로 13 후보 group 중 7건 진성 불량을 확인해 운영 검출력을 검증했고, 정확한 metric 측정과 모델 성능 향상은 별도 생성 평가셋 환경에서 SOTA recipe ablation 으로 함께 관리하고 있습니다. production 학습은 TAPT 한 ConvNeXtV2 backbone 위에 다음을 얹은 구조입니다.
 
 - **Global InfoNCE**: 같은 wafer 의 두 augmentation view 는 positive, 다른 wafer 는 negative.
 - **Queue (size 16384)**: 직전 batch 들의 representation 을 negative pool 로 누적 (한 batch 안의 좁은 negative 다양성 보강).
