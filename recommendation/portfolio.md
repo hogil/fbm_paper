@@ -203,14 +203,14 @@ SOTA recipe ablation 은 별도 synthetic benchmark 트랙 (**[구현 성과]** 
                   conf >= gate                  conf < gate
                        |                            |
                        v                            v
-+--------------------------+   +--------------------------------------------+
-|  Stage 1 only            |   |  Stage 2 (operational module selection)    |
-|  (skip Stage 2,          |   |  (A) ROI-YOLO [in production]              |
-|   ~zero throughput cost) |   |      - bbox + coord regression + class+NMS |
-|                          |   |  (B) chip-CNN obj-id map [in development]  |
-|                          |   |      - ~256x256 crop classification only   |
-|                          |   |      - val_f1 0.9946 / test_f1 0.9872      |
-+--------------------------+   +---------------------+----------------------+
++--------------------------+  +--------------------------------------------+
+|  Stage 1 only            |  |  Stage 2 (operational module selection)    |
+|  (skip Stage 2,          |  |  (A) ROI-YOLO [in production]              |
+|   ~zero throughput cost) |  |      - bbox + coord regression + class+NMS |
+|                          |  |  (B) chip-CNN obj-id map [in development]  |
+|                          |  |      - ~256x256 crop classification only   |
+|                          |  |      - val_f1 0.9946 / test_f1 0.9872      |
++--------------------------+  +---------------------+----------------------+
                 |                                    |
                 +-----------------+------------------+
                                   v
@@ -576,7 +576,7 @@ Trend 합성 데이터 생성 설계 (계측 밀도, Noise, Anomaly 수식):
 
 ```
 +---------------------------------------------------------------------------+
-|  [SOURCE]  9-year BBD / Overlay / CD trend-judgment experience            |
+|  [SOURCE]  10-year BBD / Overlay / CD trend-judgment experience           |
 |  criteria (scatter / hunting / drift / spec-out risk) -> generator        |
 |  parameters: this coding step is the core asset of the project            |
 +---------------------------------------------------------------------------+
