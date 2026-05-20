@@ -325,7 +325,7 @@ Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 metric 이 
 
 현업 EDS Failbit Map 의 single failure 패턴을 도메인 기준으로 train 은 single 4 class 만, eval 은 single + 2-combo 6 종까지 각각 생성했습니다. 생성 chip 은 failure 영역의 grade 0-7 픽셀을 확률 분포 기반 categorical sampling 으로 생성하고, noise 와 밀도까지 도메인 통계에 맞춰 control 했습니다. negative 측면은 Normal / Invalid / OOD 까지 같이 두어 약 3,850 chip 의 controlled benchmark 를 갖췄습니다.
 
-학습은 single only 로 두고 학습 중 FCM-PM 으로 single 만 가지고 2-combo augmentation 을 적용해 2-combo prediction 성능을 끌어올렸으며, 평가는 미리 생성한 single + 2-combo eval set 으로 multi-label 검출력을 측정합니다. 학습용 single 과 평가용 single + 2-combo 는 별도로 생성해 train / test 가 처음부터 분리되어 있습니다.
+학습은 single only 로 두고 학습 중 FCM-PM 으로 single 만 가지고 2-combo augmentation 을 적용해 2-combo prediction 성능을 끌어올렸으며, 평가는 미리 생성한 single + 2-combo eval set 으로 multi-label 검출력을 측정합니다. 학습용 single 과 평가용 single + 2-combo 는 별도로 생성했습니다.
 
 **[P2 수식 요약]**
 
