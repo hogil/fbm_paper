@@ -245,8 +245,7 @@ SOTA recipe ablation 은 별도 synthetic benchmark 트랙 (**[구현 성과]** 
                                    v
 +--------------------------------------------------------------------------+
 |  M_obj replaces ROI-YOLO chip-level output (Stage 2 candidate)           |
-|  Deploy decision: ROI-YOLO (in production) OR chip-CNN (in development)  |
-|  picked at Stage 2 slot after validation passes operational checks       |
+|  chip-CNN replaces ROI-YOLO once fully developed                         |
 +--------------------------------------------------------------------------+
 ```
 
