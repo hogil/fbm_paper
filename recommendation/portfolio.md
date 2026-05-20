@@ -170,10 +170,9 @@ M_obj      = place id_{u,v} on (u,v) grid    -- 32x32 object-id map
 
 Known 2-stage 성능을 실전 현업 데이터 (16 class / 1,500 labeled / 4:1 stratified split) 로 baseline 부터 단계별로 다음과 같이 향상시켰습니다.
 
-- **baseline**: 일반 ImageNet 사전학습 CNN 으로 시작한 1차 학습이 weighted F1 **0.78** 정도였습니다. 16 class 중 center 영역처럼 결함이 겹치는 영역의 class 들이 서로 헷갈리는 사례가 가장 컸습니다.
-- **backbone 교체**: ViT / Swin / EffNetV2 / MaxViT / ConvNeXtV2 를 동일 split 에서 비교한 뒤, 본 과제 결함이 국소 영역에 몰리는 특성에 맞는 ConvNeXtV2 로 교체해 **0.87** 까지 향상시켰습니다.
-- **Optuna hyperparameter 정렬 + LR schedule**: learning rate, weight decay, augmentation 강도, class weight, batch size 를 Bayesian sweep 으로 정렬하고, 학습률은 LinearLR warmup (시작 LR 을 base 의 0.05 부터 5 epoch 에 걸쳐 base 까지 올림) 뒤 CosineAnnealing (base → 1e-6) 으로 감쇠시키는 schedule 을 적용해 **0.92** 에 도달했습니다.
-- **2-stage cascade**: confidence 가 낮은 wafer 만 ROI YOLO 로 다시 보내 다시 분류하게 했고, 이 단계가 붙으면서 최종 weighted F1 **0.95** 까지 올라갔습니다.
+- **baseline 선택**: 일반 ImageNet 사전학습 CNN 으로 시작한 1차 baseline 이 weighted F1 **0.78** 정도였고, ViT / Swin / EffNetV2 / MaxViT / ConvNeXtV2 를 동일 split 에서 비교한 뒤 본 과제 결함이 국소 영역에 몰리는 특성에 맞는 ConvNeXtV2 를 backbone 으로 선택해 **0.87** 까지 향상시켰습니다.
+- **Optuna hyperparameter**: learning rate, weight decay, augmentation 강도, class weight, batch size 를 Bayesian sweep 으로 정렬하고, 학습률은 LinearLR warmup (시작 LR 을 base 의 0.05 부터 5 epoch 에 걸쳐 base 까지 올림) 뒤 CosineAnnealing (base → 1e-6) 으로 감쇠시키는 schedule 을 적용해 **0.92** 에 도달했습니다.
+- **2-stage cascade**: 16 class 중 center 영역처럼 일부 class 들의 불량 위치가 겹치는 경우 분류 성능이 저하되어, confidence 가 낮은 wafer 만 ROI YOLO 로 다시 보내 분류하게 했고 최종 weighted F1 **0.95** 까지 올라갔습니다.
 
 Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 ladder 가 의미가 없어, production 학습 구성요소와 단일 anchor (13 → 7) 만 적어둡니다. production 학습은 TAPT 한 ConvNeXtV2 backbone 위에 다음을 얹은 구조입니다.
 
