@@ -325,7 +325,7 @@ Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 metric 이 
 
 현업 EDS Failbit Map 에서 관찰되는 single failure 형태를 기준으로 4 class 를 구성하고, 두 failure 가 동시에 나타나는 조합 상황을 모사하기 위해 2-combo 6 종을 도메인 분포에 맞춰 합성해 학습 / 평가 데이터를 만들었습니다. 합성 chip 은 failure 영역의 grade 0-7 픽셀을 확률 분포 기반 categorical sampling 으로 생성하고, noise 와 밀도까지 도메인 통계에 맞춰 control 했습니다. negative 측면은 Normal / Invalid / OOD 까지 같이 두어 약 3,850 chip 의 controlled benchmark 를 갖췄습니다.
 
-실제 데이터로는 single failure chip 만 확보 가능하고 2-combo 는 현업에서 충분히 확보되지 않아 합성으로 보강했습니다. 학습은 single 원천 + 합성 2-combo 로 진행하고 평가는 single + 2-combo 까지 함께 두어 multi-label 검출력을 측정하며, single chip 원천을 chip 단위로 먼저 train / test 로 split 한 뒤 2-combo 합성은 train 원천 chip 에서만 진행해 train / test 누수를 차단했습니다.
+현업에서는 single failure chip 만 확보 가능하고 2-combo 는 충분히 확보되지 않아 합성으로 보강했습니다. 학습은 single 원천 + 합성 2-combo 로 진행하고 평가는 single + 2-combo 까지 함께 두어 multi-label 검출력을 측정하며, single chip 원천을 chip 단위로 먼저 train / test 로 split 한 뒤 2-combo 합성은 train 원천 chip 에서만 진행해 train / test 누수를 차단했습니다.
 
 **[P2 수식 요약]**
 
