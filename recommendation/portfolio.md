@@ -160,7 +160,7 @@ chip-CNN object-id map 의 내부 흐름을 식으로 정리하면 다음과 같
 
 ```
 c_{u,v}    = crop(x, pos_{u,v})          -- chip crop at coord (u, v)
-z_{u,v}    = h_phi(c_{u,v})              -- chip logits (K-dim)
+z_{u,v}    = classify(c_{u,v})           -- chip class logits (K-dim)
 M_obj(u,v) = argmax_k z_{u,v,k}          -- per-chip class id; tiled by coord -> object-id map
 ```
 
