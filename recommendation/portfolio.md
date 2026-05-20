@@ -303,7 +303,7 @@ Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 metric 이 
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**
 
-직접 설계한 FCM (Full-Cover CutMix) 은 single 만으로도 2-combo prediction 성능을 향상시켜 데이터 부족 문제를 해결했고, Pair Mask 는 합성 chip 의 background 가 false positive 신호로 학습되지 않도록 loss 영역을 분리했습니다. val_margin 기반 best-model selection 은 작은 validation set 환경에서도 false positive 가 가장 안정적인 epoch 를 선택해, 최종 단일 모델 **bit_F1 0.9927 / Total FAR 0.00%** 로 multi-label 을 검출하고 false alarm 을 억제했습니다. bit-level majority voting ensemble 은 single model 의 현업 불안정성에 대비해 함께 개발했고, Knowledge Distillation single student 는 ensemble 판단을 single model 수준 추론 비용으로 압축하기 위해 이어 개발했습니다.
+직접 설계한 FCM (Full-Cover CutMix) 은 single 만으로도 2-combo prediction 성능을 향상시켜 데이터 부족 문제를 해결했고, Pair Mask 는 합성 chip 의 background 가 false positive 신호로 학습되지 않도록 loss 영역을 분리했습니다. val_margin 기반 best-model selection 은 작은 validation set 환경에서도 false positive 가 가장 안정적인 epoch 를 선택해, 최종 단일 모델 **bit_F1 0.9927 / Total FAR 0.00%** 로 multi-label 을 검출하고 false alarm 을 억제했습니다. bit-level majority voting ensemble 은 single model 의 현업 불안정성에 대비해 함께 개발했고, Knowledge Distillation single student 는 ensemble 판단을 single model 수준 추론 비용으로 압축하기 위해 추가로 개발했습니다.
 
 **ㅁ 문제정의**
 
