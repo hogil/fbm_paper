@@ -34,7 +34,7 @@
 
 - **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**
 
-본인은 현업 경험을 바탕으로 분석 담당자로부터 Failbit Map 분석법을 교육받고 설계했습니다. 본 과제에서 raw log → wafer 이미지 변환 / 저장 / 조회 파이프라인 (fail-map), 사내 운영 뷰어 web app, Known 2-stage 분류, Unknown self-supervised 검출, 후속 chip-CNN object-id map 보정 구조까지 설계 / 구현 / 검증을 했습니다. AI 모델을 구동하기 위한 GPU 도 수요 조사를 통해 확보했습니다 (GPU 할당 **2026년 9월**).
+본인은 현업 경험을 바탕으로 분석 담당자로부터 Failbit Map 분석법을 교육받고 설계했습니다. Failbit Map 데이터 파이프라인, 운영 뷰어 web app, Known / Unknown AI 모델, 후속 chip-CNN object-id map 보정 구조까지 본 과제 전 영역을 본인이 직접 담당했습니다. AI 모델 구동을 위한 GPU 도 수요 조사를 통해 확보했습니다 (GPU 할당 **2026년 9월**).
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**
 
@@ -299,7 +299,7 @@ Unknown 검출은 정답 label 이 없는 운영 환경이라 정량 metric 이 
 
 - **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**
 
-본인은 본 과제에서 Chip Multi-label Image Classification 모델 학습 파이프라인 전 영역을 단독으로 담당했습니다. Domain-Distribution-based Synthetic Data Generation 으로 학습 / 평가용 chip 을 직접 생성하고, Augmentation Design 과 Loss Masking 으로 single only 학습 조건을 보완했으며, 그 위에 Margin-based Checkpoint Selection, Temperature Scaling Calibration, Threshold Gating, Bit-level Majority Voting Ensemble, Knowledge Distillation Compression 까지 후속 단계를 모두 직접 구성했습니다.
+본인은 본 과제에서 Chip Multi-label Classification 의 데이터 생성, 모델 학습, 모델 압축까지 전 영역을 단독으로 담당했습니다.
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**
 
@@ -525,7 +525,7 @@ positive bits     negative bits
 
 - **과제 내에서 타 구성원과 차별화되는 본인만의 구체적 담당 영역**
 
-본인은 P3 trend anomaly 검증 PoC 전체 — trend episode generator 설계, 도메인 parameter (Noise 3분포 / 계측 밀도 Region 5단계 / Anomaly 5종) 정의, 생성 normal / abnormal sample 생성, 정상 산포 보정 수식 설계, 1차 Binary gate baseline 검증까지 — 를 본인이 직접 주도한 담당자입니다. BBD / Overlay / CD 담당 **10년간** trend chart 를 직접 판정해 온 본인 경험을 generator parameter 에 그대로 옮긴 것이 본 과제 차별성의 핵심입니다.
+본인은 P3 trend anomaly 검증 PoC 의 데이터 생성, baseline 학습, 검증까지 전 영역을 직접 주도했습니다. BBD / Overlay / CD 담당 **10년간** trend chart 를 직접 판정해 온 본인 경험을 generator parameter 에 그대로 옮긴 것이 본 과제 차별성의 핵심입니다.
 
 - **본인의 기술적 해결책이 과제 성패에 미친 영향**
 
