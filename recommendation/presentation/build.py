@@ -18,7 +18,7 @@ FIG_DIR = os.path.abspath(os.path.join(HERE, "..", "figures"))
 # ---- 디자인 시스템 ----
 NAVY   = RGBColor(0x0F, 0x1E, 0x3D)
 NAVY2  = RGBColor(0x1B, 0x32, 0x60)
-ACCENT = RGBColor(0x2E, 0x8B, 0xC0)   # sky-blue (professional)
+ACCENT = RGBColor(0x5B, 0x9B, 0xD5)   # light sky-blue
 GOLD   = RGBColor(0xF2, 0xB7, 0x05)   # awards/highlight
 INK    = RGBColor(0x1A, 0x1F, 0x2E)
 MUTED  = RGBColor(0x6B, 0x72, 0x80)

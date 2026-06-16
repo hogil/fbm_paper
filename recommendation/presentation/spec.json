@@ -71,29 +71,15 @@
       "kicker": "P1 · 개념 + 현장 문제",
       "title": "Failbit Map이란? 그리고 무엇이 어려운가",
       "bullets": [
-        "**정의** — 칩마다 측정한 불량 정도를 격자로 담은 **불량 위치 지도**",
-        "**결함의 방향과 위치가 불량 종류를 결정** — 같은 형태의 긁힘이라도 각도가 다르면 공정 원인이 다른 별개 불량이라, 일반 영상처럼 뒤집기·회전으로 증강하면 라벨이 깨짐 → 방향을 보존하도록 학습·증강을 설계",
-        "**조회 한계** — 사람이 소량만 눈으로 판독 → 누락 위험(수량은 우측 하단 지표)",
-        "**라벨·운영 제약** — Known 정답 1,500장뿐·Unknown 정답 無, 일 2만 wafer 적재"
+        "EDS 검사가 메모리 셀 블록마다 불량 정도를 0~7 등급으로 찍어낸 wafer 공간 데이터입니다. 한 장에 블록이 약 1,000만 개라, 수율 평균으로는 안 보이는 국소 패턴·edge·scratch·ring이 그대로 드러납니다",
+        "일반 사진이 아닙니다 — 픽셀이 연속 밝기가 아니라 0~7로 양자화돼 있고, fail-bit가 뭉쳐 또렷한 윤곽선 없이 기하학적 형태로 나타나 자연 이미지용 기법을 그대로 쓰기 어렵습니다",
+        "방향과 위치 자체가 불량 종류입니다 — Edge-Top과 Edge-Bottom은 위치만 다른 별개 불량이고 21° 기운 scratch는 그 각도가 곧 class라, 좌우 반전·임의 회전으로 증강하면 label이 깨집니다(그래서 flip 제외·회전 ±7°)",
+        "정답 label은 Known 16종 1,500장뿐, Unknown은 아예 없습니다 — 이 라벨 부족이 P1 설계의 출발점입니다"
       ],
       "size": 18,
       "gap": 26,
       "image": "wafer_edge_ring_scratch_rot.png",
       "img_label": "실제 wafer Failbit Map · Edge-Ring",
-      "lead_metric": [
-        {
-          "big": "Grade 0~7",
-          "label": "8단계 격자값"
-        },
-        {
-          "big": "소량만",
-          "label": "1회 조회 한계"
-        },
-        {
-          "big": "방향=의미",
-          "label": "회전 다르면 다른 불량"
-        }
-      ],
       "caption": "Edge-Ring Scratch (가장자리를 따라 도는 사선 색점 군집)"
     },
     {
@@ -157,7 +143,7 @@
       "img_badge": "백본 0.87  →  튜닝 0.92  →  2단계 보정 0.95",
       "bullets": [
         "**왜 2-stage인가** — 1-stage가 낮은 confidence를 주는 wafer는 대개 **형상이 겹치는 2개 class 사이에서 헷갈리는** 경우라, wafer 전체 이미지로는 구분이 안 됨",
-        "**1-stage** — ImageNet 사전학습 CNN 수준(~0.78) → 국소 결함에 맞는 **백본 채택 0.87**(ViT 0.81·Swin 0.84·EfficientNetV2 0.85 대비) + 하이퍼파라미터 최적화 **0.92**",
+        "**1-stage 백본 선택** — 같은 조건에서 ViT 0.81·Swin 0.84·EffNetV2 0.85·MaxViT 0.87을 비교해 **ConvNeXtV2 채택**. MaxViT와 동급 최고 0.87이면서 params −26%·FLOPs −39%로 더 가볍고, 전역 attention보다 CNN의 local receptive field가 국소 결함에 맞다고 봤습니다(전해곤 교수 자문) → Optuna 튜닝 **0.92**",
         "**2-stage** — 저신뢰 wafer만 **ROI-YOLO**로 재검토 → ROI 내부에서 칩 종류가 명확히 검출돼 헷갈리던 2개 class가 분리 → **weighted F1 0.95**(어려운 것만 처리해 비용↓)"
       ],
       "body_h": 1.0,
@@ -183,12 +169,12 @@
     {
       "type": "image_grid",
       "kicker": "P1 · 칩 식별 지도 (후속 개발)",
-      "title": "위치 검출 단계를 없앤 32×32 식별 지도",
-      "img_badge": "구성요소 제거 비교(한 입력을 빼고/넣어 효과 측정): 강도만 → 강도+식별 결합 · F1 0.4385→0.9879",
+      "title": "Detection 없이 32×32 object-id map으로 chip별 종류 보존",
+      "img_badge": "ablation: 강도(intensity)만 → 강도+object-id 결합 · hold-out F1 0.4385 → 0.9879",
       "bullets": [
-        "**문제**: 위치 검출 방식은 wafer 전체에서 칩 위치를 찾아야 해 비용이 크고, 작게 보이는 칩 결함에 한계",
-        "**해법**: 이미 만든 칩 좌표로 작은 칩 조각만 분류 → 칩별 종류값을 격자에 보존한 **식별 지도** 생성(검출 단계 불필요)",
-        "**핵심 성과(구성요소 제거 비교)** — 강도만 입력 → 강도+식별 지도 결합 입력: **별도 평가셋(hold-out) F1 0.4385→0.9879**(학습에 안 쓴 평가셋, 후속 개발 ablation) · 후속 채택 모듈은 식별 지도 단독 경로(별도 평가셋 F1 0.9872, 별개 구성이라 직접 비교는 아님)"
+        "**문제** — detection 방식은 wafer 전역에서 chip 위치를 찾아야 해 비용이 크고, 작은 chip 결함엔 한계",
+        "**해법** — 이미 가진 chip 좌표로 chip patch만 분류해, chip별 class를 32×32 격자에 담은 **object-id map** 생성 (detection 단계 불필요)",
+        "**결과** — 강도(intensity)만 → 강도+object-id 결합: hold-out F1 **0.4385 → 0.9879**(후속 ablation) · 채택 모듈은 object-id 단독 0.9872 (구성이 달라 직접 비교는 아님, 합성 데이터·개발 중)"
       ],
       "body_h": 1.12,
       "img_tile": "#E4EAF4",
@@ -201,7 +187,7 @@
         },
         {
           "src": "AAN585_00P_18_20260501_010000_97.6_2_EE_NORMAL_objid.png",
-          "caption": "class A · 식별 지도(종류 분리)",
+          "caption": "class A · object-id map (class 분리)",
           "pair": "A"
         },
         {
@@ -211,12 +197,12 @@
         },
         {
           "src": "ACZ452_00P_14_20260501_010000_97.6_2_PT_NORMAL_objid.png",
-          "caption": "class B · 식별 지도(종류 분리)",
+          "caption": "class B · object-id map (class 분리)",
           "pair": "B"
         }
       ],
       "grid_cols": 4,
-      "img_note": "A·B 원본은 닮아 혼동 → 식별 지도가 칩별 종류를 색으로 분리 · 강도만 0.4385 → 강도+식별 결합 0.9879 (합성 데이터·개발 중)"
+      "img_note": "A·B 원본은 닮아 혼동 → object-id map이 chip별 class를 색으로 분리 · 강도만 0.4385 → 결합 0.9879 (합성 데이터·개발 중)"
     },
     {
       "type": "two_col",
