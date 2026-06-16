@@ -1,0 +1,90 @@
+{
+  "slides": [
+    {"type": "title", "kicker": "AI Specialist 인증 발표",
+     "title": "반도체 도메인 지식 × AI\n현장 난제를 푸는 법",
+     "subtitle": "데이터·라벨 부족을 도메인 지식으로 정면 돌파한 3개 과제",
+     "author": "최호길  |  메모리제조센터 QIE그룹 Data Science 파트",
+     "affil": "10년 현업(Photo·DRAM PA/YE) · 서울대 Data Scientist 인증 · 연세대 AI 석사"},
+
+    {"type": "stats", "kicker": "IMPACT", "title": "성과 한눈에",
+     "stats": [
+       {"big": "90%↓", "label": "분석 공수 절감", "sub": "연 약 26억 효과"},
+       {"big": "+0.02%", "label": "수율 개선", "sub": "P3WN 1건 약 97억"},
+       {"big": "2만/일", "label": "양산 운영 처리", "sub": "DRAM D1a/b/c/d 매일"},
+       {"big": "수상 3", "label": "사내 인정", "sub": "BP 수상·제안 1등급·논문상", "gold": true}
+     ],
+     "note": "운영 뷰어는 2025년 5월부터 DRAM 전제품 라인 양산 운영 중 — 현업이 매일 사용하는 실제 시스템."},
+
+    {"type": "section", "no": "P1", "title": "Failbit Map 불량 분석 아키텍처",
+     "subtitle": "대량 분석 한계 + 수작업 판정 부담을 운영형 AI로"},
+
+    {"type": "bullets", "kicker": "P1 · 창의적 해결 ①", "title": "도메인 통찰 → 인프라 돌파",
+     "bullets": [
+       "웨이퍼맵은 자연 이미지가 아니라 **EDS 8단계 이산 측정값** — 이 도메인 특성이 핵심 단서",
+       "→ **무손실 32색 팔레트 PNG**로 저장 용량 **약 75% 절감**",
+       "→ 변환 루프를 Cython으로 재구성, 속도 **약 100배** 가속",
+       {"t": "결과: **일 2만 장 / 1시간 주기** 양산 적재가 가능해짐", "lvl": 1},
+       "수작업 48매 조회 한계를 대량 조회·분석 뷰어로 대체"
+     ],
+     "image": "wafer_center_scratch.png", "caption": "Failbit Map (웨이퍼 결함 예시)"},
+
+    {"type": "two_col", "kicker": "P1 · 창의적 해결 ②", "title": "Known / Unknown 2-갈래 AI",
+     "cols": [
+       {"head": "Known — 등록된 16종 자동분류", "color": "#0F1E3D",
+        "bullets": ["결함이 국소 영역에 몰림 → **CNN 계열 선택**",
+                    "어려운 것만 2단계로 보내는 **cascade**(비용↑ 없이 정확도↑)",
+                    "가중 F1 **0.78 → 0.95**"]},
+       {"head": "Unknown — 새 패턴 스스로 발견", "color": "#12B5B0",
+        "bullets": ["**라벨 없이** AI가 비슷한 패턴끼리 군집",
+                    "신규 결함 후보를 자동 검출",
+                    "13개 후보 중 **7건 진성 불량** 현업 확인"]}
+     ]},
+
+    {"type": "image_grid", "kicker": "P2 · 데이터", "title": "직접 설계한 합성 증강(FCM-PM)",
+     "bullets": ["라벨 부족한 다중 결함을 single만으로 학습 → **Full-Cover CutMix + Pair Mask** 직접 고안"],
+     "images": [
+       {"src": "chip_eval_scratch_selected.png", "caption": "scratch"},
+       {"src": "chip_eval_fork_selected.png", "caption": "fork"},
+       {"src": "fcm_pm_step_mixed_a.png", "caption": "FCM 합성"},
+       {"src": "fcm_pm_step_masked_a.png", "caption": "Pair Mask"}
+     ], "grid_cols": 4},
+
+    {"type": "table", "kicker": "P2 · 성과", "title": "단계별 성능 향상 (대표 recipe)",
+     "headers": ["기법", "bit_F1", "오경보율(FAR)"],
+     "rows": [
+       ["BCE 기본", "0.109", "99.5%"],
+       ["CutMix", "0.936", "42.1%"],
+       ["CutMix + Pair Mask", "0.949", "24.6%"],
+       ["FCM-PM + val_margin (최종)", "0.9927", "0.00%"]
+     ], "highlight_row": 3,
+     "note": "단일 모델로 다중 결함 검출과 오경보 억제를 동시에 달성."},
+
+    {"type": "flow", "kicker": "P1 · 전체 아키텍처", "title": "문제 정의 → 설계·구현 → 운영 (한눈에)",
+     "stages": [
+       {"label": "데이터", "boxes": [{"title": "EDS 검사 raw log", "sub": "웨이퍼 1장 ≈ 1,000만 셀", "color": "navy"}]},
+       {"label": "설계·구현", "boxes": [{"title": "변환 파이프라인", "sub": "이산값→무손실 이미지", "color": "accent", "tags": ["Cython 100x", "저장 75%↓"]}]},
+       {"label": "운영", "boxes": [{"title": "운영 뷰어(Web)", "sub": "대량 조회·분석", "color": "panel", "tags": ["일 2만 장"]}]},
+       {"label": "AI 분석", "boxes": [
+          {"title": "Known 자동분류", "sub": "등록 16종", "color": "navy", "tags": ["F1 0.95"]},
+          {"title": "Unknown 발견", "sub": "새 패턴 자동", "color": "accent", "tags": ["13→7"]}]},
+       {"label": "검증", "boxes": [{"title": "현업 검증", "sub": "신규 불량 등록", "color": "panel"}]}
+     ],
+     "caption": "color: navy/accent=어두운 박스(흰 글자), panel=밝은 박스(어두운 글자), gold=강조. 단계 안 boxes를 여러 개 두면 분기."},
+
+    {"type": "timeline", "kicker": "ROADMAP", "title": "완료 시기 및 현장 적용 로드맵",
+     "items": [
+       {"date": "2024.10", "label": "P1 착수", "sub": "파이프라인·뷰어", "done": true},
+       {"date": "2025.05", "label": "양산 운영 개시", "sub": "DRAM 전제품", "done": true},
+       {"date": "2026.01", "label": "P3 Trend PoC", "sub": "데이터 생성기", "done": true},
+       {"date": "2026.09", "label": "GPU 할당·모델 양산", "sub": "Known/Unknown 배포", "done": false},
+       {"date": "향후", "label": "현업 확대 적용", "sub": "chip-CNN 대체·trend 적용", "done": false}
+     ], "caption": "done:true=완료(채움), false=예정(외곽선)"},
+
+    {"type": "closing", "title": "반도체 × AI — 현장을 아는 사람이 AI를 만든다",
+     "bullets": [
+       "공통 패턴: **데이터·라벨 부족 → 도메인 지식을 AI 설계로 옮겨 정면 돌파**",
+       "실제 사업가치(연 26억 + 97억) · 매일 양산 운영 · 사내 수상 3건",
+       "QIE 제조품질 AX(AI Transformation) 가속에 기여"
+     ]}
+  ]
+}

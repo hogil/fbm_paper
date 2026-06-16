@@ -1,0 +1,747 @@
+{
+  "slides": [
+    {
+      "type": "title",
+      "anchor_metrics": "",
+      "kicker": "AI Specialist 인증 · 사내 경연 발표",
+      "title": "AI Specialist 인증 발표",
+      "subtitle": "반도체 공정 역량을 기반으로 — 데이터 적재·백엔드·프론트·AI 모델 설계까지 직접 수행한 3개 과제",
+      "author": "최호길  |  메모리제조센터 QIE그룹 Data Science 파트",
+      "affil": "제조품질 AI · 데이터 사이언스"
+    },
+    {
+      "type": "cards",
+      "kicker": "P1·P2·P3 종합 · 한눈에 보기",
+      "title": "P1·P2·P3 한눈에 — 문제 → 접근 → 결과",
+      "cards": [
+        {
+          "no": "P1",
+          "task": "Failbit Map 불량 분석",
+          "thumb": "wafer_center_scratch.png",
+          "problem": "대량 조회 한계 · 수작업 판정 부담",
+          "approach": "좌표 보존 표현 + Known·Unknown AI",
+          "result": "파이프라인·뷰어 양산 운영 · 연 26억"
+        },
+        {
+          "no": "P2",
+          "task": "Chip 멀티라벨 분류",
+          "thumb": "chip_eval_scratch_selected.png",
+          "problem": "중복결함 정답 라벨 없음 (멀티라벨)",
+          "approach": "단일결함만 학습 → 중복결함 평가 (FCM-PM 합성)",
+          "result": "검출 F1 0.9943 · 오경보 0% (생성셋·PoC)"
+        },
+        {
+          "no": "P3",
+          "task": "Trend 이상감지 생성기",
+          "thumb": "trend_spike.png",
+          "problem": "실전 이상 데이터 부재 → 검증 막힘",
+          "approach": "10년 현장 판정경험을 생성기로",
+          "result": "정상/이상 판별 F1 0.9975 (생성셋·PoC)"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "no": "P1",
+      "title": "Failbit Map\nKnown & Unknown 불량 분석",
+      "subtitle": "대량 분석 한계와 수작업 판정 부담을, 운영형 AI 아키텍처로",
+      "prog": [
+        1,
+        3
+      ],
+      "desc": "한 번에 약 48매만 조회 가능한 수작업 눈 판독에 의존 → 일 약 2만 wafer를 자동 적재·분석하도록 전환(누락·시간 부담 큰 양산 검사를 AI로 자동화)",
+      "kpi": "세 과제 중 P1만 양산 운영 · P2·P3은 검증/PoC 단계",
+      "stat_cards": [
+        {
+          "big": "일 2만",
+          "label": "wafer 처리 [운영]"
+        },
+        {
+          "big": "F1 0.95",
+          "label": "Known 판정 F1 [검증]"
+        }
+      ],
+      "ba": {
+        "before": "조회 48매 한계 · 수작업 판독",
+        "after": "일 2만 wafer 자동 적재·분석"
+      }
+    },
+    {
+      "type": "bullets",
+      "kicker": "P1 · 개념 + 현장 문제",
+      "title": "Failbit Map이란? 그리고 무엇이 어려운가",
+      "bullets": [
+        "**정의** — 칩마다 측정한 불량 정도를 격자로 담은 **불량 위치 지도**",
+        "**결함의 방향과 위치가 불량 종류를 결정** — 같은 형태의 긁힘이라도 각도가 다르면 공정 원인이 다른 별개 불량이라, 일반 영상처럼 뒤집기·회전으로 증강하면 라벨이 깨짐 → 방향을 보존하도록 학습·증강을 설계",
+        "**조회 한계** — 사람이 소량만 눈으로 판독 → 누락 위험(수량은 우측 하단 지표)",
+        "**라벨·운영 제약** — Known 정답 1,500장뿐·Unknown 정답 無, 일 2만 wafer 적재"
+      ],
+      "size": 18,
+      "gap": 26,
+      "image": "wafer_edge_ring_scratch_rot.png",
+      "img_label": "실제 wafer Failbit Map · Edge-Ring",
+      "lead_metric": [
+        {
+          "big": "Grade 0~7",
+          "label": "8단계 격자값"
+        },
+        {
+          "big": "소량만",
+          "label": "1회 조회 한계"
+        },
+        {
+          "big": "방향=의미",
+          "label": "회전 다르면 다른 불량"
+        }
+      ],
+      "caption": "Edge-Ring Scratch (가장자리를 따라 도는 사선 색점 군집)"
+    },
+    {
+      "type": "pipeline",
+      "kicker": "P1 · 데이터 파이프라인",
+      "title": "왜 필요했나 · 무엇을 쓰나 · 왜 좋은가",
+      "why": "하루 약 2만 wafer를 짧은 주기 배치로 S3(사내 클라우드 저장소) 압축 log read → wafer 1장이 매우 큰 고용량 Failbit Map 이미지가 되고, 운영 뷰어에서 대량 조회·합성 → 이 규모라 속도·저장·뷰어 처리 최적화가 필수",
+      "stacks": [
+        {
+          "head": "생성 파이프라인 (fail-map)",
+          "size": 11,
+          "items": [
+            "① S3 다운로드 **128스레드** 병렬",
+            "② **Cython** — hex→Grade(0-7) 변환 루프 컴파일 가속",
+            "③ **32색 palette-indexed PNG**(Pillow putpalette) — 이산 등급값을 무손실 경량화",
+            "④ **ProcessPoolExecutor**(CPU 24) 이미지 생성 병렬"
+          ]
+        },
+        {
+          "head": "운영 뷰어 (mapviewer)",
+          "size": 11,
+          "items": [
+            "① **Numba**(@njit parallel) — composite map(여러 wafer/chip 합성·계산) 가속",
+            "② **pyvips** — 대량 이미지 로드·resize(고용량 빠르게)",
+            "③ **pyramid 타일**(WEBP=경량 이미지 포맷) + **cache** — 빠른 줌·조회"
+          ]
+        }
+      ],
+      "ba_rows": [
+        {
+          "label": "변환",
+          "before": "Python 인터프리터 루프 (느림)",
+          "after": "Cython 컴파일 (약 100×)"
+        },
+        {
+          "label": "저장",
+          "before": "RGB PNG (픽셀당 색 3바이트)",
+          "after": "palette PNG (색 1회+인덱스로 경량화)"
+        },
+        {
+          "label": "뷰어",
+          "before": "단건 처리 (느림)",
+          "after": "Numba 병렬 + pyvips 대량 로드"
+        }
+      ],
+      "formula_imgs": [
+        {
+          "src": "data_hex_to_grade_formula.png",
+          "caption": "hex → Grade 변환식"
+        },
+        {
+          "src": "data_palette_png_formula.png",
+          "caption": "palette PNG 저장식"
+        }
+      ]
+    },
+    {
+      "type": "image_grid",
+      "kicker": "P1 · Known 2단계 상세",
+      "title": "백본 교체 0.87 → 튜닝 0.92 → 2단계 보정 0.95",
+      "img_badge": "백본 0.87  →  튜닝 0.92  →  2단계 보정 0.95",
+      "bullets": [
+        "**왜 2-stage인가** — 1-stage가 낮은 confidence를 주는 wafer는 대개 **형상이 겹치는 2개 class 사이에서 헷갈리는** 경우라, wafer 전체 이미지로는 구분이 안 됨",
+        "**1-stage** — ImageNet 사전학습 CNN 수준(~0.78) → 국소 결함에 맞는 **백본 채택 0.87**(ViT 0.81·Swin 0.84·EfficientNetV2 0.85 대비) + 하이퍼파라미터 최적화 **0.92**",
+        "**2-stage** — 저신뢰 wafer만 **ROI-YOLO**로 재검토 → ROI 내부에서 칩 종류가 명확히 검출돼 헷갈리던 2개 class가 분리 → **weighted F1 0.95**(어려운 것만 처리해 비용↓)"
+      ],
+      "body_h": 1.0,
+      "img_tile": "#E4EAF4",
+      "images": [
+        {
+          "src": "wafer_center_scratch.png",
+          "caption": "① 적용 전 · 원본 (wafer-level)"
+        },
+        {
+          "src": "p1_roi_crop_real.png",
+          "caption": "② 관심영역(의심 구간·ROI) 크롭"
+        },
+        {
+          "src": "p1_chip_yolo_box_real.png",
+          "caption": "③ 적용 후 · 칩별 검출·불량 종류",
+          "result_frame": "검출 결과"
+        }
+      ],
+      "grid_cols": 3,
+      "img_note": "①원본 → ②어려운 wafer만 관심영역 크롭 → ③칩 단위 재분류(색점=결함 후보) · 백본 0.87 → 2단계 보정 0.95"
+    },
+    {
+      "type": "image_grid",
+      "kicker": "P1 · 칩 식별 지도 (후속 개발)",
+      "title": "위치 검출 단계를 없앤 32×32 식별 지도",
+      "img_badge": "구성요소 제거 비교(한 입력을 빼고/넣어 효과 측정): 강도만 → 강도+식별 결합 · F1 0.4385→0.9879",
+      "bullets": [
+        "**문제**: 위치 검출 방식은 wafer 전체에서 칩 위치를 찾아야 해 비용이 크고, 작게 보이는 칩 결함에 한계",
+        "**해법**: 이미 만든 칩 좌표로 작은 칩 조각만 분류 → 칩별 종류값을 격자에 보존한 **식별 지도** 생성(검출 단계 불필요)",
+        "**핵심 성과(구성요소 제거 비교)** — 강도만 입력 → 강도+식별 지도 결합 입력: **별도 평가셋(hold-out) F1 0.4385→0.9879**(학습에 안 쓴 평가셋, 후속 개발 ablation) · 후속 채택 모듈은 식별 지도 단독 경로(별도 평가셋 F1 0.9872, 별개 구성이라 직접 비교는 아님)"
+      ],
+      "body_h": 1.12,
+      "img_tile": "#E4EAF4",
+      "grid_gap": 0.34,
+      "images": [
+        {
+          "src": "AAN585_00P_18_20260501_010000_97.6_2_EE_NORMAL_raw.png",
+          "caption": "class A center 결함 · 원본(B와 닮음)",
+          "pair": "A"
+        },
+        {
+          "src": "AAN585_00P_18_20260501_010000_97.6_2_EE_NORMAL_objid.png",
+          "caption": "class A · 식별 지도(종류 분리)",
+          "pair": "A"
+        },
+        {
+          "src": "ACZ452_00P_14_20260501_010000_97.6_2_PT_NORMAL_raw.png",
+          "caption": "class B center 결함 · 원본(A와 닮음)",
+          "pair": "B"
+        },
+        {
+          "src": "ACZ452_00P_14_20260501_010000_97.6_2_PT_NORMAL_objid.png",
+          "caption": "class B · 식별 지도(종류 분리)",
+          "pair": "B"
+        }
+      ],
+      "grid_cols": 4,
+      "img_note": "A·B 원본은 닮아 혼동 → 식별 지도가 칩별 종류를 색으로 분리 · 강도만 0.4385 → 강도+식별 결합 0.9879 (합성 데이터·개발 중)"
+    },
+    {
+      "type": "two_col",
+      "kicker": "P1 · Unknown 발견",
+      "title": "Unknown — 자기지도 대조학습으로 신규 불량 군집 탐색",
+      "diagram": "cluster3",
+      "cols": [
+        {
+          "head": "방법 — Contrastive learning + HDBSCAN 군집",
+          "color": "#0F1E3D",
+          "bullets": [
+            "**Contrastive learning** — 라벨 없이 같은 wafer의 두 augmentation view는 가깝게(positive), 다른 wafer는 멀게(negative) 임베딩 학습(InfoNCE, τ=0.07, 128-D) → HDBSCAN으로 군집화",
+            "**성능을 올린 기법 스택** — Global InfoNCE → +Local DenseCL(국소 패턴) → +MoCo Queue 4096(negative pool 256배) → +NV-Retriever(false-negative 제거) → +NeCo(경계 안정화)",
+            "**도메인 제약** — 방향이 곧 클래스 정보 → flip 제외, 회전 ±7° 이내"
+          ],
+          "chips": [
+            {
+              "big": "label 0",
+              "label": "self-supervised"
+            },
+            {
+              "big": "±7°",
+              "label": "flip 제외·방향 보존"
+            },
+            {
+              "big": "queue 4096",
+              "label": "negative 256배"
+            }
+          ]
+        },
+        {
+          "head": "운영 결과 — 미학습 2,000장 1회 적용 (13→7, 미배포)",
+          "color": "#0F1E3D",
+          "bullets": [
+            "실전 1만 장 학습 후 **미학습 2,000장**에 1회 적용 → **13개 후보 군집 중 7개를 현업이 진성 불량으로 확인**",
+            "정답 label이 없는 운영 환경 → ARI 같은 정량 metric 불성립, **현업 검토로 검출력 판단** (13→7은 분류 metric이 아니라 후보 압축 결과)",
+            "신규 불량 후보를 조기 격리·교정 단서로 활용 · 모델 자체는 미배포(GPU 2026.9)"
+          ],
+          "chips": [
+            {
+              "big": "13→7",
+              "label": "후보→진성 불량"
+            },
+            {
+              "big": "label 0",
+              "label": "정답 없이 검출"
+            },
+            {
+              "big": "2,000장",
+              "label": "미학습 데이터"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "image_grid",
+      "kicker": "P1 · Unknown ablation (생성 benchmark)",
+      "title": "기법 스택이 군집을 단계적으로 안정화",
+      "bullets": [
+        "**MoCo Queue 4096**(negative pool 256배 확장)이 false cluster 합병을 줄여 noise를 크게 낮추고, **NV-Retriever**가 false-negative를 제거, **NeCo**가 Normal/defect 경계를 안정화, **τ=0.5 재배정**으로 noise 0% 달성",
+        "정직한 해석 — ARI/AMI는 TAPT backbone이 이미 높아 거의 불변. 기법 스택의 기여는 **군집 noise 15.8% → 0% · capture 0.934 → 0.962**로 군집 품질·안정성 향상"
+      ],
+      "images": [
+        {
+          "src": "p1_unknown_ablation.png",
+          "caption": "기법 추가에 따른 noise(막대, ↓) · capture(선, ↑)"
+        }
+      ],
+      "grid_cols": 1,
+      "body_h": 1.05,
+      "img_tile": "#FFFFFF",
+      "img_note": "per-class 500 + Normal 2000 (19,250 wafer) 도메인 생성 benchmark · 후속 개발/metric 관리용. 실전 운영(13→7 현업 확인)과 분리 — 운영 Unknown은 정답 label이 없어 ARI/AMI/noise 정량 metric이 성립하지 않음"
+    },
+    {
+      "type": "two_col",
+      "kicker": "P1 · 결과·임팩트",
+      "title": "운영(양산 중) vs 모델(검증·배포 대기) 분리",
+      "diagram": "twotrack",
+      "cols": [
+        {
+          "head": "양산 운영 중 — 파이프라인 + 뷰어 (2025.5~)",
+          "color": "#0F1E3D",
+          "bullets": [
+            "DRAM D1a/b/c/d(전제품 라인) 분석 파트에서 **매일 사용 중** · 일 약 2만 wafer 처리",
+            "분석 공수 약 **90% 절감 → 연 약 26억** · 수율 **+0.02% 회복 시 불량 1건 약 97억**",
+            "조회 48매 한계 → **대량 조회 뷰어** · 눈 판독 → **자동 적재·조회**로 누락·시간 절감",
+            {
+              "t": "운영=파이프라인+뷰어 · 26억=연 반복 · 97억=불량 1건(합산 아님)",
+              "lvl": 1
+            }
+          ],
+          "chips": [
+            {
+              "big": "연 26억",
+              "label": "공수 90%↓"
+            },
+            {
+              "big": "97억/건",
+              "label": "수율 +0.02%"
+            },
+            {
+              "big": "일 2만",
+              "label": "wafer 처리"
+            }
+          ]
+        },
+        {
+          "head": "모델 — 검증 완료, 배포 대기(GPU 2026.9)",
+          "color": "#0F1E3D",
+          "bullets": [
+            "Known **검증 F1 0.95**(실전 16종/1,500장) · Unknown **13→7 진성**(현업검토) · **모델만 미배포**",
+            "**Unknown 검출 약 40 wafer/s** · 분류 AI **2026.9 양산 배포 예정**",
+            "사내 인정 3건: **Good Challenger 상 · MTC(제조기술 제안) 1등급 채택 · 2026 삼성 논문상 초록 통과**(앞 2건 확정)",
+            {
+              "t": "처리속도=RTX 4060 Ti 단일 GPU 기준(encoder 추론 14.3ms·입력~결과 ≈24ms ≈ 40 wafer/s)",
+              "lvl": 1
+            }
+          ],
+          "chips": [
+            {
+              "big": "F1 0.95",
+              "label": "Known 검증 (실데이터)"
+            },
+            {
+              "big": "13→7",
+              "label": "Unknown 진성"
+            },
+            {
+              "big": "40 wafer/s",
+              "label": "Unknown 처리"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "no": "P2",
+      "title": "Chip 멀티라벨 분류",
+      "subtitle": "단일결함만으로 중복결함을 학습 — FCM-PM(전면 덮기 합성+짝 가림, 직접 고안)",
+      "prog": [
+        2,
+        3
+      ],
+      "desc": "한 칩에 결함이 여러 개 겹쳐도 라벨이 없어 못 잡던 중복결함을, 현업 결함 패턴을 본뜬 단일결함 합성만으로 학습해 검출",
+      "kpi": "현업 결함 패턴 본뜬 단일결함 합성으로 중복결함 학습 — 검출력·오경보 억제를 단일 모델로 동시 달성",
+      "stat_cards": [
+        {
+          "big": "F1 0.9943",
+          "label": "검출 F1 · 합성셋"
+        },
+        {
+          "big": "0.00%",
+          "label": "오경보율 · 단일 모델"
+        }
+      ],
+      "ba": {
+        "before": "중복결함 정답 라벨 없음 · 누락",
+        "after": "단일결함 학습만으로 검출 F1 0.9943"
+      }
+    },
+    {
+      "type": "image_grid",
+      "kicker": "P2 · 문제 + FCM-PM 증강",
+      "title": "라벨 없는 중복결함을 합성으로 학습",
+      "bullets": [
+        "**문제·제약** — multi-label인데 2-combo(중복결함) 정답 라벨 부재 → single defect 학습 / 2-combo 평가 구조",
+        "**① FCM-PM (데이터)** — Full-Cover Mixup(단일결함 2장 격자 전면 교차합성, 결함 신호 비손실) + Pair Mask(합성 의사 배경을 loss에서 마스킹) → 2-combo 검출 학습 + FAR 억제",
+        "**② val-margin (모델 선택)** — 검증 분리 마진으로 checkpoint 선택. val-F1은 실성능과 ρ=−0.10(무상관), val-margin은 ρ=+0.56 → criterion만 바꿔 +0.052 무비용 개선",
+        "**③ NB reject (추론)** — max sigmoid prob < 0.55면 Normal 강제(negative/OOD reject) → Normal·Invalid·OOD FAR 차단"
+      ],
+      "images": [
+        {
+          "src": "chip_eval_scratch_selected.png",
+          "caption": "Single defect (scratch)"
+        },
+        {
+          "src": "chip_combo_fork_scratch_selected.png",
+          "caption": "2-combo (중복결함)"
+        },
+        {
+          "src": "chip_eval_normal_selected.png",
+          "badge": "Normal",
+          "watermark": "Normal",
+          "caption": "Normal (defect-free)"
+        },
+        {
+          "src": "chip_ood_starburst_selected.png",
+          "caption": "OOD (Out-of-Distribution)"
+        }
+      ],
+      "grid_cols": 4,
+      "body_h": 1.46,
+      "grid_gap": 0.42,
+      "img_tile": "#E4EAF4",
+      "img_badge": "단일결함만 학습  →  중복결함 검출",
+      "img_note": "정상은 균질 · 실제 패턴을 본뜬 단일결함 생성본에서 중복결함·평가셋을 합성"
+    },
+    {
+      "type": "table",
+      "kicker": "P2 · 성과",
+      "title": "단계별 성능 향상 — FCM-PM으로 도약",
+      "headers": [
+        "기법",
+        "검출 정확도(F1)\n(비트 평균)",
+        "단일결함",
+        "중복결함(2개)",
+        "오경보율"
+      ],
+      "rows": [
+        [
+          "기본 손실(BCE)",
+          "0.1093",
+          "0.1896",
+          "0.0668",
+          "99.47%"
+        ],
+        [
+          "불균형 보정(Focal)",
+          "0.7980",
+          "0.8724",
+          "0.7050",
+          "45.72%"
+        ],
+        [
+          "비대칭 손실(ASL)",
+          "0.6435",
+          "0.5379",
+          "0.7320",
+          "100%"
+        ],
+        [
+          "칩 합성(랜덤 사각)",
+          "0.9359",
+          "0.9566",
+          "0.9070",
+          "42.05%"
+        ],
+        [
+          "칩 합성 + 배경 가림",
+          "0.9256",
+          "0.8538",
+          "0.9682",
+          "100%"
+        ],
+        [
+          "FCM-PM (기본 시점)",
+          "0.9652",
+          "—",
+          "—",
+          "0.00%"
+        ],
+        [
+          "FCM-PM (안정 시점)",
+          "0.9943",
+          "—",
+          "—",
+          "0.00%"
+        ]
+      ],
+      "highlight_row": 6,
+      "note": "검출 F1(비트 평균)=결함 4종을 비트 단위로 맞췄는지 평균. 손실만 바꾸거나 랜덤 칩 합성은 오경보율(FAR)이 42~100%로 무너짐 → 전면 덮기 합성(Full-Cover)으로 결함 coverage 보장 + 배경 가림(Pair Mask)으로 가짜 배경 분리, 두 축을 결합한 FCM-PM이 FAR 0.00%·검출 F1 0.9943 달성.\nFCM-PM 행은 REPORT 기준 bit_F1·오경보만 제출(단일/중복 per-class는 단일 replicate라 비표기). Ensemble(4×)은 성능 상한 확인용 teacher, 지식증류 단일 student는 운영 배포 후보(성능 확정 전)."
+    },
+    {
+      "type": "section",
+      "no": "P3",
+      "title": "Trend 이상감지 (데이터 생성 기반)",
+      "subtitle": "실전 이상 라벨 부족을, 현업 10년 판정 경험의 코드화로 — 도메인 지식을 생성 규칙으로 옮겨 학습·검증 가능하게",
+      "prog": [
+        3,
+        3
+      ],
+      "desc": "실전 이상 데이터·라벨이 부족해 모델 검증 자체가 막혔던 추세 이상감지를, 현업 10년 판정 경험의 코드화로 해결",
+      "kpi": "현업 10년 판정 경험을 생성 규칙으로 코드화 — 생성 데이터만으로 검증 가능",
+      "stat_cards": [
+        {
+          "big": "F1 0.9975",
+          "label": "정상·이상 판별 [5-seed·PoC]"
+        },
+        {
+          "big": "10,000장",
+          "label": "생성 trend 데이터"
+        }
+      ],
+      "ba": {
+        "before": "실전 이상 데이터 부재 · 검증 막힘",
+        "after": "생성 데이터로 검증(F1 0.9975)"
+      }
+    },
+    {
+      "type": "image_grid",
+      "kicker": "P3 · 문제 + 생성기 설계",
+      "title": "검증을 막는 라벨 부족을, 판정기준 코드화로 풀다",
+      "img_badge": "생성 trend 10,000장 · 밀도5×노이즈3×이상5종",
+      "bullets": [
+        "**문제**: trend(계측 시계열) 판정이 수작업 그래프 판독에 의존 → **실전 이상 데이터·라벨이 부족해 모델 검증 자체가 막힘**",
+        "**생성기 설계(직접 고안)**: 현업 10년 판정 경험을 생성 규칙으로 코드화해 정상·이상 trend를 자동 생성",
+        "**정상성 보정**: 정상 산포를 실전 기준선 하한·상한에 가두고 이상 강도는 분리 → 학습·검증이 실전과 어긋나지 않게"
+      ],
+      "images": [
+        {
+          "src": "trend_normal_nolegend.png",
+          "caption": "정상 · 기준선 주변에 모임",
+          "axis_cover": [
+            0.13,
+            0.14
+          ],
+          "axis_x": "시간 순서 →",
+          "axis_y": "계측값"
+        },
+        {
+          "src": "trend_mean_shift_nolegend.png",
+          "caption": "이상 · 기준선 벗어남(평균이동 예)",
+          "band": [
+            0.76,
+            0.985
+          ],
+          "axis_cover": [
+            0.13,
+            0.14
+          ],
+          "axis_x": "시간 순서 →",
+          "axis_y": "계측값"
+        }
+      ],
+      "grid_cols": 2,
+      "body_h": 0.74,
+      "side_card": {
+        "head": "정상 vs 이상 판정 기준",
+        "rows": [
+          [
+            "정상",
+            "기준선 주변에 점이 모임"
+          ],
+          [
+            "이상",
+            "기준선에서 벗어나 치우침·흩어짐"
+          ]
+        ]
+      },
+      "img_note": "빨강=이상 구간 · 파랑=정상 · 가로 실선=기준선 · 이상 5종은 다음 장에서 전체 제시(여기선 대표 2종)"
+    },
+    {
+      "type": "image_grid",
+      "kicker": "P3 · 생성 예시 + 결과",
+      "title": "정상 1종 + 이상 5종 전체로 게이트 검증 (PoC 결과)",
+      "bullets": [
+        "**총 10,000장 생성**(정상 5,000 + 이상 5종×1,000), 7:1.5:1.5 분할 → **시험셋 1,500건**(정상 750·이상 5종×150)에서 정상/이상 게이트 **F1 0.9975**(5-seed 평균, FN 1.6·FP 2.2) — 생성 데이터만으로 구분 확인(PoC)",
+        "**게이트=1차 스크리닝**: 보수적 임계로 불량 trend 누설을 차단 → 누락 위험↓(이상 재현율 약 0.998 = 실제 이상을 거의 놓치지 않고 잡아냄)"
+      ],
+      "body_h": 0.64,
+      "grid_gap": 0.14,
+      "grid_row_gap": 0.18,
+      "cap_size": 15,
+      "img_tile": "#EEF2F8",
+      "images": [
+        {
+          "src": "trend_normal_nolegend.png",
+          "caption": "정상·기준선 주변",
+          "axis_cover": [
+            0.13,
+            0.13
+          ],
+          "axis_x": false,
+          "axis_y": false
+        },
+        {
+          "src": "trend_mean_shift_nolegend.png",
+          "caption": "평균이동·치우침",
+          "band": [
+            0.76,
+            0.985
+          ],
+          "axis_cover": [
+            0.13,
+            0.13
+          ],
+          "axis_x": false,
+          "axis_y": false
+        },
+        {
+          "src": "trend_standard_deviation_nolegend.png",
+          "caption": "산포변화·흩어짐",
+          "band": [
+            0.76,
+            0.985
+          ],
+          "axis_cover": [
+            0.13,
+            0.13
+          ],
+          "axis_x": false,
+          "axis_y": false
+        },
+        {
+          "src": "trend_spike_nolegend.png",
+          "caption": "스파이크·순간 튐",
+          "band": [
+            0.76,
+            0.985
+          ],
+          "axis_cover": [
+            0.13,
+            0.13
+          ],
+          "axis_x": false,
+          "axis_y": false
+        },
+        {
+          "src": "trend_drift_nolegend.png",
+          "caption": "드리프트·서서히 이탈",
+          "band": [
+            0.76,
+            0.985
+          ],
+          "axis_cover": [
+            0.13,
+            0.13
+          ],
+          "axis_x": false,
+          "axis_y": false
+        },
+        {
+          "src": "trend_context_nolegend.png",
+          "caption": "맥락이탈·정상군 벗어남",
+          "band": [
+            0.76,
+            0.985
+          ],
+          "axis_cover": [
+            0.13,
+            0.13
+          ],
+          "axis_x": false,
+          "axis_y": false
+        }
+      ],
+      "grid_cols": 3,
+      "img_note": "빨강 음영=이상 구간 · 파랑 점=정상 · 가로 실선=기준선(정상 그래프만 이상 구간 없음)"
+    },
+    {
+      "type": "timeline",
+      "kicker": "로드맵 · 완료 시기",
+      "title": "완료 시기 및 현장 적용 로드맵",
+      "items": [
+        {
+          "date": "2024.10",
+          "label": "P1 착수",
+          "sub": "파이프라인·뷰어 설계",
+          "done": true
+        },
+        {
+          "date": "2025.03",
+          "label": "P2 칩 합성 증강 착수",
+          "sub": "칩 멀티라벨 합성 증강 설계",
+          "done": true
+        },
+        {
+          "date": "2025.05",
+          "label": "양산 운영 개시",
+          "sub": "DRAM 전제품·일 2만 wafer",
+          "done": true
+        },
+        {
+          "date": "2026.01",
+          "label": "P3 Trend PoC",
+          "sub": "데이터 생성기",
+          "done": true
+        },
+        {
+          "date": "2026.09",
+          "label": "모델 양산 배포",
+          "sub": "Known/Unknown GPU 할당",
+          "done": false
+        },
+        {
+          "date": "향후",
+          "label": "현업 확대 적용",
+          "sub": "칩 단위 분류기 대체 · 영상+수치 결합",
+          "done": false
+        }
+      ],
+      "caption": "운영=파이프라인·뷰어(완료) / 분류 모델=2026.9 배포 예정"
+    },
+    {
+      "type": "closing",
+      "kicker": "마무리 · 정리",
+      "title": "정리: 도메인 지식을 AI 설계로 옮긴 3개 과제",
+      "bullets": [
+        "직접 고안한 차별점 — **무손실 좌표보존 변환 · FCM-PM(전면 덮기 합성+짝 가림) · 분리폭 지표 기반 안정 시점 선택 · 유사도 0.72 초과 제외 · trend 생성기**로 표준 기법이 못 풀던 라벨·검증 공백을 메움",
+        {
+          "t": "표준 CutMix 대비 결함신호 비잘림 + 가짜배경 차단",
+          "lvl": 1
+        },
+        "실제 사업가치 — **운영 파이프라인·뷰어 효과**로 **연 약 26억** + **수율 +0.02% 회복 시 불량 1건 약 97억**, 매일 양산 운영(분류 모델 배포 전)",
+        "사내 인정 3건 — DS AI Best Practice **Good Challenger 상** · MTC 고등급(1등급) 채택 · **2026 삼성 논문상 초록 통과**",
+        "QIE 제조품질 AX(AI 전환) 가속에 기여 — 다음 단계는 분류 모델 양산 배포(2026.9)",
+        {
+          "t": "P1 운영 / P2·P3 검증·PoC(미배포) · 26억=연 반복, 97억=불량 1건(합산 아님) · 수상 2건 확정·논문상 초록 통과",
+          "lvl": 1
+        }
+      ],
+      "kpis": [
+        {
+          "big": "F1 0.95",
+          "label": "P1 Known 검증",
+          "sub": "16종 / 1,500장 / 학습:검증 4:1"
+        },
+        {
+          "big": "오경보 0.00%",
+          "label": "P2 오경보율",
+          "sub": "검출 F1 0.9943"
+        },
+        {
+          "big": "F1 0.9975",
+          "label": "P3 정상/이상 PoC",
+          "sub": "생성 데이터 5-seed 검증"
+        },
+        {
+          "big": "26억·97억",
+          "label": "연 반복 26억 / 불량 1건 97억",
+          "sub": "수율 +0.02% 회복 시(합산 아님)"
+        }
+      ]
+    }
+  ]
+}
