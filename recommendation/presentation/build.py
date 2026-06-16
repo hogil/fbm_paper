@@ -261,8 +261,8 @@ def s_title(slide, d, idx):
     # 부제목과 발표자 사이 중앙 공백을 3개 과제(P1/P2/P3) 미니 카드로 채워 무게중심 균형(휑함 완화)
     tasks = d.get("tasks", [
         {"no": "P1", "t": "Failbit Map 불량 분석"},
-        {"no": "P2", "t": "Chip 멀티라벨 분류"},
-        {"no": "P3", "t": "Trend 이상감지 생성기"}])
+        {"no": "P2", "t": "Chip multi-label"},
+        {"no": "P3", "t": "Trend anomaly generator"}])
     if tasks:
         # P 카드 3개의 우측 끝선을 하단 footer 라인 우측 끝(12.33")과 정확히 맞춰 좌우 균형을
         # 맞춘다(slide1 low — 콘텐츠가 좌측에 쏠리고 우측 공백이 남던 인상 제거). 폭=(11.36-2*0.28)/3.
@@ -314,7 +314,7 @@ def s_section(slide, d, idx):
     _rect(slide, Inches(0.9), Inches(0.78), Inches(0.5), Pt(2.2), ACCENT)
     _text(slide, Inches(0.9), Inches(0.96), Inches(2.55), Inches(0.3),
           [[("PROJECT", dict(size=12, bold=True, color=ACCENT))]])
-    rail_sub = d.get("rail_sub", "제조품질 AI · 도메인 지식 설계")
+    rail_sub = d.get("rail_sub", "제조품질 AI · Domain-informed design")
     _text(slide, Inches(0.9), Inches(1.28), Inches(2.55), Inches(0.8),
           [[(rail_sub, dict(size=12.5, bold=True, color=NAVY))]])
     # 섹션 라벨(P1/P2/P3)+제목 묶음. 좌측 레일은 P 번호 블록을 위로 끌어올려(2.95→2.42)
@@ -327,7 +327,7 @@ def s_section(slide, d, idx):
     # 각 과제를 작은 점+라벨로 쌓아 현재 과제를 강조 → 공백 흡수 + 발표 위치감 제공.
     if d.get("prog"):
         cur, tot = d["prog"]
-        seg_labels = ["P1  Failbit Map", "P2  Chip 멀티라벨", "P3  Trend 생성기"]
+        seg_labels = ["P1  Failbit Map", "P2  Chip multi-label", "P3  Trend generator"]
         # P 번호 아래·하단 라벨 위 공백에 3행으로 배치(겹침 방지). 번호 블록을 위로 올린 만큼
         # 진행점도 함께 올려(4.45→3.95) 윗 그룹과 붙이고 stat 카드(5.48~) 위 간격을 균등화.
         sy0 = int(Inches(3.95)); srow = int(Inches(0.29))
@@ -377,7 +377,7 @@ def s_section(slide, d, idx):
     if d.get("kpi"):
         ky = Inches(5.62)
         _text(slide, Inches(4.0), ky, Inches(1.2), Inches(0.46),
-              [[("핵심 성과", dict(size=11, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
+              [[("Key Result", dict(size=11, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
         _text(slide, Inches(5.12), ky, Inches(7.5), Inches(0.46),
               [[(d["kpi"], dict(size=13.5, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
     # 하단 빈 영역을 'before → after' 한 줄 비교 배지로 채워 무게중심 균형(공백 과다 완화).
@@ -385,19 +385,19 @@ def s_section(slide, d, idx):
     if d.get("ba"):
         ba = d["ba"]; by = Inches(6.36); bh = Inches(0.72)
         _text(slide, Inches(9.5), by-Inches(0.30), Inches(3.1), Inches(0.26),
-              [[("적용 전 → 후", dict(size=11, bold=True, color=ACCENT))]],
+              [[("Before → After", dict(size=11, bold=True, color=ACCENT))]],
               align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
         bx = Inches(4.0); bcw = Inches(3.95); bgap = Inches(0.7)
         _rect(slide, bx, by, bcw, bh, PANEL)
         _text(slide, bx+Inches(0.18), by, Emu(int(bcw)-int(Inches(0.36))), bh,
-              [[("적용 전  ", dict(size=10.5, bold=True, color=MUTED)),
+              [[("Before  ", dict(size=10.5, bold=True, color=MUTED)),
                 (ba.get("before", ""), dict(size=12.5, bold=True, color=INK))]],
               anchor=MSO_ANCHOR.MIDDLE)
         bx2 = Emu(int(bx)+int(bcw)+int(bgap))
         _rect(slide, bx2, by, bcw, bh, RGBColor(0xE6,0xF7,0xF6))
         _rect(slide, bx2, by, Inches(0.09), bh, ACCENT)
         _text(slide, bx2+Inches(0.18), by, Emu(int(bcw)-int(Inches(0.36))), bh,
-              [[("적용 후  ", dict(size=10.5, bold=True, color=ACCENT)),
+              [[("After  ", dict(size=10.5, bold=True, color=ACCENT)),
                 (ba.get("after", ""), dict(size=12.5, bold=True, color=NAVY))]],
               anchor=MSO_ANCHOR.MIDDLE)
         # 두 배지 사이 화살표(밴드 세로 중심에 맞춤)
@@ -621,7 +621,7 @@ def _cluster3_diagram(slide, x, y, w, h):
     cap_h = int(Inches(0.26))
     pan_y = y + cap_h
     pan_h = h - cap_h
-    caps = ["① 라벨 없음 (무작위 점)", "② 자기지도 군집화", "③ 유사도 0.72 컷 · 같은 불량 보존"]
+    caps = ["① Unlabeled points", "② Self-supervised clustering", "③ Similarity 0.72 cut · same-defect 유지"]
     cap_cols = [MUTED, NAVY, ACCENT]
     px0 = x
     centers_for = {
@@ -692,8 +692,8 @@ def _twotrack_diagram(slide, x, y, w, h):
     ty2 = ty1 + th + gap
     # 운영 트랙(가동 중) — teal 채움 + '양산 중' 단계들
     _text(slide, Emu(x), Emu(ty1), Emu(lblw - int(Inches(0.1))), Emu(th),
-          [[("운영 (양산 중)", dict(size=11, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
-    ops = ["변환 파이프라인", "운영 뷰어", "일 2만 wafer 처리"]
+          [[("Production operation", dict(size=11, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+    ops = ["Pipeline", "Production viewer", "20K wafer/day"]
     n = len(ops); sg = int(Inches(0.14))
     bw = (track_w - sg * (n - 1)) // n
     for k, t in enumerate(ops):
@@ -707,8 +707,8 @@ def _twotrack_diagram(slide, x, y, w, h):
           Emu(int(Inches(0.16))), Emu(int(Inches(0.26))), ACCENT, shape=MSO_SHAPE.RIGHT_ARROW)
     # 모델 트랙(검증·배포 대기) — 회색 점선 외곽 + 마지막 단계 'GPU 대기'
     _text(slide, Emu(x), Emu(ty2), Emu(lblw - int(Inches(0.1))), Emu(th),
-          [[("모델 (검증·배포 대기)", dict(size=11, bold=True, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
-    mds = ["검증 완료 F1 0.95", "Unknown 13→7", "GPU 대기 → 2026.9 배포"]
+          [[("Model validation / deploy waiting", dict(size=11, bold=True, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
+    mds = ["Validation F1 0.95", "Unknown 13→7", "GPU wait → 2026.9 deploy"]
     for k, t in enumerate(mds):
         bx = track_x + k * (bw + sg)
         last = (k == len(mds) - 1)
@@ -1201,7 +1201,7 @@ def s_image_grid(slide, d, idx):
             tf = rchip.text_frame; tf.word_wrap = False
             tf.margin_left = 0; tf.margin_right = 0; tf.margin_top = 0; tf.margin_bottom = 0
             pp = tf.paragraphs[0]; pp.alignment = PP_ALIGN.CENTER
-            rr = pp.add_run(); rr.text = str(rf) if not isinstance(rf, bool) else "검출 결과"
+            rr = pp.add_run(); rr.text = str(rf) if not isinstance(rf, bool) else "Detection result"
             _set_font(rr, size=10.5, bold=True, color=WHITE)
         # trend 산점도(matplotlib)의 영문 축 라벨·작은 눈금 숫자(좌측 'Measurement Value (nm)' 세로,
         # 하단 'time_index')는 비즈니스 톤과 이질적이고 가독성 하한이다 → 이미지 픽셀은 가공하지 않고,
@@ -1223,11 +1223,11 @@ def s_image_grid(slide, d, idx):
             if im.get("axis_y") is not False:
                 _text(slide, Emu(px_ - int(Inches(0.02))), Emu(py_ + ph_ // 2 - int(Inches(0.12))),
                       Emu(lw_m + int(Inches(0.5))), Emu(int(Inches(0.24))),
-                      [[(im.get("axis_y", "계측값"), dict(size=9.5, bold=True, color=MUTED))]],
+                      [[(im.get("axis_y", "Measured value"), dict(size=9.5, bold=True, color=MUTED))]],
                       align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
             if im.get("axis_x") is not False:
                 _text(slide, Emu(px_), Emu(py_ + ph_ - bh_m), Emu(pw_), Emu(max(bh_m, int(Inches(0.2)))),
-                      [[(im.get("axis_x", "시간 순서 →"), dict(size=9.5, bold=True, color=MUTED))]],
+                      [[(im.get("axis_x", "Time order →"), dict(size=9.5, bold=True, color=MUTED))]],
                       align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
             # 하단 strip 만큼만 산점도 본문 높이를 좁혀 band(이상 음영)가 가려진 축 영역 아래로
             # 흘러내리지 않게 한다(가로 위치/폭은 원본 그대로라 band b0/b1 비율이 유지됨).
@@ -1269,7 +1269,7 @@ def s_image_grid(slide, d, idx):
             tf = lab.text_frame; tf.word_wrap = False
             tf.margin_left = 0; tf.margin_right = 0; tf.margin_top = 0; tf.margin_bottom = 0
             pp = tf.paragraphs[0]; pp.alignment = PP_ALIGN.CENTER
-            rr = pp.add_run(); rr.text = "이상"
+            rr = pp.add_run(); rr.text = "Anomaly"
             _set_font(rr, size=10, bold=True, color=RGBColor(0xE5, 0x3A, 0x1F))
         if im.get("outline") and hasattr(pic, "_fit_rect"):
             # 흰 바탕에 색점 몇 개만 흩어진 식별 지도(objid) 패널은 박스 내부가 텅 비어 보인다 →
@@ -1298,7 +1298,7 @@ def s_image_grid(slide, d, idx):
             tf = pchip.text_frame; tf.word_wrap = False
             tf.margin_left = 0; tf.margin_right = 0; tf.margin_top = 0; tf.margin_bottom = 0
             pp = tf.paragraphs[0]; pp.alignment = PP_ALIGN.CENTER
-            rr = pp.add_run(); rr.text = im["pair"] + "쌍"
+            rr = pp.add_run(); rr.text = "pair " + im["pair"]
             _set_font(rr, size=10.5, bold=True, color=WHITE)
         if im.get("watermark") and hasattr(pic, "_fit_rect"):
             # 의도적으로 거의 빈 '정상 — 패턴 없음' 패널이 렌더 누락/빈 이미지로 오인되지 않게,
@@ -1373,7 +1373,7 @@ def s_image_grid(slide, d, idx):
         rh = (int(sh) - int(hh) - int(Inches(0.28))) // max(1, len(srows))
         for k, (lab, txt) in enumerate(srows):
             ry = ry0 + k * rh
-            badge_col = ACCENT if "정상" in lab and "이상" not in lab else RGBColor(0xE5, 0x3A, 0x1F)
+            badge_col = ACCENT if lab in ("정상", "Normal") else RGBColor(0xE5, 0x3A, 0x1F)
             _rect(slide, Emu(int(sx) + int(Inches(0.18))), Emu(ry),
                   Emu(int(Inches(0.78))), Emu(int(Inches(0.34))), badge_col,
                   shape=MSO_SHAPE.ROUNDED_RECTANGLE)
@@ -1797,7 +1797,7 @@ def s_cards(slide, d, idx):
         _img_fit(slide, cd["thumb"], Emu(x + tpad + inset), Emu(ty + tpad // 2 + inset // 2),
                  Emu(cw - 2 * tpad - 2 * inset), Emu(thumb_h - tpad - inset), frame=False)
         # ── 아래 3줄(문제·접근·결과) — 라벨은 틸, 결과 줄 강조 ──
-        labels = [("문제", "problem"), ("접근", "approach"), ("결과", "result")]
+        labels = [("Problem", "problem"), ("Approach", "approach"), ("Impact", "result")]
         rgap = int(Inches(0.06))
         rh = (rows_h - rgap * (len(labels) - 1)) // len(labels)
         rx = x + int(Inches(0.2)); rw = cw - int(Inches(0.4))
@@ -1811,14 +1811,16 @@ def s_cards(slide, d, idx):
                 _rect(slide, Emu(rx - int(Inches(0.08))), Emu(ry), Emu(int(Inches(0.08))),
                       Emu(rh), ACCENT)
             # 라벨 칩(틸 텍스트) + 본문
-            _text(slide, Emu(rx), Emu(ry), Emu(int(Inches(0.62))), Emu(rh),
+            label_w = int(Inches(0.96))
+            row_pad = int(Inches(0.08))
+            _text(slide, Emu(rx), Emu(ry + row_pad), Emu(label_w), Emu(rh - 2 * row_pad),
                   [[(lab, dict(size=11, bold=True, color=ACCENT))]],
-                  anchor=MSO_ANCHOR.MIDDLE)
+                  anchor=MSO_ANCHOR.TOP)
             body_col = NAVY if is_result else INK
-            _text(slide, Emu(rx + int(Inches(0.6))), Emu(ry),
-                  Emu(rw - int(Inches(0.6))), Emu(rh),
+            _text(slide, Emu(rx + label_w + int(Inches(0.04))), Emu(ry + row_pad),
+                  Emu(rw - label_w - int(Inches(0.04))), Emu(rh - 2 * row_pad),
                   [[(cd[key], dict(size=11.5, bold=is_result, color=body_col))]],
-                  anchor=MSO_ANCHOR.MIDDLE, wrap=True)
+                  anchor=MSO_ANCHOR.TOP, wrap=True)
     if d.get("note"):
         _text(slide, Inches(0.7), Emu(int(Inches(6.52))), Inches(12.0), Inches(0.5),
               [[(d["note"], dict(size=11.5, color=RGBColor(0x3A, 0x48, 0x5C)))]],
@@ -1858,6 +1860,43 @@ def _ba_row(slide, x, y, w, h, label, before, after):
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
 
+def _tech_card(slide, x, y, w, h, d):
+    """기법 1개를 '무엇을 무엇으로 바꾸는지' 보이는 카드로 표현."""
+    x, y, w, h = int(x), int(y), int(w), int(h)
+    _rect(slide, Emu(x), Emu(y), Emu(w), Emu(h), WHITE,
+          line=RGBColor(0xC4, 0xD0, 0xE2), line_w=Pt(1.15), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    _rect(slide, Emu(x), Emu(y), Emu(int(Inches(0.08))), Emu(h), ACCENT)
+    _text(slide, Emu(x + int(Inches(0.18))), Emu(y + int(Inches(0.10))),
+          Emu(w - int(Inches(0.36))), Emu(int(Inches(0.28))),
+          [[(d["name"], dict(size=13, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, Emu(x + int(Inches(0.18))), Emu(y + int(Inches(0.39))),
+          Emu(w - int(Inches(0.36))), Emu(int(Inches(0.24))),
+          [[(d["role"], dict(size=9.5, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
+
+    fy = y + int(Inches(0.72)); fh = int(Inches(0.36))
+    node_gap = int(Inches(0.16)); arr_w = int(Inches(0.26))
+    node_w = (w - int(Inches(0.42)) - node_gap * 2 - arr_w) // 2
+    bx = x + int(Inches(0.20))
+    _rect(slide, Emu(bx), Emu(fy), Emu(node_w), Emu(fh), PANEL,
+          line=LINE, line_w=Pt(0.9), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    _text(slide, Emu(bx + int(Inches(0.06))), Emu(fy), Emu(node_w - int(Inches(0.12))), Emu(fh),
+          [[(d["before"], dict(size=8.8, bold=True, color=RGBColor(0x55, 0x60, 0x75)))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    ax = bx + node_w + node_gap
+    _rect(slide, Emu(ax), Emu(fy + int(Inches(0.08))), Emu(arr_w), Emu(int(Inches(0.20))),
+          ACCENT, shape=MSO_SHAPE.RIGHT_ARROW)
+    bx2 = ax + arr_w + node_gap
+    _rect(slide, Emu(bx2), Emu(fy), Emu(node_w), Emu(fh), RGBColor(0xE6, 0xF7, 0xF6),
+          line=ACCENT, line_w=Pt(0.9), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    _text(slide, Emu(bx2 + int(Inches(0.06))), Emu(fy), Emu(node_w - int(Inches(0.12))), Emu(fh),
+          [[(d["after"], dict(size=8.8, bold=True, color=NAVY))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+
+    _text(slide, Emu(x + int(Inches(0.22))), Emu(y + int(Inches(1.16))),
+          Emu(w - int(Inches(0.44))), Emu(h - int(Inches(1.24))),
+          [[(d["desc"], dict(size=9.2, color=INK))]], anchor=MSO_ANCHOR.TOP)
+
+
 def s_pipeline(slide, d, idx):
     """데이터 파이프라인: WHY(필요성) + 기술 스택(생성/뷰어 구분) + '왜 좋은가' before→after 도식.
     좌측 = WHY 박스 + 두 스택 카드(생성 파이프라인 / 운영 뷰어), 우측 = before→after 비교 박스
@@ -1876,10 +1915,41 @@ def s_pipeline(slide, d, idx):
         _rect(slide, Emu(int(Inches(0.7))), Emu(wy), Emu(int(Inches(0.1))), Emu(wy_h), ACCENT)
         _text(slide, Emu(int(Inches(0.92))), Emu(wy), Emu(int(Inches(1.2))), Emu(wy_h),
               [[("WHY", dict(size=12, bold=True, color=ACCENT))],
-               [("필요성", dict(size=9.5, bold=True, color=MUTED))]],
+               [("Need", dict(size=9.5, bold=True, color=MUTED))]],
               anchor=MSO_ANCHOR.MIDDLE)
         _text(slide, Emu(int(Inches(1.92))), Emu(wy), Emu(int(Inches(10.6))), Emu(wy_h),
               [[(why, dict(size=12.5, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
+    if d.get("tech_cards"):
+        col_top = top + wy_h + (int(Inches(0.18)) if why else 0)
+        lx = int(Inches(0.7)); lw = int(Inches(7.45)); gap = int(Inches(0.22))
+        rx = lx + lw + int(Inches(0.36)); rw = int(Inches(12.7)) - rx
+        _text(slide, Emu(lx), Emu(col_top), Emu(lw), Emu(int(Inches(0.30))),
+              [[("기법별 역할", dict(size=13, bold=True, color=NAVY))]],
+              anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, Emu(rx), Emu(col_top), Emu(rw), Emu(int(Inches(0.30))),
+              [[("Before → After", dict(size=13, bold=True, color=NAVY))]],
+              anchor=MSO_ANCHOR.MIDDLE)
+
+        grid_top = col_top + int(Inches(0.42))
+        card_w = (lw - gap) // 2
+        card_h = int(Inches(1.58))
+        row_gap = int(Inches(0.20))
+        for ti, tc in enumerate(d["tech_cards"][:4]):
+            r, c = divmod(ti, 2)
+            tx = lx + c * (card_w + gap)
+            ty = grid_top + r * (card_h + row_gap)
+            _tech_card(slide, tx, ty, card_w, card_h, tc)
+
+        bas = d.get("ba_rows", [])
+        ba_top = grid_top
+        ba_gap = int(Inches(0.18))
+        ba_h = (bottom - ba_top - ba_gap * (len(bas) - 1)) // max(1, len(bas))
+        for bi, ba in enumerate(bas):
+            by = ba_top + bi * (ba_h + ba_gap)
+            _ba_row(slide, Emu(rx), Emu(by), Emu(rw), Emu(ba_h),
+                    ba["label"], ba["before"], ba["after"])
+        _footer(slide, idx)
+        return
     # ── 좌/우 2단: 좌=기술 스택 카드 2개, 우=before→after 도식 ──
     col_top = top + wy_h + (int(Inches(0.18)) if why else 0)
     col_h = bottom - col_top
@@ -1887,7 +1957,7 @@ def s_pipeline(slide, d, idx):
     rx = lx + lw + colgap; rw = int(Inches(12.7)) - rx
     # 좌측 컬럼 헤더
     _text(slide, Emu(lx), Emu(col_top), Emu(lw), Emu(int(Inches(0.32))),
-          [[("무엇을 쓰나 — 실제 기술 스택", dict(size=13, bold=True, color=NAVY))]],
+          [[("Actual stack", dict(size=13, bold=True, color=NAVY))]],
           anchor=MSO_ANCHOR.MIDDLE)
     stacks = d.get("stacks", [])
     sy0 = col_top + int(Inches(0.42))
@@ -1909,7 +1979,7 @@ def s_pipeline(slide, d, idx):
                     st["items"], size=st.get("size", 11), gap=3, line_spacing=1.06)
     # 우측 컬럼 헤더
     _text(slide, Emu(rx), Emu(col_top), Emu(rw), Emu(int(Inches(0.32))),
-          [[("왜 좋은가 — 적용 전 → 후", dict(size=13, bold=True, color=NAVY))]],
+          [[("Before → After", dict(size=13, bold=True, color=NAVY))]],
           anchor=MSO_ANCHOR.MIDDLE)
     bas = d.get("ba_rows", [])
     # before→after 3행 도식
@@ -1941,7 +2011,7 @@ def s_pipeline(slide, d, idx):
                      Emu(iw - int(Inches(0.12))), Emu(img_band_h - cap_h - int(Inches(0.12))),
                      frame=False)
             _text(slide, Emu(ix), Emu(iy + img_band_h - cap_h), Emu(iw), Emu(cap_h),
-                  [[("보조 도식 · ", dict(size=10, bold=True, color=ACCENT)),
+                  [[("Reference · ", dict(size=10, bold=True, color=ACCENT)),
                     (im.get("caption", ""), dict(size=10.5, bold=True, color=RGBColor(0x3A,0x48,0x5C)))]],
                   align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
