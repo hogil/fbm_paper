@@ -28,7 +28,7 @@ LINE   = RGBColor(0xD7, 0xDE, 0xEA)
 
 FONT = "맑은 고딕"
 EMU_W, EMU_H = Inches(13.333), Inches(7.5)
-FOOTER = "최호길 · QIE Data Science · AI Specialist 인증"
+FOOTER = "최호길 | QIE Data Science | AI Specialist 인증"
 
 
 _NAMED = {"navy": "0F1E3D", "navy2": "1B3260", "accent": "12B5B0", "gold": "F2B705",
@@ -242,7 +242,7 @@ def s_title(slide, d, idx):
     # 표지 상단의 빈 띠를 핵심 성과 한 줄(시각적 앵커)로 채워 임팩트 보강 — 장식 과하지 않게
     # 가는 teal 룰 + 핵심 수치를 우상단 가로 라인에 절제 있게 배치.
     anchor_metrics = d.get("anchor_metrics",
-                           "연 26억 효과   ·   Known F1 0.95   ·   DS AI Best Practice 수상")
+                           "연 26억 효과   |   Known F1 0.95   |   DS AI Best Practice 수상")
     if anchor_metrics:
         _rect(slide, Inches(0.97), Inches(0.62), Inches(0.5), Pt(2.2), ACCENT)
         _text(slide, Inches(1.6), Inches(0.48), Inches(10.7), Inches(0.34),
@@ -289,9 +289,9 @@ def s_title(slide, d, idx):
     # 하단 구분선 + 소속/날짜 라인으로 하단 공백 메움(날짜 2026은 정보 전달용으로 푸터 우측에 배치)
     _rect(slide, Inches(0.97), Inches(6.55), Inches(11.36), Pt(1), LINE)
     _text(slide, Inches(0.97), Inches(6.68), Inches(8.5), Inches(0.4),
-          [[(d.get("footer_l", "삼성전자 메모리제조센터 · QIE그룹 Data Science"),
+          [[(d.get("footer_l", "삼성전자 메모리제조센터 | QIE그룹 Data Science"),
              dict(size=12, bold=True, color=NAVY)),
-            (d.get("footer_r", "    AI Specialist 인증 · 사내 경연 발표"),
+            (d.get("footer_r", "    AI Specialist 인증 사내 경연 발표"),
              dict(size=12, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
     _text(slide, Inches(10.5), Inches(6.68), Inches(1.83), Inches(0.4),
           [[("2026", dict(size=12, bold=True, color=ACCENT))]],
@@ -307,14 +307,14 @@ def s_section(slide, d, idx):
     _rect(slide, 0, 0, EMU_W, Inches(0.12), ACCENT)
     # 우측 본문 영역 상단(스탯카드 띠 위)에 과제 진행 eyebrow 라벨을 얹어 좌상단 공백 흡수.
     _text(slide, Inches(4.0), Inches(0.42), Inches(8.6), Inches(0.32),
-          [[("AI Specialist 인증 · 3개 과제", dict(size=12, bold=True, color=ACCENT))]],
+          [[("AI Specialist 인증 | 3개 과제", dict(size=12, bold=True, color=ACCENT))]],
           anchor=MSO_ANCHOR.MIDDLE)
     # 좌측 레일 상단의 큰 빈 띠(0~2.8")를 'PROJECT' eyebrow + 한 줄 요약 + 가는 룰로 채워
     # 세 섹션 표지 공통의 좌상단 휑함을 제거(P 마커는 그대로 수직 중앙 유지).
     _rect(slide, Inches(0.9), Inches(0.78), Inches(0.5), Pt(2.2), ACCENT)
     _text(slide, Inches(0.9), Inches(0.96), Inches(2.55), Inches(0.3),
           [[("PROJECT", dict(size=12, bold=True, color=ACCENT))]])
-    rail_sub = d.get("rail_sub", "제조품질 AI · Domain-informed design")
+    rail_sub = d.get("rail_sub", "제조품질 AI | Domain-informed design")
     _text(slide, Inches(0.9), Inches(1.28), Inches(2.55), Inches(0.8),
           [[(rail_sub, dict(size=12.5, bold=True, color=NAVY))]])
     # 섹션 라벨(P1/P2/P3)+제목 묶음. 좌측 레일은 P 번호 블록을 위로 끌어올려(2.95→2.42)
@@ -329,15 +329,15 @@ def s_section(slide, d, idx):
         cur, tot = d["prog"]
         seg_labels = ["P1  Failbit Map", "P2  Chip multi-label", "P3  Trend generator"]
         # P 번호 아래·하단 라벨 위 공백에 3행으로 배치(겹침 방지). 번호 블록을 위로 올린 만큼
-        # 진행점도 함께 올려(4.45→3.95) 윗 그룹과 붙이고 stat 카드(5.48~) 위 간격을 균등화.
-        sy0 = int(Inches(3.95)); srow = int(Inches(0.29))
+        # 진행 라벨은 큰 P 번호/세로 바가 끝난 뒤에 시작시켜 서로 덮이지 않게 한다.
+        sy0 = int(Inches(4.18)); srow = int(Inches(0.31))
         for k in range(tot):
             on = (k + 1) == cur
             yy = sy0 + k * srow
             _rect(slide, Inches(1.0), Emu(yy + int(Inches(0.04))), Inches(0.13), Inches(0.13),
                   ACCENT if on else RGBColor(0xC2, 0xCC, 0xDC), shape=MSO_SHAPE.OVAL)
             lab = seg_labels[k] if k < len(seg_labels) else f"P{k+1}"
-            _text(slide, Inches(1.28), Emu(yy), Inches(2.25), Inches(0.24),
+            _text(slide, Inches(1.28), Emu(yy), Inches(2.25), Inches(0.26),
                   [[(lab, dict(size=11, bold=on, color=(NAVY if on else MUTED)))]],
                   anchor=MSO_ANCHOR.MIDDLE)
     _text(slide, Inches(4.0), Inches(2.95), Inches(8.6), Inches(1.55),
@@ -621,7 +621,7 @@ def _cluster3_diagram(slide, x, y, w, h):
     cap_h = int(Inches(0.26))
     pan_y = y + cap_h
     pan_h = h - cap_h
-    caps = ["① Unlabeled points", "② Self-supervised clustering", "③ Similarity 0.72 cut · same-defect 유지"]
+    caps = ["① Unlabeled points", "② Self-supervised clustering", "③ Similarity 0.72 cut / same-defect 유지"]
     cap_cols = [MUTED, NAVY, ACCENT]
     px0 = x
     centers_for = {
@@ -693,7 +693,7 @@ def _twotrack_diagram(slide, x, y, w, h):
     # 운영 트랙(가동 중) — teal 채움 + '양산 중' 단계들
     _text(slide, Emu(x), Emu(ty1), Emu(lblw - int(Inches(0.1))), Emu(th),
           [[("Production operation", dict(size=11, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
-    ops = ["Pipeline", "Production viewer", "20K wafer/day"]
+    ops = ["Processing flow", "Production viewer", "20K wafer/day"]
     n = len(ops); sg = int(Inches(0.14))
     bw = (track_w - sg * (n - 1)) // n
     for k, t in enumerate(ops):
@@ -708,7 +708,7 @@ def _twotrack_diagram(slide, x, y, w, h):
     # 모델 트랙(검증·배포 대기) — 회색 점선 외곽 + 마지막 단계 'GPU 대기'
     _text(slide, Emu(x), Emu(ty2), Emu(lblw - int(Inches(0.1))), Emu(th),
           [[("Model validation / deploy waiting", dict(size=11, bold=True, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
-    mds = ["Validation F1 0.95", "Unknown 13→7", "GPU wait → 2026.9 deploy"]
+    mds = ["Validation F1 0.95", "Unknown 후보 13→7", "GPU server → 2026.9"]
     for k, t in enumerate(mds):
         bx = track_x + k * (bw + sg)
         last = (k == len(mds) - 1)
@@ -964,7 +964,7 @@ def _hex_to_grade_diagram(slide, x, y, w, h):
     gtot = gcw * len(grades) + ggp * (len(grades) - 1)
     _text(slide, Emu(x + int(Inches(0.2))), Emu(gry - lbl_h),
           Emu(w - int(Inches(0.4))), Emu(lbl_h),
-          [[("결과 등급 스펙트럼 (0~7) · 위 Grade 3은 이 중 한 값", dict(size=9.5, bold=True, color=ACCENT))]],
+          [[("결과 등급 스펙트럼 (0~7) / 위 Grade 3은 이 중 한 값", dict(size=9.5, bold=True, color=ACCENT))]],
           align=PP_ALIGN.CENTER, wrap=False, anchor=MSO_ANCHOR.MIDDLE)
     gsx = x + (w - gtot) // 2
     gcols = [RGBColor(0xEC, 0xEF, 0xF4), RGBColor(0xCF, 0xE6, 0xE4), RGBColor(0xA9, 0xD8, 0xD4),
@@ -986,6 +986,120 @@ def _hex_to_grade_diagram(slide, x, y, w, h):
     _text(slide, Emu(sx2 + int(Inches(0.18))), Emu(spy), Emu(sp_w - int(Inches(0.3))), Emu(sp_h),
           [[("Cython 컴파일 루프 ", dict(size=10, bold=True, color=NAVY)),
             ("→ 약 100배 가속", dict(size=10.5, bold=True, color=ACCENT))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+
+
+def _numba_composite_diagram(slide, x, y, w, h):
+    """다수 wafer를 픽셀 위치별로 누적해 composite hot-spot map을 만드는 Numba 병렬 합산을
+    코드/이미지 캡처 대신 네이티브 도형으로 보여준다. 여러 wafer → 픽셀별 누적(@njit prange)
+    → hot-spot 강조 composite. 라벨은 하단 라벨행에 둬 요소와 겹치지 않게 한다."""
+    x, y, w, h = int(x), int(y), int(w), int(h)
+    def I(v): return int(Inches(v))
+    cap_reserve = I(0.04); avail = h - cap_reserve
+    title_h = I(0.20)
+    _text(slide, Emu(x), Emu(y + I(0.04)), Emu(w), Emu(title_h),
+          [[("다수 wafer를 픽셀 위치별로 누적", dict(size=10.5, bold=True, color=NAVY))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+    callout_h = I(0.28)
+    band_top = y + I(0.04) + title_h + I(0.03)
+    band_bot = y + avail - callout_h - I(0.05)
+    lbl_h = I(0.18); lbl_y = band_bot - lbl_h
+    elem_top = band_top; elem_h = (band_bot - lbl_h) - elem_top
+    wafers_cx = x + I(1.25); arr_cx = x + I(2.85); comp_cx = x + I(4.35)
+    mini = min(I(0.62), elem_h)
+    offs = [(-I(0.13), -I(0.09)), (0, I(0.02)), (I(0.13), I(0.13))]
+    hot = [(0.60, 0.40), (0.46, 0.54), (0.50, 0.50)]
+    for k, (ox, oy) in enumerate(offs):
+        wx = wafers_cx - mini // 2 + ox; wy = elem_top + (elem_h - mini) // 2 + oy
+        sp = slide.shapes.add_shape(MSO_SHAPE.OVAL, Emu(wx), Emu(wy), Emu(mini), Emu(mini))
+        sp.fill.solid(); sp.fill.fore_color.rgb = RGBColor(0xDC, 0xE6, 0xF0)
+        sp.line.color.rgb = RGBColor(0xB9, 0xC6, 0xDB); sp.line.width = Pt(1); sp.shadow.inherit = False
+        fx, fy = hot[k]; dd = I(0.10)
+        _rect(slide, Emu(wx + int(fx * mini) - dd // 2), Emu(wy + int(fy * mini) - dd // 2),
+              Emu(dd), Emu(dd), RGBColor(0xE0, 0x68, 0x3A))
+    _text(slide, Emu(wafers_cx - I(0.7)), Emu(lbl_y), Emu(I(1.4)), Emu(lbl_h),
+          [[("여러 wafer", dict(size=9, color=MUTED))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    arr_w = I(0.95); ay = elem_top + elem_h // 2 - I(0.12)
+    _rect(slide, Emu(arr_cx - arr_w // 2), Emu(ay), Emu(arr_w), Emu(I(0.24)), ACCENT, shape=MSO_SHAPE.RIGHT_ARROW)
+    _text(slide, Emu(arr_cx - I(1.0)), Emu(lbl_y), Emu(I(2.0)), Emu(lbl_h),
+          [[("픽셀별 누적 (@njit prange)", dict(size=8.5, bold=True, color=ACCENT))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    comp = min(I(0.80), elem_h); compx = comp_cx - comp // 2; compy = elem_top + (elem_h - comp) // 2
+    sp = slide.shapes.add_shape(MSO_SHAPE.OVAL, Emu(compx), Emu(compy), Emu(comp), Emu(comp))
+    sp.fill.solid(); sp.fill.fore_color.rgb = RGBColor(0xEA, 0xF2, 0xF7)
+    sp.line.color.rgb = RGBColor(0xB9, 0xC6, 0xDB); sp.line.width = Pt(1.2); sp.shadow.inherit = False
+    hr = I(0.28)
+    hp = slide.shapes.add_shape(MSO_SHAPE.OVAL, Emu(compx + comp // 2 - hr // 2),
+                                Emu(compy + comp // 2 - hr // 2), Emu(hr), Emu(hr))
+    hp.fill.solid(); hp.fill.fore_color.rgb = RGBColor(0xCC, 0x33, 0x28)
+    hp.line.fill.background(); hp.shadow.inherit = False
+    _text(slide, Emu(comp_cx - I(1.0)), Emu(lbl_y), Emu(I(2.0)), Emu(lbl_h),
+          [[("hot-spot composite", dict(size=9, color=MUTED))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    cby = y + avail - callout_h
+    _rect(slide, Emu(x + I(0.3)), Emu(cby), Emu(w - I(0.6)), Emu(callout_h),
+          RGBColor(0xE6, 0xF7, 0xF6), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    _rect(slide, Emu(x + I(0.3)), Emu(cby), Emu(I(0.09)), Emu(callout_h), ACCENT)
+    _text(slide, Emu(x + I(0.46)), Emu(cby), Emu(w - I(0.76)), Emu(callout_h),
+          [[("반복 픽셀 합산을 기계어로 컴파일 + 병렬 ", dict(size=9.5, bold=True, color=NAVY)),
+            ("→ 대량 wafer 합성 가속", dict(size=9.5, bold=True, color=ACCENT))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+
+
+def _pyvips_stream_diagram(slide, x, y, w, h):
+    """대용량 이미지를 통째로 적재하지 않고 타일 단위로 필요한 부분만 streaming 디코드하는
+    pyvips 동작을 네이티브 도형으로 보여준다. 타일 격자(일부만 로드) → 운영 viewer.
+    라벨은 하단 라벨행에 둔다."""
+    x, y, w, h = int(x), int(y), int(w), int(h)
+    def I(v): return int(Inches(v))
+    cap_reserve = I(0.04); avail = h - cap_reserve
+    title_h = I(0.20)
+    _text(slide, Emu(x), Emu(y + I(0.04)), Emu(w), Emu(title_h),
+          [[("대용량 이미지를 타일 단위로 streaming 로드", dict(size=10.5, bold=True, color=NAVY))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+    callout_h = I(0.28)
+    band_top = y + I(0.04) + title_h + I(0.03)
+    band_bot = y + avail - callout_h - I(0.05)
+    lbl_h = I(0.18); lbl_y = band_bot - lbl_h
+    elem_top = band_top; elem_h = (band_bot - lbl_h) - elem_top
+    img_cx = x + I(1.25); arr_cx = x + I(2.85); v_cx = x + I(4.40)
+    big = min(I(0.86), elem_h); bx = img_cx - big // 2; by = elem_top + (elem_h - big) // 2
+    _rect(slide, Emu(bx), Emu(by), Emu(big), Emu(big), RGBColor(0xEE, 0xF1, 0xF6),
+          line=RGBColor(0xB9, 0xC6, 0xDB), line_w=Pt(1.2))
+    n = 4; ts = big // n
+    loaded = {(1, 1), (1, 2), (2, 1)}
+    for r in range(n):
+        for c in range(n):
+            tx = bx + c * ts; ty = by + r * ts
+            if (r, c) in loaded:
+                _rect(slide, Emu(tx), Emu(ty), Emu(ts - I(0.02)), Emu(ts - I(0.02)),
+                      RGBColor(0xCF, 0xEE, 0xED), line=ACCENT, line_w=Pt(1))
+            else:
+                sp = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Emu(tx), Emu(ty),
+                                            Emu(ts - I(0.02)), Emu(ts - I(0.02)))
+                sp.fill.background(); sp.line.color.rgb = RGBColor(0xD7, 0xDE, 0xEA)
+                sp.line.width = Pt(0.75); sp.shadow.inherit = False
+    _text(slide, Emu(img_cx - I(1.0)), Emu(lbl_y), Emu(I(2.0)), Emu(lbl_h),
+          [[("필요한 타일만 디코드", dict(size=9, bold=True, color=ACCENT))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    arr_w = I(0.95); ay = elem_top + elem_h // 2 - I(0.12)
+    _rect(slide, Emu(arr_cx - arr_w // 2), Emu(ay), Emu(arr_w), Emu(I(0.24)), ACCENT, shape=MSO_SHAPE.RIGHT_ARROW)
+    _text(slide, Emu(arr_cx - I(0.85)), Emu(lbl_y), Emu(I(1.7)), Emu(lbl_h),
+          [[("on-demand 디코드", dict(size=8.5, bold=True, color=MUTED))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    vw = I(1.55); vh = min(I(0.78), elem_h); vx = v_cx - vw // 2; vy = elem_top + (elem_h - vh) // 2
+    _rect(slide, Emu(vx), Emu(vy), Emu(vw), Emu(vh), RGBColor(0xEA, 0xF2, 0xF7),
+          line=ACCENT, line_w=Pt(1.4), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    _text(slide, Emu(vx), Emu(vy), Emu(vw), Emu(vh),
+          [[("운영 viewer", dict(size=11, bold=True, color=NAVY))],
+           [("대량 이미지 조회", dict(size=8.5, color=MUTED))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    cby = y + avail - callout_h
+    _rect(slide, Emu(x + I(0.3)), Emu(cby), Emu(w - I(0.6)), Emu(callout_h),
+          RGBColor(0xE6, 0xF7, 0xF6), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    _rect(slide, Emu(x + I(0.3)), Emu(cby), Emu(I(0.09)), Emu(callout_h), ACCENT)
+    _text(slide, Emu(x + I(0.46)), Emu(cby), Emu(w - I(0.76)), Emu(callout_h),
+          [[("전체 메모리 적재 대신 타일 streaming ", dict(size=9.5, bold=True, color=NAVY)),
+            ("→ viewer 로드 경량화", dict(size=9.5, bold=True, color=ACCENT))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
 
@@ -1086,6 +1200,7 @@ def s_image_grid(slide, d, idx):
     # 인상을 완화(slide 7·8·9·12·15 공통 medium). 타일/이미지 실높이를 cap_gap 만큼 줄이고
     # 캡션 박스를 그만큼 아래로 내려, 이미지 가공 없이 간격만 확보한다.
     has_cap = any(im.get("caption") for im in imgs)
+    has_diagram = any(im.get("diagram") for im in imgs)
     cap_gap = int(Inches(0.10)) if has_cap else 0
     cap_h = (Inches(0.46) if cols >= 5 else (Inches(0.44) if cols == 4 else Inches(0.36))) if has_cap else Inches(0)
     # 캡션 폰트를 한 단계 더 키워(11.5/12.5/13.5 → 12/13/14) figure형 슬라이드 캡션이 프리미엄
@@ -1118,7 +1233,7 @@ def s_image_grid(slide, d, idx):
     # 단일 행(rows==1) 가로형 이미지가 셀보다 작아(box_ar>max_ar) 좌우에 큰 거터가 남으면,
     # 셀 높이를 키워 이미지를 가로폭에 맞게 확대한다(slide15 두 그래프가 중앙 55%에만 몰려
     # 좌우가 비던 문제 해결 — 이미지 가공 없이 배치 영역만 확대). 가용 area_h 안에서만 키운다.
-    if rows == 1 and max_ar <= box_ar and max_ar > 0:
+    if (not has_diagram) and rows == 1 and max_ar <= box_ar and max_ar > 0:
         target_h = int(int(cw) / max_ar)            # 이미지가 셀 폭을 꽉 채우는 데 필요한 높이
         new_box_h = min(int(area_h) - int(cap_h), target_h)
         if new_box_h > img_box_h:
@@ -1128,7 +1243,9 @@ def s_image_grid(slide, d, idx):
             # 키운 그리드를 area 안에서 수직 중앙으로 정렬(상·하 균형)
             top = Emu(int(top) + max(0, (int(area_h) - used_h) // 2))
             box_ar = int(cw) / max(1, img_box_h)
-    if max_ar > box_ar:
+    if has_diagram:
+        pass  # 네이티브 도식 그리드는 셀 폭/높이를 그대로 채움(AR 리사이즈 건너뜀)
+    elif max_ar > box_ar:
         # 가로폭 한정 → 실제 이미지 높이는 cw/max_ar. 셀 세로 슬랙을 회수해 그리드를 수직 중앙 정렬.
         real_img_h = int(int(cw) / max_ar)
         slack_per_row = max(0, img_box_h - real_img_h)
@@ -1174,6 +1291,10 @@ def s_image_grid(slide, d, idx):
                 _bytes_compare_diagram(slide, x, y, cw, img_h)
             if im["diagram"] == "hex_to_grade":
                 _hex_to_grade_diagram(slide, x, y, cw, img_h)
+            if im["diagram"] == "numba_composite":
+                _numba_composite_diagram(slide, x, y, cw, img_h)
+            if im["diagram"] == "pyvips_stream":
+                _pyvips_stream_diagram(slide, x, y, cw, img_h)
             if im.get("caption"):
                 cap_pad = int(gx) // 2
                 _text(slide, Emu(int(x) - cap_pad), Emu(int(y)+int(chh)-int(cap_h)),
@@ -2011,7 +2132,7 @@ def s_pipeline(slide, d, idx):
                      Emu(iw - int(Inches(0.12))), Emu(img_band_h - cap_h - int(Inches(0.12))),
                      frame=False)
             _text(slide, Emu(ix), Emu(iy + img_band_h - cap_h), Emu(iw), Emu(cap_h),
-                  [[("Reference · ", dict(size=10, bold=True, color=ACCENT)),
+                  [[("Reference / ", dict(size=10, bold=True, color=ACCENT)),
                     (im.get("caption", ""), dict(size=10.5, bold=True, color=RGBColor(0x3A,0x48,0x5C)))]],
                   align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)

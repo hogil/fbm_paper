@@ -67,6 +67,36 @@
       }
     },
     {
+      "type": "image_grid",
+      "kicker": "P1 | 데이터 처리 구조 (생성 파이프라인)",
+      "title": "원천 log를 분석 가능한 Failbit Map으로 — 4가지 기법",
+      "bullets": [
+        "**왜** — 하루 약 2만 wafer를 압축 log에서 Failbit Map으로 변환·적재하고 운영 viewer로 대량 조회합니다 (변환 속도·저장·로드 최적화가 핵심)"
+      ],
+      "images": [
+        {
+          "diagram": "hex_to_grade",
+          "caption": "① Cython · 측정 log → Grade 격자"
+        },
+        {
+          "diagram": "bytes_compare",
+          "caption": "② 팔레트 PNG · 색을 번호로 저장"
+        },
+        {
+          "diagram": "numba_composite",
+          "caption": "③ Numba · 다수 wafer 합성"
+        },
+        {
+          "diagram": "pyvips_stream",
+          "caption": "④ pyvips · 대용량 이미지 로드"
+        }
+      ],
+      "grid_cols": 2,
+      "body_h": 0.5,
+      "img_tile": "#FFFFFF",
+      "bullet_size": 13.5
+    },
+    {
       "type": "bullets",
       "kicker": "P1 | Concept + field constraint",
       "title": "Failbit Map: 일반 이미지와 다른 점",
@@ -81,23 +111,6 @@
       "image": "wafer_edge_ring_scratch_rot.png",
       "img_label": "wafer Failbit Map / Edge-Ring",
       "caption": "Edge-Ring Scratch (edge를 따라 형성된 diagonal cluster)"
-    },
-    {
-      "type": "image_grid",
-      "kicker": "P1 | 데이터 처리 구조",
-      "title": "각 기법이 무엇을 어떻게 바꾸는가",
-      "bullets": [
-        "**왜** — 하루 약 2만 wafer를 S3 압축 log에서 대용량 Failbit Map으로 변환·적재하고, 운영 viewer에서 대량 조회·합성이 반복됩니다. 변환 속도·저장·viewer 처리 속도 최적화가 핵심이었습니다"
-      ],
-      "images": [
-        {
-          "src": "p1_pipeline_concept.png",
-          "caption": "①②③ 생성(fail-map) · ④ 운영 viewer(mapviewer) · 수치는 recommendation 기준"
-        }
-      ],
-      "grid_cols": 1,
-      "body_h": 1.05,
-      "img_tile": "#FFFFFF"
     },
     {
       "type": "image_grid",
