@@ -222,7 +222,7 @@
               "Used here:",
               [
                 "composite[y][x] = sum_w grade[w][y][x]",
-                "via @njit(parallel) + prange -> ~5x faster"
+                "via @njit(parallel) + prange -> ~50x faster"
               ]
             ]
           ],
@@ -234,22 +234,23 @@
             [
               "What:",
               [
-                "pyvips = Python binding of libvips — a",
-                "demand-driven, streaming image library"
+                "pyvips = libvips binding (image library)",
+                "light: demand-driven, streams in regions",
+                "peak memory ~ a tile, not whole; threaded"
               ]
             ],
             [
               "Why:",
               [
                 "one map = 6912x6912x3 ~ 140 MB raw",
-                "loading whole maps overwhelms the viewer"
+                "loading whole maps -> viewer out of memory"
               ]
             ],
             [
               "Used here:",
               [
-                "load + resize the large maps for the viewer",
-                "libvips streams regions -> low peak memory"
+                "load + resize the large maps in the viewer",
+                "stays low-memory even on ~140 MB maps"
               ]
             ]
           ],
