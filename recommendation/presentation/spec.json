@@ -384,8 +384,8 @@
           "caption": "SimCLR — 한 wafer의 두 augmentation을 encoder f·projection g로 보내 z를 일치(maximize agreement)"
         },
         {
-          "src": "ref_nvretriever_hist.png",
-          "caption": "NV-Retriever — naive top-k(위)는 positive·hard negative 점수가 겹쳐 false negative 혼입 → threshold(아래)로 분리"
+          "src": "ref_hardneg_concept.png",
+          "caption": "Hard-negative 선택 — too-hard(빨강)=false negative라 제외, ambiguous(파랑)를 hard negative로 사용"
         }
       ]
     },
