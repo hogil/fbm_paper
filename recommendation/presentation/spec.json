@@ -347,28 +347,45 @@
       "body_h": 0.9
     },
     {
-      "type": "image_grid",
+      "type": "papertext",
       "kicker": "P1 | Unknown 대조 학습 기법",
-      "title": "작은 batch에서 negative를 늘린 MoCo queue + 경계 안정화 NeCo",
+      "title": "대조학습 구성: InfoNCE(base) → MoCo queue → NeCo",
       "bullets": [
-        "라벨 없는 wafer를 자기지도 대조학습(InfoNCE)으로 임베딩합니다 — 같은 wafer의 두 augmentation은 가깝게, 다른 wafer는 멀게",
-        "**MoCo queue + NV-Retriever** — batch가 8로 작아 negative가 부족하므로 momentum queue(4096)로 약 256배 확장하고, 같은 불량을 negative로 오인하는 유사 patch는 유사도 임계로 제외했습니다 (좌측 그림)",
-        "**NeCo** — student와 teacher의 patch neighbor consistency로 Normal과 defect 경계 임베딩을 안정화했습니다 (우측 그림)"
+        "라벨 없는 wafer를 자기지도 대조학습으로 임베딩합니다 — 같은 wafer의 두 augmentation은 가깝게, 다른 wafer는 멀게(InfoNCE). 작은 batch 한계는 MoCo queue로, Normal/defect 경계는 NeCo로 보강했습니다"
       ],
-      "images": [
+      "body_h": 0.95,
+      "img_note": "외부 논문 figure를 본 과제 대조학습 구성요소(MoCo queue, NeCo) 설명에 인용",
+      "cols": 3,
+      "figs": [
+        {
+          "head": "InfoNCE (base)",
+          "sections": [
+            [
+              "positive / negative",
+              [
+                "같은 wafer 두 view = positive (당김)",
+                "다른 wafer = negative (밀어냄)"
+              ]
+            ],
+            [
+              "loss",
+              [
+                "sim(z_i, z_j) / tau 를 최대화",
+                "tau = 0.07,  128-D 임베딩"
+              ]
+            ]
+          ],
+          "caption": "라벨 없이 결함 표현 학습 (자기지도)"
+        },
         {
           "src": "ref_moco_fig1.png",
-          "caption": "MoCo (He et al. 2020) Fig.1 — query/momentum encoder + queue"
+          "caption": "MoCo (He 2020) — queue로 negative 256배"
         },
         {
           "src": "ref_neco_fig1.png",
-          "caption": "NeCo (Pariza et al. 2024) Fig.1 — student/teacher patch 정렬"
+          "caption": "NeCo (Pariza 2024) — patch 경계 안정화"
         }
-      ],
-      "grid_cols": 2,
-      "body_h": 1.25,
-      "img_tile": "#FFFFFF",
-      "img_note": "외부 논문 figure를 본 과제 대조학습 구성요소(MoCo queue, NeCo) 설명에 인용"
+      ]
     },
     {
       "type": "two_col",
