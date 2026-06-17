@@ -193,67 +193,20 @@
       "kicker": "P1 | viewer 처리 구조",
       "title": "Numba와 pyvips: 대량 Failbit Map viewer 처리",
       "bullets": [
-        "**왜 필요한가** — 운영 viewer는 여러 wafer를 겹쳐 hotspot을 보는 composite와 큰 Failbit Map PNG를 빠르게 여는 동작이 핵심입니다. 이 두 구간이 느리면 하루 단위 대량 조회가 바로 막히므로, 픽셀 누적 연산은 Numba로, 대형 이미지 로드는 pyvips로 분리했습니다"
+        "운영 viewer의 두 핵심 동작을 가속했습니다 — 여러 wafer를 겹친 composite 픽셀 누적은 Numba로, 큰 Failbit Map PNG 로드는 pyvips로 처리합니다(아래는 왜 빨라지는지 원리)"
       ],
-      "body_h": 0.72,
+      "body_h": 0.75,
       "bullet_size": 13.4,
       "img_note": "모델 추론 속도 수치가 아니라, 운영 viewer가 대량 map을 다룰 수 있게 만든 데이터/이미지 처리 구조입니다",
       "cols": 2,
       "figs": [
         {
-          "head": "Numba @njit composite",
-          "sections": [
-            [
-              "Numba가 하는 일:",
-              [
-                "Python 함수를 native machine code로 컴파일(JIT)",
-                "최초 호출 때 입력 타입 기준, 매번 해석하지 않음"
-              ]
-            ],
-            [
-              "왜 빠른가:",
-              [
-                "① 매 반복 타입확인/객체처리 제거 → 기계어 loop",
-                "② parallel=True로 독립 영역을 여러 CPU 코어에 분배"
-              ]
-            ],
-            [
-              "적용 위치:",
-              [
-                "Composite Map — wafer 수백 장을 좌표로 겹쳐",
-                "위치별 grade 개수, mask 해당, sum/weighted 계산"
-              ]
-            ]
-          ],
-          "caption": "Numba: Python loop 제거 + 멀티코어 병렬로 composite 누적 가속"
+          "diagram": "numba",
+          "caption": "Numba: Python loop(매 pixel 해석) 제거 + 멀티코어 병렬로 composite 누적 가속"
         },
         {
-          "head": "pyvips image streaming",
-          "sections": [
-            [
-              "처리 대상:",
-              [
-                "좌표 보존 Failbit Map PNG(수천×수천 px)를",
-                "viewer에서 표시하고 zoom/축소 preview 생성"
-              ]
-            ],
-            [
-              "병목:",
-              [
-                "전체를 메모리에 펼치면(원본 전체 + 결과 전체)",
-                "메모리와 로드 시간이 급증"
-              ]
-            ],
-            [
-              "적용 방식:",
-              [
-                "출력 row/tile 단위로 계산, 각 구간에 필요한",
-                "원본 구간만 읽어 흘려보냄 (결과는 전체 완성)",
-                "중간 메모리만 작게 유지 (thumbnail/확대 공통)"
-              ]
-            ]
-          ],
-          "caption": "pyvips: row/tile streaming — 결과는 전체 완성, 중간 메모리만 작게"
+          "diagram": "pyvips",
+          "caption": "pyvips: 출력 row/tile 단위 streaming — 결과는 전체 완성, 중간 메모리만 작게"
         }
       ]
     },
