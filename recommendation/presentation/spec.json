@@ -204,53 +204,57 @@
           "head": "Numba @njit composite map",
           "sections": [
             [
-              "composite 연산",
+              "Operation:",
               [
                 "composite[y][x] = sum_w  grade[w][y][x]",
-                "여러 wafer를 픽셀 위치마다 누적해 hot-spot map"
+                "accumulate N aligned wafer maps, per pixel"
               ]
             ],
             [
-              "Python vs Numba",
+              "Why it is fast:",
               [
-                "Python : 약 4,800만 픽셀 × N장 인터프리터 루프 (느림)",
-                "Numba : @njit 기계어 컴파일 + prange 멀티코어 병렬"
+                "Python: bytecode dispatch + boxed PyObject / element",
+                "@njit: LLVM native code, type-specialized, unboxed",
+                "prange + parallel: loop over CPU cores, GIL released"
               ]
             ],
             [
-              "성능",
+              "vs numpy:",
               [
-                "numpy 대비 약 50배,  10장 합성 약 2.9초"
+                "one fused pass, no temporary arrays (cache-friendly)",
+                "~50x vs numpy ;  10-map composite ~2.9 s"
               ]
             ]
           ],
-          "caption": "같은 누적 연산을 컴파일·병렬로 → 합성 가속"
+          "caption": "JIT-compiled, unboxed, multi-core composite"
         },
         {
           "head": "pyvips demand-driven tile streaming",
           "sections": [
             [
-              "데이터 크기",
+              "Data scale:",
               [
-                "map 1장 = 6912×6912×3 byte ≈ 수백 MB",
-                "전부 메모리 적재하면 viewer가 무겁고 느림"
+                "one map = 6912 x 6912 x 3 B  ~  hundreds of MB",
+                "loading it whole makes the viewer heavy and slow"
               ]
             ],
             [
-              "demand-driven",
+              "Why it is efficient:",
               [
-                "화면에 보이는 tile만 디코드 (rolling window)",
-                "pyramid [0.25,0.5,0.75,1.0]로 zoom에 맞춰 로드"
+                "lazy pipeline: runs only when the sink pulls output",
+                "region streaming: peak memory ~ a tile, not full image",
+                "threaded: regions traverse the pipeline in parallel"
               ]
             ],
             [
-              "효과",
+              "Pyramid + cache:",
               [
-                "viewer 메모리 수백 MB → 수 MB, 대용량 즉시 조회"
+                "pre-rendered LoD [0.25,0.5,0.75,1.0], zoom-matched",
+                "viewer memory:  hundreds of MB  ->  a few MB"
               ]
             ]
           ],
-          "caption": "전체 적재 대신 tile streaming → viewer 경량화"
+          "caption": "lazy, streamed, threaded large-image loading"
         }
       ]
     },
