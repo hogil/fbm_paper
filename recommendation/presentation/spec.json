@@ -380,12 +380,12 @@
       "cols": 2,
       "figs": [
         {
-          "src": "ref_simclr_framework.png",
-          "caption": "SimCLR — 한 wafer의 두 augmentation을 encoder f·projection g로 보내 z를 일치(maximize agreement)"
+          "src": "ref_simclr_with_loss.png",
+          "caption": "SimCLR — 두 augmentation을 가깝게(maximize agreement), NT-Xent loss로 positive는 분자, 나머지는 분모(τ=temperature)"
         },
         {
-          "src": "ref_hardneg_concept.png",
-          "caption": "Hard-negative 선택 — too-hard(빨강)=false negative라 제외, ambiguous(파랑)를 hard negative로 사용"
+          "diagram": "hardneg",
+          "caption": "Hard-negative 선택 — too-hard(빨강 ◆)=false negative라 제외, ambiguous(파랑 ▲)를 hard negative로 사용"
         }
       ]
     },

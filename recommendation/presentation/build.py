@@ -2077,6 +2077,58 @@ def s_pipeline(slide, d, idx):
     _footer(slide, idx)
 
 
+def _draw_hardneg(slide, X, Y, W, H):
+    """Hard-negative 선택 개념을 네이티브 PPT 도형으로 그린다(이미지 X → PowerPoint 에서 직접 편집 가능).
+    q(query) 기준으로 d+(positive) 와 세 부류의 negative: Too Hard(=false negative, 제외) /
+    Ambiguous(유용한 hard negative, 사용) / Too Easy(무의미) 를 임베딩 산포로 표현."""
+    def PX(f): return int(X + f * W)
+    def PY(f): return int(Y + f * H)
+    NAVY = RGBColor(0x0F, 0x1E, 0x3D); INK = RGBColor(0x22, 0x26, 0x2E)
+    RED = RGBColor(0xCC, 0x33, 0x28); BLUE = RGBColor(0x2B, 0x66, 0xD9)
+    ORANGE = RGBColor(0xE0, 0x8A, 0x1E); GRAYL = RGBColor(0xCF, 0xD4, 0xDB)
+    ARRC = RGBColor(0x9A, 0xA4, 0xB2)
+    M = int(Inches(0.17))
+    # 1) 이웃(neighborhood) 경계를 점선 타원으로 — q 주변 가까운 표본 영역
+    ell = slide.shapes.add_shape(MSO_SHAPE.OVAL, Emu(PX(0.04)), Emu(PY(0.13)),
+                                 Emu(int(0.50 * W)), Emu(int(0.78 * H)))
+    ell.fill.background(); ell.line.color.rgb = ARRC; ell.line.width = Pt(1.6)
+    ell.shadow.inherit = False
+    _ln = ell.line._get_or_add_ln()
+    _ln.append(_ln.makeelement(qn('a:prstDash'), {'val': 'dash'}))
+    # 2) q -> 각 표본 화살표(마커 뒤에 먼저 그림)
+    qx, qy = PX(0.30), PY(0.56)
+    for fx, fy in [(0.42, 0.24), (0.24, 0.36), (0.12, 0.64), (0.68, 0.72)]:
+        cn = slide.shapes.add_connector(1, Emu(qx), Emu(qy), Emu(PX(fx)), Emu(PY(fy)))
+        cn.line.color.rgb = ARRC; cn.line.width = Pt(1.1); cn.shadow.inherit = False
+    def mk(fx, fy, shp, fill, line=None):
+        _rect(slide, Emu(PX(fx) - M // 2), Emu(PY(fy) - M // 2), Emu(M), Emu(M),
+              fill, line=line, shape=shp, line_w=Pt(1.4))
+    def lbl(fx, fy, t):
+        _text(slide, Emu(PX(fx)), Emu(PY(fy)), Emu(int(0.13 * W)), Emu(int(Inches(0.26))),
+              [[(t, dict(size=14, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+    # 3) 마커
+    mk(0.30, 0.56, MSO_SHAPE.OVAL, NAVY); lbl(0.205, 0.55, 'q')
+    mk(0.42, 0.24, MSO_SHAPE.OVAL, WHITE, line=INK); lbl(0.455, 0.205, 'd⁺')
+    mk(0.24, 0.36, MSO_SHAPE.DIAMOND, RED); mk(0.40, 0.42, MSO_SHAPE.DIAMOND, RED)
+    mk(0.12, 0.64, MSO_SHAPE.ISOSCELES_TRIANGLE, BLUE); mk(0.19, 0.30, MSO_SHAPE.ISOSCELES_TRIANGLE, BLUE)
+    mk(0.68, 0.72, MSO_SHAPE.RECTANGLE, ORANGE); mk(0.60, 0.88, MSO_SHAPE.RECTANGLE, ORANGE)
+    # 4) 범례(우상단)
+    lx, ly = PX(0.60), PY(0.04); lw, lh = int(0.39 * W), int(0.45 * H)
+    _rect(slide, Emu(lx), Emu(ly), Emu(lw), Emu(lh), WHITE, line=GRAYL, line_w=Pt(1))
+    rows = [(MSO_SHAPE.OVAL, WHITE, INK, 'Positive (d⁺)'),
+            (MSO_SHAPE.ISOSCELES_TRIANGLE, BLUE, None, 'Ambiguous (사용)'),
+            (MSO_SHAPE.DIAMOND, RED, None, 'Too Hard=false neg(제외)'),
+            (MSO_SHAPE.RECTANGLE, ORANGE, None, 'Too Easy (무의미)')]
+    rh = lh // len(rows); mm = int(Inches(0.14))
+    for i, (shp, fl, li, txt) in enumerate(rows):
+        ry = ly + i * rh + rh // 2
+        _rect(slide, Emu(lx + int(Inches(0.12))), Emu(ry - mm // 2), Emu(mm), Emu(mm),
+              fl, line=li, shape=shp, line_w=Pt(1.2))
+        _text(slide, Emu(lx + int(Inches(0.36))), Emu(ry - int(Inches(0.13))),
+              Emu(lw - int(Inches(0.44))), Emu(int(Inches(0.26))),
+              [[(txt, dict(size=9.5, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
+
+
 def s_papertext(slide, d, idx):
     """논문 figure(Fig.1/2)의 텍스트 내용을 네이티브 텍스트 박스로 렌더(이미지 캡쳐 X).
     각 fig = 얇은 테두리 박스 + (선택 head) + (라벨 줄 + 들여쓴 monospace 내용) + 하단 Fig 캡션."""
@@ -2106,7 +2158,10 @@ def s_papertext(slide, d, idx):
         r, c = divmod(i, cols)
         fx = x0 + c * (cw + gx)
         fy = top + r * (chh + gy)
-        if fg.get("src"):
+        if fg.get("diagram") == "hardneg":
+            # 네이티브 도형으로 그린 hard-negative 개념도(이미지 X → PowerPoint 직접 편집 가능)
+            _draw_hardneg(slide, fx, fy, cw, box_h)
+        elif fg.get("src"):
             # 이미지 figure 는 테두리 박스 없이 셀을 거의 가득 채워 최대 크기로 렌더한다
             # (테두리+padding 이 이미지를 줄이던 문제 제거 — 사용자 요청). 텍스트 박스만 테두리 유지.
             _img_fit(slide, fg["src"], Emu(fx + int(Inches(0.04))), Emu(fy + int(Inches(0.04))),
