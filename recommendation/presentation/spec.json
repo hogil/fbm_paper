@@ -75,12 +75,12 @@
       ],
       "images": [
         {
-          "diagram": "hex_to_grade",
-          "caption": "① Cython · hex → Grade 무손실 변환 (~100×)"
+          "src": "data_hex_to_grade_formula.png",
+          "caption": "① Cython hex→Grade 변환 — 순수 Python 대비 약 100배"
         },
         {
-          "diagram": "bytes_compare",
-          "caption": "② 32색 palette PNG · 색을 번호로 저장 (~75%↓)"
+          "src": "data_palette_png_formula.png",
+          "caption": "② 32색 palette-indexed PNG — 저장 약 75% 축소 (무손실)"
         }
       ],
       "grid_cols": 2,
