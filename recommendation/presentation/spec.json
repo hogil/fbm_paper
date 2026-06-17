@@ -67,59 +67,102 @@
       }
     },
     {
-      "type": "image_grid",
+      "type": "papertext",
       "kicker": "P1 | 데이터 생성 (fail-map)",
-      "title": "측정값(hex)을 Grade로 무손실 변환 — 좌표 보존 Failbit Map",
+      "title": "측정 log를 좌표 보존 Failbit Map으로 — hex→Grade + palette PNG",
       "bullets": [
-        "**왜** — 하루 약 2만 wafer가 쌓이고, wafer 한 장마다 약 1,000만 개의 측정 value를 담고 있어 원본 log 그대로는 대량 조회와 분석이 어렵습니다. 측정값(hex)을 Grade로 무손실 변환해 좌표를 보존한 Failbit Map PNG와 positions JSON을 만듭니다"
+        "**왜** — wafer 한 장이 약 1,000만 개 측정 value를 담고 하루 약 2만 장이 쌓여 원본 log 그대로는 대량 조회·분석이 어렵습니다. 측정값(hex)을 Grade로 무손실 변환하고 색을 번호로 저장(palette PNG)해 좌표를 보존한 Failbit Map과 positions JSON을 만듭니다"
       ],
-      "images": [
-        {
-          "src": "paper_fig1_cython_hex_to_grade.png",
-          "caption": "Hex→Grade 변환 (논문 Fig.1) — 순수 Python 대비 약 100배"
-        }
-      ],
-      "grid_cols": 1,
       "body_h": 0.72,
       "img_frame": false,
-      "bullet_size": 13.5
-    },
-    {
-      "type": "image_grid",
-      "kicker": "P1 | 데이터 생성 (fail-map)",
-      "title": "32종 색을 번호로 저장 — palette PNG (저장 약 75% 축소)",
-      "bullets": [
-        "**왜** — Failbit Map은 Grade와 chip 경계 등 약 32종 색만 씁니다. 픽셀마다 RGB 3 byte 대신 색 번호 1 byte만 저장해 파일을 약 75% 줄였고, 색표(PLTE)만 교체해 담당자별 색 설정을 즉시 반영합니다"
-      ],
-      "images": [
+      "bullet_size": 13.5,
+      "cols": 2,
+      "figs": [
         {
-          "src": "paper_fig2_palette_png.png",
-          "caption": "RGB PNG vs palette-indexed PNG (논문 Fig.2) — 저장 약 75% 축소 (무손실)"
+          "head": "Hex-to-grade conversion",
+          "sections": [
+            [
+              "Raw:",
+              [
+                "090B0C0D0E0F090A0B0C"
+              ]
+            ],
+            [
+              "Decoding:",
+              [
+                "\"0C\" -> \"C\" -> 12 (hex to decimal) -> 3"
+              ]
+            ],
+            [
+              "Python:",
+              [
+                "interpreter-based loop execution"
+              ]
+            ],
+            [
+              "Cython:",
+              [
+                "compiled integer loop execution"
+              ]
+            ],
+            [
+              "Grade:",
+              [
+                "0 2 3 4 5 6 0 1 2 3"
+              ]
+            ]
+          ],
+          "caption": "Fig. 1. Hex-to-grade conversion accelerated by Cython"
+        },
+        {
+          "head": "RGB PNG vs Palette-indexed PNG",
+          "sections": [
+            [
+              "RGB PNG:",
+              [
+                "[(123,54,24), (123,54,24), ..., (123,54,24)],",
+                "[(123,54,24), (123,54,24), ..., (123,54,24)]"
+              ]
+            ],
+            [
+              "Palette-indexed PNG:",
+              [
+                "P[3] = (123,54,24)",
+                "[(3), (3), ..., (3)],",
+                "[(3), (3), ..., (3)]"
+              ]
+            ],
+            [
+              "RGB_to_Palette:",
+              [
+                "(123,54,24) -> (3)"
+              ]
+            ]
+          ],
+          "caption": "Fig. 2. Palette-indexed PNG for failbit map compression."
         }
-      ],
-      "grid_cols": 1,
-      "body_h": 0.72,
-      "img_note": "생성(fail-map) 단계 — 운영 뷰어(mapviewer)의 Numba 합성과 pyvips 로드는 운영 슬라이드에서 별도로 다룹니다"
+      ]
     },
     {
       "type": "image_grid",
       "kicker": "P1 | viewer 처리 구조",
       "title": "Numba와 pyvips: 대량 Failbit Map viewer 처리",
       "bullets": [
-        "**Numba** — 여러 wafer의 Grade map을 같은 좌표계에서 합성할 때 pixel 단위 Python loop를 제거하고 typed loop로 계산합니다",
-        "**pyvips** — PNG 전체를 메모리에 올리지 않고 현재 화면에 필요한 tile만 읽어 viewer memory를 viewport 크기에 가깝게 제한합니다"
+        "**왜 필요한가** — 생성된 대량 Failbit Map을 운영 viewer에서 매일 조회·비교·합성합니다. 여러 wafer 합성과 수천×수천 PNG 로드가 viewer 병목이라, 아래 두 기법으로 처리 속도와 메모리를 잡았습니다",
+        "**Numba** — 여러 wafer Grade map 합성 시 픽셀 단위 Python loop를 기계어로 병렬화해 composite map 생성을 가속합니다",
+        "**pyvips** — 초고해상도 PNG 전체를 메모리에 올리지 않고 화면에 필요한 tile만 읽어 viewer 메모리와 지연을 줄입니다"
       ],
       "images": [
         {
           "src": "numba_composite_formula.png",
-          "caption": "Numba @njit composite — 픽셀 위치별 병렬 누적"
+          "caption": "Numba @njit composite — 여러 wafer를 픽셀 위치별로 병렬 누적"
         },
         {
           "src": "pyvips_stream_formula.png",
-          "caption": "pyvips demand-driven tile streaming"
+          "caption": "pyvips demand-driven tile streaming — 필요한 tile만 로드"
         }
       ],
-      "grid_cols": 2,
+      "grid_cols": 1,
       "body_h": 1.02,
       "bullet_size": 13.4,
       "img_note": "모델 추론 속도 수치가 아니라, 운영 viewer가 대량 map을 다룰 수 있게 만든 데이터/이미지 처리 구조입니다"

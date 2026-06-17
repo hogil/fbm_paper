@@ -1249,7 +1249,8 @@ def s_image_grid(slide, d, idx):
             _rect(slide, x, y, cw, img_h, tile,
                   line=(ACCENT if rf else RGBColor(0xB9, 0xC6, 0xDB)),
                   line_w=Pt(1.9 if rf else 1.25))
-        pic = _img_fit(slide, im["src"], x, y, cw, img_h, frame=not tile)
+        img_frame = d.get("img_frame", True) is not False and im.get("frame", True) is not False
+        pic = _img_fit(slide, im["src"], x, y, cw, img_h, frame=(not tile) and img_frame)
         if rf:
             # '검출 결과' 라벨 칩을 타일 좌상단에 얹어 색감이 다른 결과 이미지가 의도된 대비임을 명시.
             rlw = int(Inches(1.12)); rlh = int(Inches(0.32))
@@ -1817,10 +1818,10 @@ def s_cards(slide, d, idx):
     cw = (total_w - gap * (n - 1)) // n
     # 카드 세로 슬롯: 제목 아래(1.92")~note 위. note 가 있으면 하단을 끌어올린다.
     cy0 = int(Inches(1.92))
-    cbottom = int(Inches(6.46)) if d.get("note") else int(Inches(6.74))
+    cbottom = int(Inches(6.46)) if d.get("note") else int(Inches(6.48))
     ch = cbottom - cy0
     badge_h = int(Inches(0.62))           # 상단 배지(P번호+과제명) 띠
-    thumb_h = int(Inches(2.12))           # 대표 썸네일 영역
+    thumb_h = int(Inches(1.88))           # 대표 썸네일 영역
     rows_top = cy0 + badge_h + thumb_h    # 3줄(문제·접근·결과) 시작 y
     rows_h = (cy0 + ch) - rows_top
     for i, cd in enumerate(cards):
@@ -1856,8 +1857,9 @@ def s_cards(slide, d, idx):
                  Emu(cw - 2 * tpad - 2 * inset), Emu(thumb_h - tpad - inset), frame=False)
         # ── 아래 3줄(문제·접근·결과) — 라벨은 틸, 결과 줄 강조 ──
         labels = [("Problem", "problem"), ("Approach", "approach"), ("Impact", "result")]
-        rgap = int(Inches(0.06))
-        rh = (rows_h - rgap * (len(labels) - 1)) // len(labels)
+        rgap = int(Inches(0.10))
+        bottom_pad = int(Inches(0.18))
+        rh = min(int(Inches(0.52)), (rows_h - bottom_pad - rgap * (len(labels) - 1)) // len(labels))
         rx = x + int(Inches(0.2)); rw = cw - int(Inches(0.4))
         for k, (lab, key) in enumerate(labels):
             ry = rows_top + k * (rh + rgap)
@@ -2075,9 +2077,58 @@ def s_pipeline(slide, d, idx):
     _footer(slide, idx)
 
 
+def s_papertext(slide, d, idx):
+    """논문 figure(Fig.1/2)의 텍스트 내용을 네이티브 텍스트 박스로 렌더(이미지 캡쳐 X).
+    각 fig = 얇은 테두리 박스 + (선택 head) + (라벨 줄 + 들여쓴 monospace 내용) + 하단 Fig 캡션."""
+    _bg(slide, WHITE)
+    _title_block(slide, d.get("kicker"), d["title"])
+    top = int(Inches(2.0))
+    if d.get("bullets"):
+        bh = int(Inches(d.get("body_h", 0.7)))
+        _bullets_tf(slide, Inches(0.7), Emu(top), Inches(12.0), Emu(bh),
+                    d["bullets"], size=d.get("bullet_size", 14), gap=5)
+        top = top + bh + int(Inches(0.14))
+    figs = d["figs"]
+    n = len(figs)
+    cols = d.get("cols", 2 if n >= 2 else 1)
+    rows = (n + cols - 1) // cols
+    bottom = int(Inches(6.95))
+    area_h = bottom - top
+    cap_h = int(Inches(0.36))
+    gx = int(Inches(0.4)); gy = int(Inches(0.28))
+    x0 = int(Inches(0.7)); total_w = int(Inches(12.0))
+    cw = (total_w - gx * (cols - 1)) // cols
+    chh = (area_h - gy * (rows - 1)) // rows
+    box_h = chh - cap_h
+    MONO = "Consolas"
+    for i, fg in enumerate(figs):
+        r, c = divmod(i, cols)
+        fx = x0 + c * (cw + gx)
+        fy = top + r * (chh + gy)
+        _rect(slide, Emu(fx), Emu(fy), Emu(cw), Emu(box_h), WHITE,
+              line=RGBColor(0xB9, 0xC6, 0xDB), line_w=Pt(1.25))
+        lines = []
+        if fg.get("head"):
+            lines.append([(fg["head"], dict(size=14.5, bold=True, color=NAVY))])
+            lines.append([(" ", dict(size=5, color=WHITE))])
+        for sec in fg["sections"]:
+            lab, content = sec[0], sec[1]
+            lines.append([(lab, dict(size=13.5, bold=True, italic=True, color=NAVY, name=MONO))])
+            for cc in content:
+                lines.append([("    " + cc, dict(size=13, color=INK, name=MONO))])
+        _text(slide, Emu(fx + int(Inches(0.30))), Emu(fy + int(Inches(0.14))),
+              Emu(cw - int(Inches(0.54))), Emu(box_h - int(Inches(0.28))),
+              lines, anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, Emu(fx), Emu(fy + box_h + int(Inches(0.03))), Emu(cw), Emu(cap_h),
+              [[(fg["caption"], dict(size=12.5, bold=True, color=NAVY))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _footer(slide, idx)
+
+
 DISPATCH = {"title": s_title, "section": s_section, "stats": s_stats, "bullets": s_bullets,
             "two_col": s_two_col, "image_grid": s_image_grid, "table": s_table, "closing": s_closing,
-            "flow": s_flow, "timeline": s_timeline, "cards": s_cards, "pipeline": s_pipeline}
+            "flow": s_flow, "timeline": s_timeline, "cards": s_cards, "pipeline": s_pipeline,
+            "papertext": s_papertext}
 
 
 def build(spec_path, out_path):
