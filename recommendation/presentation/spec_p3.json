@@ -11,19 +11,25 @@
     },
     {
       "type": "image_grid",
-      "kicker": "P3 | episode 생성 방식",
-      "title": "현장 판정 기준을 episode(구간) 생성 규칙으로 옮겼다",
+      "kicker": "P3 | 순차 episode 생성",
+      "title": "현장 판정 기준을 순차 episode 생성 규칙으로 옮겼다",
       "bullets": [
         "한 chart는 같은 device/step/item을 여러 설비(fleet)가 함께 찍은 trend이고, 그중 한 설비를 판정 대상으로 봅니다",
-        "정상 baseline은 episode(구간)를 이어 붙여 만듭니다. episode마다 측정 밀도(밀집/희소/결핍)와 산포가 다르고, 변동은 노이즈 3종으로 재현합니다",
-        {"t": "episode는 사내 표현이고, 학계 표준 용어로는 piecewise-stationary / regime segment입니다", "lvl": 1}
+        "정상 baseline은 episode(자기완결 한 구간)를 하나씩 완결 생성하고 다음으로 넘어가며 이어 붙입니다. episode마다 측정 밀도(밀집/희소/결핍)와 산포가 다르고, 변동은 노이즈 3종으로 재현합니다",
+        {
+          "t": "순차 episode 생성(sequential episode generation) — episode는 자기완결 한 구간(=segment), 이어 붙여 trend 한 장을 구성",
+          "lvl": 1
+        }
       ],
       "body_h": 1.55,
       "images": [
-        {"src": "p3_deck_baseline.png", "caption": ""}
+        {
+          "src": "p3_deck_baseline.png",
+          "caption": ""
+        }
       ],
       "grid_cols": 1,
-      "img_note": "현업(BBD / Overlay / CD) trend 판정 경험을 영역, 노이즈, 이상 규칙으로 코드화"
+      "img_note": "현업(BBD / Overlay / CD) trend 판정 경험을 영역, 노이즈, 이상 규칙으로 코드화 — episode를 순차로 생성"
     },
     {
       "type": "image_grid",
@@ -31,11 +37,17 @@
       "title": "정상 baseline 위에 이상 5종을 현장 발생 방식대로 합성",
       "bullets": [
         "정상(Normal)에 더해 Mean shift / Variance / Spike / Trend drift / Contextual 5종을 만듭니다. 이상은 주로 trend 오른쪽 끝 구간에 주입하고(분홍 음영), context만 전체가 fleet에서 벗어납니다",
-        {"t": "이상 강도는 그 설비의 정상 산포(σ) 배수로 정해 너무 약해 보이지 않게 보정합니다", "lvl": 1}
+        {
+          "t": "이상 강도는 그 설비의 정상 산포(σ) 배수로 정해 너무 약해 보이지 않게 보정합니다",
+          "lvl": 1
+        }
       ],
       "body_h": 1.2,
       "images": [
-        {"src": "p3_deck_types.png", "caption": ""}
+        {
+          "src": "p3_deck_types.png",
+          "caption": ""
+        }
       ],
       "grid_cols": 1,
       "img_badge": "정상 3,500 + 이상 3,500 = 7,000",
@@ -48,11 +60,17 @@
       "bullets": [
         "trend 이미지를 **ConvNeXtV2-Tiny**로 정상/이상 1차 판정하고(Focal loss, normal threshold 0.9), 놓침(FN) 최소화를 목표로 했습니다",
         "test 1,500(정상 750 / 불량 750)에서 **binary F1 0.9967, 이상 recall 0.9987** — 놓친 불량 1건(std), 정상 오경보 4건. 5-seed 평균 F1 0.9975",
-        {"t": "통과한 불량은 2차에서 유형 진단(type 정확도 0.73, 주 혼동 drift↔mean_shift). NT를 올리면 FN↓ / FP↑ — 운영은 0.9 균형점", "lvl": 1}
+        {
+          "t": "통과한 불량은 2차에서 유형 진단(type 정확도 0.73, 주 혼동 drift↔mean_shift). NT를 올리면 FN↓ / FP↑ — 운영은 0.9 균형점",
+          "lvl": 1
+        }
       ],
       "body_h": 1.6,
       "images": [
-        {"src": "p3_deck_result.png", "caption": ""}
+        {
+          "src": "p3_deck_result.png",
+          "caption": ""
+        }
       ],
       "grid_cols": 1,
       "img_badge": "F1 0.9967 / recall 0.9987 (생성셋 PoC)",
