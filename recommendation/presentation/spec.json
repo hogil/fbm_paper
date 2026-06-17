@@ -69,25 +69,56 @@
     {
       "type": "image_grid",
       "kicker": "P1 | 데이터 생성 (fail-map)",
-      "title": "원천 EDS log → 좌표 보존 Failbit Map 생성",
+      "title": "측정값(hex)을 Grade로 무손실 변환 — 좌표 보존 Failbit Map",
       "bullets": [
-        "**왜** — 하루 약 2만 wafer의 EDS log를 좌표 보존 Failbit Map PNG와 positions JSON으로 바꿉니다. 핵심은 측정값(hex)→Grade 무손실 변환과 색을 번호로 저장하는 palette PNG이며, ProcessPool로 24개 병렬 처리합니다"
+        "**왜** — wafer 한 장이 약 1,000만 개의 측정 value를 담고 하루 약 2만 장이 쌓여, 원본 그대로는 다루기 어렵습니다. 측정값(hex)을 Grade로 무손실 변환해 좌표를 보존한 Failbit Map과 positions JSON을 만듭니다"
       ],
       "images": [
         {
           "src": "data_hex_to_grade_formula.png",
-          "caption": "① Cython hex→Grade 변환 — 순수 Python 대비 약 100배"
-        },
-        {
-          "src": "data_palette_png_formula.png",
-          "caption": "② 32색 palette-indexed PNG — 저장 약 75% 축소 (무손실)"
+          "caption": ""
         }
       ],
-      "grid_cols": 2,
-      "body_h": 0.62,
+      "grid_cols": 1,
+      "body_h": 0.72,
+      "img_frame": false,
+      "bullet_size": 13.5
+    },
+    {
+      "type": "image_grid",
+      "kicker": "P1 | 데이터 생성 (fail-map)",
+      "title": "32종 색을 번호로 저장 — palette PNG (저장 약 75% 축소)",
+      "bullets": [
+        "**왜** — Failbit Map은 Grade와 chip 경계 등 약 32종 색만 씁니다. 픽셀마다 RGB 3 byte 대신 색 번호 1 byte만 저장해 파일을 약 75% 줄였고, 색표(PLTE)만 교체해 담당자별 색 설정을 즉시 반영합니다"
+      ],
+      "images": [
+        {
+          "src": "data_palette_png_formula.png",
+          "caption": ""
+        }
+      ],
+      "grid_cols": 1,
+      "body_h": 0.72,
+      "img_note": "생성(fail-map) 단계 — 운영 뷰어(mapviewer)의 Numba 합성과 pyvips 로드는 운영 슬라이드에서 별도로 다룹니다"
+    },
+    {
+      "type": "image_grid",
+      "kicker": "P1 | viewer 처리 구조",
+      "title": "Numba와 pyvips: 대량 Failbit Map viewer 처리",
+      "bullets": [
+        "**Numba** — 여러 wafer를 같은 좌표계에서 합성할 때 Python loop 대신 typed array 연산을 JIT compile해 composite map 생성을 가볍게 만듭니다",
+        "**pyvips** — 초고해상도 PNG 전체를 메모리에 올리지 않고 viewer가 필요한 tile만 읽고 cache해, 4K+ map 조회 지연을 줄입니다"
+      ],
+      "images": [
+        {
+          "src": "p1_numba_pyvips_method.png",
+          "caption": ""
+        }
+      ],
+      "grid_cols": 1,
+      "body_h": 0.72,
       "img_tile": "#FFFFFF",
-      "bullet_size": 13.5,
-      "img_note": "생성(fail-map) 단계입니다. 운영 뷰어(mapviewer)의 Numba 합성과 pyvips 로드는 운영 슬라이드에서 별도로 다룹니다"
+      "img_note": "모델 추론 속도 수치가 아니라, 운영 viewer가 대량 map을 다룰 수 있게 만든 데이터/이미지 처리 구조입니다"
     },
     {
       "type": "bullets",
@@ -176,38 +207,44 @@
     {
       "type": "image_grid",
       "kicker": "P1 | Unknown 탐색",
-      "title": "Unknown — 라벨 없이 신규 불량을 찾는 법",
+      "title": "Unknown 신규 불량 탐색: contrastive embedding + HDBSCAN",
       "bullets": [
-        "**라벨이 없으니 self-supervised contrastive로 학습** — 같은 wafer의 두 augmentation은 가깝게, 다른 wafer는 멀게(InfoNCE). 학습한 임베딩을 HDBSCAN으로 군집해 신규 불량 후보를 그룹화",
-        "**운영 결과** — 미학습 2,000장에 1회 적용 → **13개 후보 군집 중 7개를 현업이 진성 불량으로 확인**. 정답 label이 없어 정확도가 아니라 검토 후보 압축 결과 (모델 미배포)"
+        "**원리** — 같은 wafer의 두 view는 가깝게, 다른 wafer는 멀게 학습하고, false-negative 후보는 negative에서 제외합니다",
+        "**운영 해석** — HDBSCAN 결과는 자동 판정이 아니라 현업 검토 후보입니다. 2,000장 적용 결과 13개 후보 group 중 7개가 진성 불량으로 확인되었습니다"
       ],
       "images": [
         {
-          "src": "_fig_cluster.png",
-          "caption": "self-supervised contrastive 임베딩 → HDBSCAN 군집 — 라벨 없이 같은 신규 결함 패턴끼리 자동 그룹화 (C형 · 십자 · 대각 scratch)"
+          "src": "p1_unknown_method.png",
+          "caption": ""
         }
       ],
       "grid_cols": 1,
+      "body_h": 0.9,
       "img_tile": "#FFFFFF"
     },
     {
       "type": "image_grid",
-      "kicker": "P1 | Unknown ablation (생성 benchmark)",
-      "title": "기법 스택이 군집 품질을 단계적으로 개선",
+      "kicker": "P1 | Unknown 대조 학습 기법",
+      "title": "작은 batch에서 negative를 늘린 MoCo queue + 경계 안정화 NeCo",
       "bullets": [
-        "**MoCo Queue 4096**(negative 256배)이 false cluster 합병을 줄여 noise를 크게 낮추고, **NV-Retriever**가 false-negative 제거, **NeCo**가 경계 안정화, **τ=0.5 재배정**으로 noise 0%",
-        "정직한 해석 — ARI/AMI는 TAPT backbone이 이미 높아 거의 불변. 기법 스택의 기여는 **군집 noise 15.8% → 0% · capture 0.934 → 0.962**로 군집 품질·안정성 향상"
+        "라벨 없는 wafer를 자기지도 대조학습(InfoNCE)으로 임베딩합니다 — 같은 wafer의 두 augmentation은 가깝게, 다른 wafer는 멀게",
+        "**MoCo queue + NV-Retriever** — batch가 8로 작아 negative가 부족하므로 momentum queue(4096)로 약 256배 확장하고, 같은 불량을 negative로 오인하는 유사 patch는 유사도 임계로 제외했습니다 (좌측 그림)",
+        "**NeCo** — student와 teacher의 patch neighbor consistency로 Normal과 defect 경계 임베딩을 안정화했습니다 (우측 그림)"
       ],
       "images": [
         {
-          "src": "p1_unknown_ablation.png",
-          "caption": "기법 추가에 따른 noise(막대, ↓) · capture(선, ↑)"
+          "src": "ref_moco_fig1.png",
+          "caption": "MoCo (He et al. 2020) Fig.1 — query/momentum encoder + queue"
+        },
+        {
+          "src": "ref_neco_fig1.png",
+          "caption": "NeCo (Pariza et al. 2024) Fig.1 — student/teacher patch 정렬"
         }
       ],
-      "grid_cols": 1,
-      "body_h": 1.05,
+      "grid_cols": 2,
+      "body_h": 1.25,
       "img_tile": "#FFFFFF",
-      "img_note": "per-class 500 + Normal 2000 (19,250 wafer) 도메인 생성 benchmark · 후속 개발/metric 관리용. 실전 운영(13→7 현업 확인)과 분리 — 운영 Unknown은 정답 label이 없어 정량 metric이 성립하지 않음"
+      "img_note": "외부 논문 figure를 본 과제 대조학습 구성요소(MoCo queue, NeCo) 설명에 인용"
     },
     {
       "type": "two_col",
@@ -299,90 +336,46 @@
     },
     {
       "type": "image_grid",
-      "kicker": "P2 | Problem + FCM-PM augmentation",
-      "title": "2-combo defect 학습: FCM-PM",
+      "kicker": "P2 | FCM-PM 원리",
+      "title": "FCM-PM: 결함 coverage와 background loss를 분리",
       "bullets": [
-        "**Problem/constraint** — 2-combo ground truth 부족 → single-defect 원천으로 학습하고 2-combo evaluation set에서 검증",
-        "**① FCM-PM (data)** — Full-Cover Mixup(격자 cut+paste)으로 결함 coverage 보장, Pair Mask(masked paired chip 추가 학습)로 single 형상 보강",
-        "**② val-margin (model selection)** — validation margin으로 checkpoint 선택. val-F1보다 test 성능 상관이 높아 +0.052 개선",
-        "**③ NB reject (inference)** — max sigmoid prob < 0.55를 Normal로 reject해 Normal/Invalid/OOD FAR 차단"
+        "**핵심** — random CutMix는 결함 일부가 잘리거나 가짜 background를 label과 함께 학습할 수 있습니다. FCM-PM은 Full-Cover Mixup으로 결함 영역을 보존하고 Pair Mask로 background loss를 제외합니다",
+        "**검증** — source chip 단위 split 이후 train 원천에서만 조합을 생성해 test 원천 chip 누수를 막고, val-margin selection과 GaussianNB reject로 bit-F1과 FAR를 함께 관리했습니다"
       ],
       "images": [
         {
           "src": "fcm_pm_panel.png",
-          "caption": "A·B single-defect → Full-Cover Mixup(격자 cut+paste)으로 2-combo 합성 → Pair Mask(masked paired chip 추가)로 single 형상 보강"
+          "caption": ""
         }
       ],
       "grid_cols": 1,
-      "body_h": 1.46,
+      "body_h": 0.82,
       "img_tile": "#FFFFFF",
-      "img_badge": "single-defect 원천  →  2-combo defect detection",
-      "img_note": "Normal은 균질 pattern이며, 현업 single-defect 원천에서 2-combo 학습/evaluation set을 구성"
+      "img_badge": "single-defect source chips → 2-combo defect learning",
+      "img_note": "P2는 현업 single failure chip 원천과 도메인 확률분포 기반 생성/검증입니다. bit-F1 0.9943 / FAR 0.00%는 synthetic/controlled benchmark 기준입니다"
     },
     {
-      "type": "table",
-      "kicker": "P2 | 성과",
-      "title": "Ablation: FCM-PM에서 bit-F1과 FAR가 동시에 개선",
-      "headers": [
-        "기법",
-        "bit-F1\n(4-bit 평균)",
-        "single defect",
-        "2-combo",
-        "FAR"
+      "type": "image_grid",
+      "kicker": "P2 | model selection + reject",
+      "title": "val-margin으로 checkpoint를 고르고, GaussianNB reject로 OOD를 거른다",
+      "bullets": [
+        "**val-margin best model select** — val-F1 하나만 보지 않고 positive/negative margin이 벌어진 checkpoint를 고릅니다. 이 선택에서 bit-F1 0.9943과 FAR 0.00%가 같이 나왔습니다",
+        "**NB reject** — max probability 하나가 아니라 4-bit probability vector 전체가 known single/2-combo 분포처럼 생겼는지 GaussianNB likelihood로 판단합니다"
       ],
-      "rows": [
-        [
-          "Baseline (BCE)",
-          "0.1093",
-          "0.1896",
-          "0.0668",
-          "99.47%"
-        ],
-        [
-          "Focal loss",
-          "0.7980",
-          "0.8724",
-          "0.7050",
-          "45.72%"
-        ],
-        [
-          "ASL",
-          "0.6435",
-          "0.5379",
-          "0.7320",
-          "100%"
-        ],
-        [
-          "Random CutMix",
-          "0.9359",
-          "0.9566",
-          "0.9070",
-          "42.05%"
-        ],
-        [
-          "Random CutMix + Pair Mask",
-          "0.9256",
-          "0.8538",
-          "0.9682",
-          "100%"
-        ],
-        [
-          "FCM-PM (val-F1 best)",
-          "0.9652",
-          "—",
-          "—",
-          "0.00%"
-        ],
-        [
-          "FCM-PM (val-margin best)",
-          "0.9943",
-          "—",
-          "—",
-          "0.00%"
-        ]
+      "images": [
+        {
+          "src": "p2_val_margin_selection.png",
+          "caption": ""
+        },
+        {
+          "src": "nb_reject_single_combo_ood_pattern_illustrative.png",
+          "caption": ""
+        }
       ],
-      "highlight_row": 6,
-      "note": "bit-F1은 결함 4종을 bit 단위로 맞췄는지 평균한 값입니다. Loss만 바꾸거나 random CutMix만 쓰면 FAR가 42~100%까지 올라갔습니다. Full-Cover Mixup으로 defect coverage를 보장하고, Pair Mask로 pseudo-background loss를 분리한 FCM-PM에서 FAR 0.00%와 bit-F1 0.9943을 동시에 달성했습니다.\nFCM-PM 행은 REPORT 기준 bit-F1/FAR만 제출했습니다. Ensemble(4×)은 성능 상한을 확인하는 teacher이고, distillation student는 운영 배포 후보입니다(성능 확정 전)."
+      "grid_cols": 2,
+      "body_h": 0.84,
+      "img_tile": "#FFFFFF",
+      "img_note": "NB reject는 raw model 성능을 대체하는 모델이 아니라, ambiguous/OOD probability vector를 reject하는 운영 safety layer입니다"
     },
     {
       "type": "section",
@@ -397,7 +390,7 @@
       "kpi": "현장 판정 기준을 generator rule로 구현 — synthetic data만으로 gate validation 가능",
       "stat_cards": [
         {
-          "big": "F1 0.9975",
+          "big": "F1 0.9967",
           "label": "Normal/abnormal gate [5-seed PoC]"
         },
         {
@@ -407,28 +400,27 @@
       ],
       "ba": {
         "before": "real anomaly label 부족, validation bottleneck",
-        "after": "synthetic data로 validation(F1 0.9975)"
+        "after": "synthetic data로 validation(F1 0.9967)"
       }
     },
     {
       "type": "image_grid",
-      "kicker": "P3 | Problem + generator design",
-      "title": "Label 부족으로 막힌 validation을 generator로 풀다",
-      "img_badge": "synthetic trend 10,000장, density5×noise3×anomaly5",
+      "kicker": "P3 | generator 원리",
+      "title": "Trend generator: 현장 판정 기준을 검증 데이터로 변환",
+      "img_badge": "synthetic trend 10,000장, region5×noise3×anomaly5",
       "bullets": [
-        "**Problem**: trend(계측 시계열) 판정이 manual graph review에 의존 → **real anomaly data/label이 부족해 model validation이 어려움**",
-        "**Generator 설계**: 10년 현장 판정 경험을 rule로 옮겨 Normal/abnormal trend를 자동 생성",
-        "**Normality calibration**: 정상 산포는 실전 기준선 하한/상한 안에 두고 anomaly intensity는 분리 → 학습/validation 기준이 현장 기준과 어긋나지 않게 조정"
+        "**핵심** — real anomaly label이 부족한 문제를 모델 성능 자랑이 아니라 generator rule 설계 문제로 풀었습니다",
+        "**구성** — Region 5종, Noise 3종, anomaly 5종, 정상성 calibration을 조합해 Normal/abnormal gate 검증용 synthetic benchmark를 만들었습니다"
       ],
       "images": [
         {
-          "src": "p3_trend_generation_formula.png",
-          "caption": "Region 계측밀도(5종) × Noise 분포(3종) × Anomaly 수식(5종) — 10년 현장 판정 기준을 generator rule로 코드화"
+          "src": "p3_generator_concept.png",
+          "caption": "Figure. Field decision rules are encoded into synthetic trend episodes and anomaly windows"
         }
       ],
       "grid_cols": 1,
-      "body_h": 0.92,
-      "img_note": "현장 판정 기준을 Region·Noise·Anomaly 수식으로 옮긴 생성 규칙. 생성 예시는 다음 장",
+      "body_h": 0.78,
+      "img_note": "합성 trend chart PoC 내부 검증값이며 실제 현업 trend log 성능으로 표현하지 않습니다",
       "img_tile": "#FFFFFF"
     },
     {
@@ -436,7 +428,7 @@
       "kicker": "P3 | 생성 예시 + 결과",
       "title": "Normal 1종 + anomaly 5종으로 gate validation (PoC)",
       "bullets": [
-        "**총 10,000장 생성**(Normal 5,000 + anomaly 5종×1,000), 7:1.5:1.5 split → **test 1,500건**(Normal 750, anomaly 5종×150)에서 Normal/abnormal gate **F1 0.9975**(5-seed 평균, FN 1.6, FP 2.2) — synthetic data만으로 구분 가능성 확인(PoC)",
+        "**총 10,000장 생성**(Normal 5,000 + anomaly 5종×1,000), 7:1.5:1.5 split → **test 1,500건**에서 Normal/abnormal gate **F1 0.9967**, abnormal recall 0.9987 — synthetic data만으로 구분 가능성 확인(PoC)",
         "**Gate=1차 screening**: conservative threshold로 abnormal trend 누락을 줄임 → abnormal recall 약 0.998"
       ],
       "body_h": 0.64,
@@ -603,7 +595,7 @@
           "sub": "bit-F1 0.9943"
         },
         {
-          "big": "F1 0.9975",
+          "big": "F1 0.9967",
           "label": "P3 Normal/abnormal PoC",
           "sub": "synthetic data 5-seed validation"
         },
