@@ -206,8 +206,8 @@
             [
               "What:",
               [
-                "composite[y][x] = sum_w grade[w][y][x]",
-                "@njit compiles the loop to native code"
+                "Numba = JIT compiler: runs numeric Python",
+                "code at C/machine level (unboxed, parallel)"
               ]
             ],
             [
@@ -218,14 +218,14 @@
               ]
             ],
             [
-              "How:",
+              "Used here:",
               [
-                "one fused unboxed pass + prange cores",
-                "no temp arrays -> ~50x vs numpy (~2.9 s)"
+                "@njit + prange on the composite  -> ~50x",
+                "composite[y][x] = sum_w grade[w][y][x]"
               ]
             ]
           ],
-          "caption": "JIT-compiled, unboxed, single pass, multi-core"
+          "caption": "JIT to machine code, unboxed, multi-core"
         },
         {
           "head": "pyvips large-image load & resize",
@@ -233,26 +233,26 @@
             [
               "What:",
               [
-                "load + resize very large maps for the UI",
-                "pyvips = Python binding of libvips"
+                "pyvips = Python binding of libvips — a",
+                "demand-driven, streaming image library"
               ]
             ],
             [
               "Why:",
               [
                 "one map = 6912x6912x3 ~ 140 MB raw",
-                "decoding whole maps overwhelms the viewer"
+                "loading whole maps overwhelms the viewer"
               ]
             ],
             [
-              "How:",
+              "Used here:",
               [
-                "demand-driven scanline streaming",
-                "peak memory ~ a region; threaded"
+                "load + resize the large maps for the viewer",
+                "libvips streams regions -> low peak memory"
               ]
             ]
           ],
-          "caption": "low-memory streaming load & resize"
+          "caption": "streaming load & resize, low memory"
         }
       ]
     },
