@@ -213,15 +213,15 @@
             [
               "Why:",
               [
-                "pure Python: interpreter + boxed objects",
-                "numpy: C arrays, but a temp array per op"
+                "pure Python: too slow (interpreter + boxing)",
+                "numpy: faster, but a temp array per op"
               ]
             ],
             [
               "Used here:",
               [
-                "@njit + prange on the composite  -> ~50x",
-                "composite[y][x] = sum_w grade[w][y][x]"
+                "composite[y][x] = sum_w grade[w][y][x]",
+                "ran as @njit(parallel) + prange  ->  ~50x"
               ]
             ]
           ],
