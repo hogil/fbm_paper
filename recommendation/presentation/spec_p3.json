@@ -14,14 +14,13 @@
       "kicker": "P3 | 순차 episode 생성",
       "title": "순차 episode 기반 trend 생성 (Sequential Episode-Based)",
       "bullets": [
-        "한 chart는 같은 device/step/item을 여러 설비(fleet)가 함께 찍은 trend이고, 그중 한 설비(target)를 판정 대상으로 봅니다 (fleet-conditioned)",
-        "정상 baseline은 episode(자기완결 한 구간)를 하나씩 완결 생성 후 이어 붙입니다. episode마다 길이/측정 밀도(밀집/희소/결핍)/결측 패턴이 다르고, 노이즈는 chart당 1종(Gaussian/AR/Laplacian)을 공유합니다",
+        "fleet(여러 설비)가 함께 찍은 한 trend에서 한 설비(target)를 판정합니다. episode(자기완결 구간)를 순차 생성해 이어 붙여 정상 baseline을 만듭니다",
         {
-          "t": "episode = 자기완결 trend segment. 강화학습 episode 개념(완결 단위 순차 생성) 차용 — 시계열 표준어는 segment",
+          "t": "episode마다 길이/밀도/결측이 다르고, 노이즈는 chart당 1종 (episode = segment, 강화학습 개념 차용)",
           "lvl": 1
         }
       ],
-      "body_h": 1.55,
+      "body_h": 0.82,
       "images": [
         {
           "src": "p3_deck_baseline.png",

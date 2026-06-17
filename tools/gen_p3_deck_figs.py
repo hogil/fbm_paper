@@ -41,6 +41,7 @@ def draw_baseline_chart(ax, rng):
                 ("밀집", 52, 0.85, "dense")]
     band = {"dense": "#EAF0F8", "sparse": "#FBF4E5", "missing": "#FBECEA", "thin": "#F2F3F6"}
     edge = {"dense": NAVY, "sparse": "#C98A22", "missing": "#CC3328", "thin": MUT}
+    en = {"dense": "Dense", "sparse": "Sparse", "missing": "Missing", "thin": "Thin"}
     nfleet = 5
     foff = rng.normal(0, 0.018, nfleet)
     sig = 0.05   # 노이즈는 chart당 1종 → 산포 폭 동일. episode마다 변하는 건 밀도/결측/길이
@@ -57,14 +58,16 @@ def draw_baseline_chart(ax, rng):
             ax.scatter(rng.uniform(x0, x1, npts), rng.normal(0, sig, npts),
                        s=12, color=BL, alpha=0.85, edgecolors="none", zorder=3)
         if kind not in shown:
-            ax.text((x0 + x1) / 2, 0.305, label, ha="center", va="top", fontsize=9.5,
+            ax.text((x0 + x1) / 2, 0.315, en.get(kind, kind), ha="center", va="top", fontsize=13,
                     color=edge.get(kind, MUT), fontweight="bold")
             shown.add(kind)
         x0 = x1
     ax.axhline(0, color="#8A929E", lw=1.0, ls=(0, (5, 4)), zorder=1)
-    ax.set_xlim(0, x0); ax.set_ylim(-0.36, 0.33)
-    ax.set_ylabel("Measurement (정규화)", fontsize=8.5, color=MUT)
-    ax.set_xlabel("time index — episode(구간)마다 측정 밀도/결측/길이가 다름 (노이즈는 chart당 1종)", fontsize=8.5, color=MUT)
+    ax.set_xlim(0, x0); ax.set_ylim(-0.36, 0.34)
+    ax.set_ylabel("Measurement (norm.)", fontsize=11, color=MUT)
+    ax.set_xlabel("Sample index — density / missing pattern varies per episode (noise: one type per chart)",
+                  fontsize=11, color=MUT)
+    ax.tick_params(labelsize=9.5)
     _spines(ax)
 
 
@@ -72,41 +75,41 @@ def draw_baseline_chart(ax, rng):
 def draw_noise(axs, rng):
     n = 120; t = np.arange(n)
     axs[0].plot(t, rng.normal(0, 0.3, n), color=NAVY, lw=0.9, alpha=0.9, marker="o", ms=2.0, mfc=NAVY, mec="none")
-    axs[0].set_title("산포 — Gaussian iid", fontsize=10.5, color=NAVY, fontweight="bold", pad=5)
-    axs[0].set_xlabel("기본 계측 산포", fontsize=8.5, color=MUT)
+    axs[0].set_title("Gaussian iid", fontsize=13, color=NAVY, fontweight="bold", pad=6)
+    axs[0].set_xlabel("base dispersion", fontsize=10.5, color=MUT)
     a = np.zeros(n)
     for i in range(1, n):
         a[i] = 0.93 * a[i - 1] + rng.normal(0, 0.12)
     axs[1].plot(t, a, color=TEAL, lw=1.7); axs[1].fill_between(t, a, color=TEAL, alpha=0.10)
-    axs[1].set_title("설비 상태변동 — AR(1)", fontsize=10.5, color=NAVY, fontweight="bold", pad=5)
-    axs[1].set_xlabel("천천히 끌리는 상관 변동", fontsize=8.5, color=MUT)
+    axs[1].set_title("Correlated AR(1)", fontsize=13, color=NAVY, fontweight="bold", pad=6)
+    axs[1].set_xlabel("equipment drift", fontsize=10.5, color=MUT)
     lp = rng.laplace(0, 0.10, n)
     axs[2].plot(t, lp, color=NAVY, lw=0.8, alpha=0.85, marker="o", ms=1.8, mfc=NAVY, mec="none")
     big = np.argsort(np.abs(lp))[-4:]
     axs[2].scatter(t[big], lp[big], s=40, color=RD, zorder=5, edgecolors="white", lw=0.7)
-    axs[2].set_title("계측 헌팅 — Laplacian", fontsize=10.5, color=NAVY, fontweight="bold", pad=5)
-    axs[2].set_xlabel("한 번씩 크게 튀는 heavy-tail", fontsize=8.5, color=MUT)
+    axs[2].set_title("Laplacian", fontsize=13, color=NAVY, fontweight="bold", pad=6)
+    axs[2].set_xlabel("hunting (heavy-tail)", fontsize=10.5, color=MUT)
     for ax in axs:
         ax.set_ylim(-1.15, 1.15); ax.axhline(0, color="#D5DBE3", lw=0.7, zorder=1)
         _spines(ax); ax.set_xticks([])
 
 
 def fig_baseline():
-    fig = plt.figure(figsize=(13.8, 5.4), dpi=200); fig.patch.set_facecolor("white")
-    gs = fig.add_gridspec(2, 1, height_ratios=[1.0, 0.78], hspace=0.62,
-                          left=0.06, right=0.985, top=0.88, bottom=0.10)
+    fig = plt.figure(figsize=(14.4, 5.2), dpi=200); fig.patch.set_facecolor("white")
+    gs = fig.add_gridspec(2, 1, height_ratios=[1.0, 0.74], hspace=0.82,
+                          left=0.055, right=0.985, top=0.845, bottom=0.135)
     ax_b = fig.add_subplot(gs[0])
-    ng = gs[1].subgridspec(1, 3, wspace=0.26)
+    ng = gs[1].subgridspec(1, 3, wspace=0.24)
     ax_n = [fig.add_subplot(ng[i]) for i in range(3)]
     draw_baseline_chart(ax_b, np.random.default_rng(7))
     draw_noise(ax_n, np.random.default_rng(3))
 
-    def sec(aL, aR, text):
-        p0 = aL.get_position(); p1 = aR.get_position()
-        fig.text((p0.x0 + p1.x1) / 2, p0.y1 + 0.04, text, ha="center", va="bottom",
-                 fontsize=12.5, color=NAVY, fontweight="bold")
-    sec(ax_b, ax_b, "(a) 정상 baseline — 회색 fleet + 파랑 highlighted, episode 구간마다 밀도/결측이 변함")
-    sec(ax_n[0], ax_n[2], "(b) 계측 노이즈 3종 (chart당 1종)")
+    def sec(aL, text):
+        p0 = aL.get_position()
+        fig.text(p0.x0, p0.y1 + 0.052, text, ha="left", va="bottom",
+                 fontsize=14.5, color=NAVY, fontweight="bold")
+    sec(ax_b, "(a) Normal baseline  —  gray = fleet,  blue = target;  density / missing vary per episode")
+    sec(ax_n[0], "(b) Measurement noise  —  one type per chart")
     fig.savefig(FIG + "/p3_deck_baseline.png", facecolor="white"); print("wrote baseline"); plt.close(fig)
 
 
