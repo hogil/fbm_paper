@@ -67,6 +67,42 @@
       }
     },
     {
+      "type": "archflow",
+      "kicker": "P1 | 전체 아키텍쳐",
+      "title": "raw log에서 운영·분석까지 — Failbit Map 전체 흐름",
+      "stages": [
+        {
+          "text": "raw EDS log (hex)",
+          "arrow": "Cython hex→Grade  +  32색 palette PNG"
+        },
+        {
+          "text": "Failbit Map (PNG) + positions JSON",
+          "sub": "좌표 보존 표현 — 이미지·좌표·계측을 같은 좌표계로 정합 적재",
+          "arrow": "같은 자산을 운영 viewer와 AI 분석이 공유"
+        },
+        {
+          "text": "AI 분석 (3 경로)",
+          "lines": [
+            "Known     :  CNN(ConvNeXtV2) -> ROI-YOLO 2-stage     [F1 0.95]",
+            "object-id :  chip-CNN -> 32x32 obj-id map            [dev]",
+            "Unknown   :  contrastive(MoCo/NeCo) -> HDBSCAN        [13->7]"
+          ],
+          "arrow": "검토 결과를 라벨로 환류"
+        },
+        {
+          "text": "현업 검토 -> 라벨 등록 -> 재학습   (human-in-the-loop)"
+        }
+      ],
+      "branch": {
+        "from": 1,
+        "text": "운영 viewer (양산 중)",
+        "lines": [
+          "Numba 합성 · pyvips streaming",
+          "대량 map 조회·합성"
+        ]
+      }
+    },
+    {
       "type": "papertext",
       "kicker": "P1 | 데이터 생성 (fail-map)",
       "title": "측정 log를 좌표 보존 Failbit Map으로 — hex→Grade + palette PNG",
@@ -150,7 +186,7 @@
       "bullets": [
         "**왜 필요한가** — 생성된 대량 Failbit Map을 운영 viewer에서 매일 조회·비교·합성합니다. 여러 wafer 합성과 수천×수천 PNG 로드가 viewer 병목이라, 아래 두 기법으로 처리 속도와 메모리를 잡았습니다"
       ],
-      "body_h": 0.92,
+      "body_h": 0.82,
       "bullet_size": 13.4,
       "img_note": "모델 추론 속도 수치가 아니라, 운영 viewer가 대량 map을 다룰 수 있게 만든 데이터/이미지 처리 구조입니다",
       "cols": 2,
@@ -159,10 +195,17 @@
           "head": "Numba @njit composite map",
           "sections": [
             [
-              "픽셀 위치별 병렬 누적",
+              "composite 연산",
               [
-                "여러 wafer Grade map을 같은 좌표로 합산하고,",
-                "@njit + prange 로 Python loop을 기계어로 병렬화"
+                "composite[y][x] = sum_w  grade[w][y][x]",
+                "여러 wafer를 픽셀 위치마다 누적해 hot-spot map"
+              ]
+            ],
+            [
+              "Python vs Numba",
+              [
+                "Python : 약 4,800만 픽셀 × N장 인터프리터 루프 (느림)",
+                "Numba : @njit 기계어 컴파일 + prange 멀티코어 병렬"
               ]
             ],
             [
@@ -172,27 +215,33 @@
               ]
             ]
           ],
-          "caption": "Numba 병렬 합성 — composite map 생성 가속"
+          "caption": "같은 누적 연산을 컴파일·병렬로 → 합성 가속"
         },
         {
           "head": "pyvips demand-driven tile streaming",
           "sections": [
             [
-              "필요한 tile만 로드",
+              "데이터 크기",
               [
-                "큰 PNG 전체를 메모리에 올리지 않고,",
-                "화면에 보이는 부분의 tile만 골라 디코드"
+                "map 1장 = 6912×6912×3 byte ≈ 수백 MB",
+                "전부 메모리 적재하면 viewer가 무겁고 느림"
               ]
             ],
             [
-              "pyramid + cache",
+              "demand-driven",
               [
-                "축소 레벨 [0.25, 0.5, 0.75, 1.0] 을 미리 캐시 →",
-                "대용량 map 즉시 조회, viewer 메모리 절감"
+                "화면에 보이는 tile만 디코드 (rolling window)",
+                "pyramid [0.25,0.5,0.75,1.0]로 zoom에 맞춰 로드"
+              ]
+            ],
+            [
+              "효과",
+              [
+                "viewer 메모리 수백 MB → 수 MB, 대용량 즉시 조회"
               ]
             ]
           ],
-          "caption": "pyvips tile streaming — viewer 메모리·지연 절감"
+          "caption": "전체 적재 대신 tile streaming → viewer 경량화"
         }
       ]
     },

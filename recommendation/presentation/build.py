@@ -2132,10 +2132,84 @@ def s_papertext(slide, d, idx):
     _footer(slide, idx)
 
 
+def s_archflow(slide, d, idx):
+    """전체 아키텍쳐 흐름을 네이티브 도형(박스+화살표)으로 그린다(이미지 캡쳐 X).
+    세로 main 흐름(stages) + 우측 분기(branch, 운영 viewer). 각 stage 는 박스, 사이에 down-arrow."""
+    _bg(slide, WHITE)
+    _title_block(slide, d.get("kicker"), d["title"])
+    def I(v): return int(Inches(v))
+    MONO = "Consolas"
+    LN = RGBColor(0xB9, 0xC6, 0xDB)
+    TINT = RGBColor(0xEE, 0xF2, 0xF8)
+    stages = d["stages"]
+    n = len(stages)
+    cx = I(4.45); mw = I(7.4); mx = cx - mw // 2
+    top = I(2.05); bottom = I(6.92)
+    arrow_h = I(0.40)
+
+    def stage_h(st):
+        if st.get("lines"):
+            return I(0.40) + I(0.30) * len(st["lines"])
+        if st.get("sub"):
+            return I(0.84)
+        return I(0.60)
+    heights = [stage_h(s) for s in stages]
+    total = sum(heights) + arrow_h * (n - 1)
+    y = top + max(0, (bottom - top - total) // 2)
+    centers = []
+    for i, st in enumerate(stages):
+        bh = heights[i]
+        fill = TINT if st.get("lines") else WHITE
+        _rect(slide, Emu(mx), Emu(y), Emu(mw), Emu(bh), fill, line=LN, line_w=Pt(1.4),
+              shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        if st.get("lines"):
+            _text(slide, Emu(mx + I(0.24)), Emu(y + I(0.05)), Emu(mw - I(0.48)), Emu(I(0.30)),
+                  [[(st["text"], dict(size=12.5, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+            ly = y + I(0.38)
+            for ln in st["lines"]:
+                _text(slide, Emu(mx + I(0.36)), Emu(ly), Emu(mw - I(0.5)), Emu(I(0.28)),
+                      [[(ln, dict(size=11, color=INK, name=MONO))]], anchor=MSO_ANCHOR.MIDDLE)
+                ly += I(0.30)
+        elif st.get("sub"):
+            _text(slide, Emu(mx), Emu(y + I(0.11)), Emu(mw), Emu(I(0.34)),
+                  [[(st["text"], dict(size=13.5, bold=True, color=NAVY))]],
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+            _text(slide, Emu(mx), Emu(y + I(0.46)), Emu(mw), Emu(I(0.30)),
+                  [[(st["sub"], dict(size=11, color=MUTED))]],
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        else:
+            _text(slide, Emu(mx), Emu(y), Emu(mw), Emu(bh),
+                  [[(st["text"], dict(size=13.5, bold=True, color=NAVY))]],
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        centers.append((y, bh))
+        if i < n - 1:
+            ay = y + bh
+            _rect(slide, Emu(cx - I(0.13)), Emu(ay + I(0.03)), Emu(I(0.26)), Emu(arrow_h - I(0.06)),
+                  ACCENT, shape=MSO_SHAPE.DOWN_ARROW)
+            if st.get("arrow"):
+                _text(slide, Emu(cx + I(0.26)), Emu(ay), Emu(I(4.5)), Emu(arrow_h),
+                      [[(st["arrow"], dict(size=10.5, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
+        y = y + bh + arrow_h
+    br = d.get("branch")
+    if br:
+        sy, sbh = centers[br["from"]]
+        bw = I(3.45); bx = mx + mw + I(0.4); bhh = I(1.02); by = sy + (sbh - bhh) // 2
+        _rect(slide, Emu(mx + mw + I(0.02)), Emu(sy + sbh // 2 - I(0.1)), Emu(I(0.4)), Emu(I(0.2)),
+              ACCENT, shape=MSO_SHAPE.RIGHT_ARROW)
+        _rect(slide, Emu(bx), Emu(by), Emu(bw), Emu(bhh), RGBColor(0xE6, 0xF7, 0xF6),
+              line=ACCENT, line_w=Pt(1.4), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        blines = [[(br["text"], dict(size=12.5, bold=True, color=NAVY))]]
+        for l in br.get("lines", []):
+            blines.append([(l, dict(size=10.5, color=INK))])
+        _text(slide, Emu(bx + I(0.22)), Emu(by + I(0.08)), Emu(bw - I(0.44)), Emu(bhh - I(0.16)),
+              blines, anchor=MSO_ANCHOR.MIDDLE)
+    _footer(slide, idx)
+
+
 DISPATCH = {"title": s_title, "section": s_section, "stats": s_stats, "bullets": s_bullets,
             "two_col": s_two_col, "image_grid": s_image_grid, "table": s_table, "closing": s_closing,
             "flow": s_flow, "timeline": s_timeline, "cards": s_cards, "pipeline": s_pipeline,
-            "papertext": s_papertext}
+            "papertext": s_papertext, "archflow": s_archflow}
 
 
 def build(spec_path, out_path):
