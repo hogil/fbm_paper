@@ -55,33 +55,20 @@
     {
       "type": "image_grid",
       "kicker": "P3 | 결과",
-      "title": "생성 데이터로 학습한 1차 gate — 조건·백본·운영까지 검증",
+      "title": "단변수 반복 실험으로 조건별 BKM 확보 — 백본·데이터셋·운영 검증",
       "bullets": [
-        "생성 데이터로 학습한 1차 gate를 여러 조건·백본·운영 임계값에서 검증했습니다. 정상 비율과 정규화로 놓친 불량을 **4.6→0.8**, F1을 **0.9944→0.9988**까지 올렸습니다 (전부 5-seed 평균)"
+        "각 학습 조건을 한 번에 하나씩만 변경하는 단변수(single-axis) 방식으로 5-seed 반복 평가를 수행하고, 축별 최적값을 BKM(Best Known Method)으로 정리하였습니다. 정상 비율 축에서 F1 0.9944→**0.9988**, 놓친 불량 4.6→0.8로 가장 큰 개선을 확인하였으며, 백본·데이터셋·운영 임계값까지 동일 프로토콜로 비교하였습니다"
       ],
-      "body_h": 0.62,
+      "body_h": 0.98,
       "images": [
         {
-          "src": "p3r_normal_ratio.png",
-          "caption": "정상 비율 700→3300 — F1 0.9944→0.9988, FN 4.6→0.8"
-        },
-        {
-          "src": "p3r_gradcam.png",
-          "caption": "Grad-CAM 6종×6 — 색이 아니라 결함 패턴 위치로 판단"
-        },
-        {
-          "src": "p3r_nt_effect.png",
-          "caption": "운영 임계값 NT — FN/FP를 현장 비용에 맞춰 (319-run)"
-        },
-        {
-          "src": "p3r_stoch_depth.png",
-          "caption": "Stochastic Depth 0.05 — F1 0.9985, FN 0.8"
+          "src": "p3_bkm.png",
+          "caption": ""
         }
       ],
-      "grid_cols": 2,
+      "grid_cols": 1,
       "grid_gap": 0.3,
-      "img_badge": "F1 0.9944 → 0.9988 / FN 4.6 → 0.8",
-      "img_note": "backbone Tiny 0.9944 vs Base 0.9971 · noise +15%에도 F1 0.9960 · 2-stage(불량 유형 분류) pilot binary F1 0.9967 / 유형 acc 0.73 — 동일 baseline·5-seed 비교 프레임워크로 확장 중"
+      "img_note": "단변수 11축 각 5-seed 반복 · baseline F1 0.9975 (0.9940–0.9993) 반복 안정 · 축별 best 를 합친 통합 BKM 은 GPU 확보 후 진행 · 2-stage 유형분류 pilot 0.73"
     }
   ]
 }

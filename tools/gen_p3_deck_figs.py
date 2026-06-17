@@ -273,8 +273,96 @@ def fig_robust():
     fig.savefig(FIG + "/p3_deck_robust.png", facecolor="white"); print("wrote robust"); plt.close(fig)
 
 
+def fig_bkm():
+    """연속 반복 실험: 각 조건을 한 변수만 바꿔(single-axis) 5-seed 반복 평가하고 축별 best 를 BKM 으로 정리.
+    좌: 단변수 11축 BKM(축별 baseline→best F1), 우: 백본/데이터셋/운영 임계값.
+    출처: anomaly-detection/docs/data/one_factor_latest.json (각 5/5 seeds, * smoothing 은 3-seed pilot)."""
+    import matplotlib.gridspec as gridspec
+    axes = [
+        ("정상비율  700→3300", 0.9988, 0.8, "best"),
+        ("Stochastic Depth →0.05", 0.9985, 0.8, "imp"),
+        ("Label Smoothing →0.02", 0.9981, 0.8, "imp"),
+        ("Learning rate →1e-4", 0.9964, 2.0, "imp"),
+        ("EMA →0.95", 0.9964, 2.2, "imp"),
+        ("Focal γ →2.0", 0.9964, 2.4, "imp"),
+        ("Allow-tie-save on", 0.9964, 2.4, "imp"),
+        ("per-class →700", 0.9960, 2.4, "imp"),
+        ("Smoothing median*", 0.9960, 2.0, "hl"),
+        ("Warmup →3", 0.9957, 2.4, "imp"),
+        ("Abnormal weight →1.5", 0.9956, 3.0, "imp"),
+        ("Color  c01(red)", 0.9952, 3.8, "hl"),
+    ]
+    fig = plt.figure(figsize=(14.6, 5.2), dpi=195); fig.patch.set_facecolor("white")
+    gs = gridspec.GridSpec(3, 2, width_ratios=[2.5, 1.0], hspace=0.95, wspace=0.14,
+                           left=0.165, right=0.975, top=0.89, bottom=0.10)
+    axL = fig.add_subplot(gs[:, 0])
+    names = [a[0] for a in axes]; f1 = [a[1] for a in axes]
+    cmap = {"best": NAVY, "imp": "#9DB4D6", "hl": TEAL}
+    cols = [cmap[a[3]] for a in axes]
+    y = np.arange(len(axes))[::-1]
+    axL.barh(y, [v - 0.992 for v in f1], left=0.992, color=cols, height=0.64, zorder=3)
+    axL.axvline(0.9944, color=GRAYF, ls=(0, (4, 3)), lw=1.3, zorder=2)
+    axL.text(0.99435, len(axes) - 0.35, "baseline 0.9944  (FN 4.6)", fontsize=8.5, color=MUT, ha="right", va="bottom")
+    axL.set_xlim(0.992, 0.9995); axL.set_yticks(y); axL.set_yticklabels(names, fontsize=9.5, color=NAVY)
+    for yi, v in zip(y, f1):
+        axL.text(v + 0.00004, yi, f"{v:.4f}", va="center", fontsize=8.6, color=NAVY, fontweight="bold")
+    axL.set_title("단변수(single-axis) 반복 평가 → 축별 BKM   (각 5-seed,  * smoothing 3-seed)",
+                  fontsize=12, color=NAVY, fontweight="bold", pad=9, loc="left")
+    _spines(axL); axL.set_xticks([0.992, 0.994, 0.996, 0.998]); axL.tick_params(labelsize=8)
+
+    def mini(ax, nm, vals, c2, title):
+        ax.bar([0, 1], [v - 0.992 for v in vals], bottom=0.992, color=[GRAYF, c2], width=0.62, zorder=3)
+        ax.set_ylim(0.992, 0.9982)
+        for i, v in enumerate(vals):
+            ax.text(i, v + 0.00003, f"{v:.4f}", ha="center", fontsize=8, color=NAVY, fontweight="bold")
+        ax.set_xticks([0, 1]); ax.set_xticklabels(nm, fontsize=8.5, color=MUT)
+        ax.set_title(title, fontsize=10, color=NAVY, fontweight="bold", pad=4)
+        _spines(ax); ax.tick_params(labelleft=False, labelsize=8)
+
+    mini(fig.add_subplot(gs[0, 1]), ["Tiny", "Base"], [0.9944, 0.9971], NAVY, "백본 ConvNeXtV2 (5-seed)")
+    mini(fig.add_subplot(gs[1, 1]), ["base", "noise+15%"], [0.9944, 0.9960], TEAL, "데이터셋 강건성 (5-seed)")
+    a3 = fig.add_subplot(gs[2, 1])
+    nts = ["0.9", "0.99", "0.999"]; fnn = [3.80, 2.74, 1.75]; fpp = [2.91, 3.65, 5.12]
+    a3.plot(nts, fnn, marker="o", ms=4, color=RD, lw=1.8, label="FN")
+    a3.plot(nts, fpp, marker="o", ms=4, color=BL, lw=1.8, label="FP")
+    a3.set_ylim(0, 6); a3.legend(fontsize=7.5, frameon=False, ncol=2, loc="upper center")
+    a3.set_title("운영 임계값 NT — FN/FP (319-run)", fontsize=10, color=NAVY, fontweight="bold", pad=4)
+    _spines(a3); a3.tick_params(labelsize=7.5)
+    fig.savefig(FIG + "/p3_bkm.png", facecolor="white"); print("wrote bkm"); plt.close(fig)
+
+
+def fig_smoothing():
+    """checkpoint 선택용 val_f1 평활화 window(median) — 흔들리는 epoch에 강건한 best 선택 (3-seed).
+    주의: 계측 신호를 median filter 한 것이 아니라, 학습 중 val_f1 metric 을 최근 N epoch median 으로
+    평활화해 best checkpoint 를 안정적으로 고르는 기법. spike epoch 에 흔들리지 않아 FN 이 줄어든다."""
+    names = ["raw\n(window 1)", "median\nwindow 3", "median\nwindow 5"]
+    f1 = [0.9953, 0.9954, 0.9960]; fn = [4.3, 3.0, 2.0]
+    cols = [GRAYF, TEAL, NAVY]
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(10.6, 4.3), dpi=195); fig.patch.set_facecolor("white")
+    x = np.arange(3)
+    a1.bar(x, f1, color=cols, width=0.6, zorder=3)
+    a1.axhline(0.9953, color=GRAYF, ls=(0, (4, 3)), lw=1, zorder=2)
+    a1.set_ylim(0.9948, 0.9964)
+    for i, v in enumerate(f1):
+        a1.text(i, v + 0.00004, f"{v:.4f}", ha="center", fontsize=9, color=NAVY, fontweight="bold")
+    a1.set_title("binary F1  (↑ 좋음)", fontsize=12, color=NAVY, fontweight="bold", pad=8)
+    a2.bar(x, fn, color=cols, width=0.6, zorder=3)
+    a2.axhline(4.3, color=GRAYF, ls=(0, (4, 3)), lw=1, zorder=2)
+    a2.set_ylim(0, 5.0)
+    for i, v in enumerate(fn):
+        a2.text(i, v + 0.12, f"{v:.1f}", ha="center", fontsize=9, color=NAVY, fontweight="bold")
+    a2.set_title("놓친 불량 FN  (↓ 좋음)", fontsize=12, color=NAVY, fontweight="bold", pad=8)
+    for a in (a1, a2):
+        _spines(a); a.set_xticks(x); a.set_xticklabels(names, fontsize=9, color=MUT)
+        a.tick_params(labelbottom=True, labelleft=True)
+    fig.tight_layout()
+    fig.savefig(FIG + "/p3_smoothing.png", facecolor="white"); print("wrote smoothing"); plt.close(fig)
+
+
 if __name__ == "__main__":
     fig_baseline()
     fig_types()
+    fig_bkm()
+    fig_smoothing()
     fig_ablation()
     fig_robust()
