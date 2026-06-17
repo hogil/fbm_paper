@@ -71,12 +71,12 @@
       "kicker": "P1 | 데이터 생성 (fail-map)",
       "title": "측정값(hex)을 Grade로 무손실 변환 — 좌표 보존 Failbit Map",
       "bullets": [
-        "**왜** — wafer 한 장이 약 1,000만 개의 측정 value를 담고 하루 약 2만 장이 쌓여, 원본 그대로는 다루기 어렵습니다. 측정값(hex)을 Grade로 무손실 변환해 좌표를 보존한 Failbit Map과 positions JSON을 만듭니다"
+        "**왜** — 하루 약 2만 wafer가 쌓이고, wafer 한 장마다 약 1,000만 개의 측정 value를 담고 있어 원본 log 그대로는 대량 조회와 분석이 어렵습니다. 측정값(hex)을 Grade로 무손실 변환해 좌표를 보존한 Failbit Map PNG와 positions JSON을 만듭니다"
       ],
       "images": [
         {
-          "src": "data_hex_to_grade_formula.png",
-          "caption": ""
+          "src": "paper_fig1_cython_hex_to_grade.png",
+          "caption": "Hex→Grade 변환 (논문 Fig.1) — 순수 Python 대비 약 100배"
         }
       ],
       "grid_cols": 1,
@@ -93,8 +93,8 @@
       ],
       "images": [
         {
-          "src": "data_palette_png_formula.png",
-          "caption": ""
+          "src": "paper_fig2_palette_png.png",
+          "caption": "RGB PNG vs palette-indexed PNG (논문 Fig.2) — 저장 약 75% 축소 (무손실)"
         }
       ],
       "grid_cols": 1,
@@ -106,18 +106,22 @@
       "kicker": "P1 | viewer 처리 구조",
       "title": "Numba와 pyvips: 대량 Failbit Map viewer 처리",
       "bullets": [
-        "**Numba** — 여러 wafer를 같은 좌표계에서 합성할 때 Python loop 대신 typed array 연산을 JIT compile해 composite map 생성을 가볍게 만듭니다",
-        "**pyvips** — 초고해상도 PNG 전체를 메모리에 올리지 않고 viewer가 필요한 tile만 읽고 cache해, 4K+ map 조회 지연을 줄입니다"
+        "**Numba** — 여러 wafer의 Grade map을 같은 좌표계에서 합성할 때 pixel 단위 Python loop를 제거하고 typed loop로 계산합니다",
+        "**pyvips** — PNG 전체를 메모리에 올리지 않고 현재 화면에 필요한 tile만 읽어 viewer memory를 viewport 크기에 가깝게 제한합니다"
       ],
       "images": [
         {
-          "src": "p1_numba_pyvips_method.png",
-          "caption": ""
+          "src": "numba_composite_formula.png",
+          "caption": "Numba @njit composite — 픽셀 위치별 병렬 누적"
+        },
+        {
+          "src": "pyvips_stream_formula.png",
+          "caption": "pyvips demand-driven tile streaming"
         }
       ],
-      "grid_cols": 1,
-      "body_h": 0.72,
-      "img_tile": "#FFFFFF",
+      "grid_cols": 2,
+      "body_h": 1.02,
+      "bullet_size": 13.4,
       "img_note": "모델 추론 속도 수치가 아니라, 운영 viewer가 대량 map을 다룰 수 있게 만든 데이터/이미지 처리 구조입니다"
     },
     {
@@ -214,13 +218,12 @@
       ],
       "images": [
         {
-          "src": "p1_unknown_method.png",
-          "caption": ""
+          "src": "_fig_cluster.png",
+          "caption": "contrastive 임베딩 + HDBSCAN 군집 — 라벨 없이 같은 신규 결함 패턴끼리 (C형·십자·대각 scratch)"
         }
       ],
       "grid_cols": 1,
-      "body_h": 0.9,
-      "img_tile": "#FFFFFF"
+      "body_h": 0.9
     },
     {
       "type": "image_grid",
@@ -364,17 +367,16 @@
       ],
       "images": [
         {
-          "src": "p2_val_margin_selection.png",
-          "caption": ""
+          "src": "val_margin_formula.png",
+          "caption": "val-margin으로 checkpoint 선택"
         },
         {
-          "src": "nb_reject_single_combo_ood_pattern_illustrative.png",
-          "caption": ""
+          "src": "nb_reject_formula.png",
+          "caption": "GaussianNB reject gate (Normal/OOD 차단)"
         }
       ],
       "grid_cols": 2,
       "body_h": 0.84,
-      "img_tile": "#FFFFFF",
       "img_note": "NB reject는 raw model 성능을 대체하는 모델이 아니라, ambiguous/OOD probability vector를 reject하는 운영 safety layer입니다"
     },
     {
@@ -414,14 +416,13 @@
       ],
       "images": [
         {
-          "src": "p3_generator_concept.png",
-          "caption": "Figure. Field decision rules are encoded into synthetic trend episodes and anomaly windows"
+          "src": "p3_trend_generation_formula.png",
+          "caption": "Region × Noise × Anomaly 생성 수식 (논문 figure)"
         }
       ],
       "grid_cols": 1,
       "body_h": 0.78,
-      "img_note": "합성 trend chart PoC 내부 검증값이며 실제 현업 trend log 성능으로 표현하지 않습니다",
-      "img_tile": "#FFFFFF"
+      "img_note": "합성 trend chart PoC 내부 검증값이며 실제 현업 trend log 성능으로 표현하지 않습니다"
     },
     {
       "type": "image_grid",
