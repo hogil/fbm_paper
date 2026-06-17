@@ -14,7 +14,7 @@ for f in ("Malgun Gothic", "맑은 고딕", "NanumGothic", "DejaVu Sans"):
         pass
 rcParams["axes.unicode_minus"] = False
 
-NAVY = "#0F1E3D"; ACC = "#2F6FD6"; RED = "#CC3328"; GRN = "#2BA66B"; MUT = "#6B7280"
+NAVY = "#0F1E3D"; ACC = "#3A4150"; RED = "#CC3328"; GRN = "#2BA66B"; MUT = "#6B7280"
 classes = ["bb", "fk", "sc", "sr"]
 cases = [
     ("single  (bank_boundary)", [0.86, 0.10, 0.13, 0.09], True),
@@ -36,7 +36,7 @@ for ax, (title, probs, accept) in zip(axs, cases):
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     for s in ("left", "bottom"):
-        ax.spines[s].set_color("#C4CCD8")
+        ax.spines[s].set_color("#333740")
 fig.suptitle("같은 max 확률이라도 4-bit 분포 패턴이 다르다 → GaussianNB 가능도로 판정",
              fontsize=11.5, color=NAVY, fontweight="bold", y=1.04)
 fig.tight_layout()

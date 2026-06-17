@@ -225,11 +225,11 @@ def _title_block(slide, kicker, title, x=Inches(0.7), y=Inches(0.55), w=Inches(1
     # closing(30) 디바이더와 같은 줌 배율로 보이도록 제목을 키우고(29→31) 좌측 teal 바를 더 굵고
     # 길게(0.11→0.135w, 0.78→0.82h) 통일한다. 이전엔 figure·표 계열이 size29 로 약간 작아 보여
     # '컴팩트 vs full-bleed' 두 톤으로 갈렸음 → 동일 헤더 위계로 맞춘다(제목 밑줄 X).
-    _rect(slide, x, y+Inches(0.00), Inches(0.135), Inches(0.84), ACCENT)
+    _rect(slide, x, y+Inches(0.00), Inches(0.135), Inches(0.84), RGBColor(0xCF, 0xD4, 0xDB))
     tx = x + Inches(0.32)
     if kicker:
         _text(slide, tx, y-Inches(0.06), w, Inches(0.28),
-              [[(kicker, dict(size=13, bold=True, color=ACCENT))]])
+              [[(kicker, dict(size=13, bold=True, color=RGBColor(0x8A, 0x92, 0x9E)))]])
     _text(slide, tx, y+(Inches(0.22) if kicker else Inches(0.02)), w, Inches(0.66),
           [[(title, dict(size=31, bold=True, color=NAVY))]])
 
@@ -238,7 +238,7 @@ def _title_block(slide, kicker, title, x=Inches(0.7), y=Inches(0.55), w=Inches(1
 def s_title(slide, d, idx):
     _bg(slide, WHITE)
     # 좌측 액센트 바를 슬라이드 전체 높이로 확장(안정감)
-    _rect(slide, 0, 0, Inches(0.16), EMU_H, ACCENT)
+    _rect(slide, 0, 0, Inches(0.16), EMU_H, RGBColor(0xCF, 0xD4, 0xDB))
     # 표지 상단의 빈 띠를 핵심 성과 한 줄(시각적 앵커)로 채워 임팩트 보강 — 장식 과하지 않게
     # 가는 teal 룰 + 핵심 수치를 우상단 가로 라인에 절제 있게 배치.
     anchor_metrics = d.get("anchor_metrics",
@@ -251,7 +251,7 @@ def s_title(slide, d, idx):
     # 콘텐츠 블록을 위로 끌어올려 상단 빈 띠를 축소(시각 무게중심을 화면 중앙으로). 앵커 메트릭
     # 0.48"·kicker 0.98"·제목 1.42"로 통째로 올리고 제목 폰트를 키워(40→42) 상단 공백을 흡수한다.
     _text(slide, Inches(0.95), Inches(0.98), Inches(11.5), Inches(0.4),
-          [[(d.get("kicker", "AI Specialist 인증 발표"), dict(size=15, bold=True, color=ACCENT))]])
+          [[(d.get("kicker", "AI Specialist 인증 발표"), dict(size=15, bold=True, color=RGBColor(0x8A, 0x92, 0x9E)))]])
     # 제목에 명시적 줄바꿈(\n)이 있으면 어절 단위로 끊어 josa('에' 등)가 줄 앞에 홀로 떨어지지 않게 함
     title_lines = [[(seg, dict(size=42, bold=True, color=NAVY))] for seg in d["title"].split("\n")]
     _text(slide, Inches(0.95), Inches(1.46), Inches(11.6), Inches(1.8), title_lines)
@@ -273,7 +273,7 @@ def s_title(slide, d, idx):
         for ti, tk in enumerate(tasks[:3]):
             tx = Emu(int(tx0) + ti*(int(tcw)+int(tgap)))
             _rect(slide, tx, ty0, tcw, tch, PANEL)
-            _rect(slide, tx, ty0, Inches(0.08), tch, ACCENT)
+            _rect(slide, tx, ty0, Inches(0.08), tch, RGBColor(0xCF, 0xD4, 0xDB))
             # P 번호와 설명을 좌측 한 정렬축에 묶는다(slide1 low — 칩과 설명이 박스 가운데에 떠
             # 정렬축이 모호하던 인상 제거). P 번호는 좌측 패딩(0.24")에 고정하고, 설명은 그 바로
             # 우측(1.02")에서 좌측정렬해 칩-설명을 하나의 시각 그룹으로 붙인다.
@@ -304,10 +304,10 @@ def s_section(slide, d, idx):
     _rect(slide, 0, 0, Inches(3.55), EMU_H, PANEL)
     # 슬라이드 최상단 가는 teal 액센트 스트립으로 우상단 빈 띠(제목/스탯카드 위)를 정리해
     # 표지·마무리와 톤을 통일하고 휑함을 줄임(높이 0.12").
-    _rect(slide, 0, 0, EMU_W, Inches(0.12), ACCENT)
+    _rect(slide, 0, 0, EMU_W, Inches(0.12), RGBColor(0xCF, 0xD4, 0xDB))
     # 우측 본문 영역 상단(스탯카드 띠 위)에 과제 진행 eyebrow 라벨을 얹어 좌상단 공백 흡수.
     _text(slide, Inches(4.0), Inches(0.42), Inches(8.6), Inches(0.32),
-          [[("AI Specialist 인증 | 3개 과제", dict(size=12, bold=True, color=ACCENT))]],
+          [[("AI Specialist 인증 | 3개 과제", dict(size=12, bold=True, color=RGBColor(0x8A, 0x92, 0x9E)))]],
           anchor=MSO_ANCHOR.MIDDLE)
     # 좌측 레일 상단의 큰 빈 띠(0~2.8")를 'PROJECT' eyebrow + 한 줄 요약 + 가는 룰로 채워
     # 세 섹션 표지 공통의 좌상단 휑함을 제거(P 마커는 그대로 수직 중앙 유지).
@@ -2107,7 +2107,7 @@ def s_papertext(slide, d, idx):
         fx = x0 + c * (cw + gx)
         fy = top + r * (chh + gy)
         _rect(slide, Emu(fx), Emu(fy), Emu(cw), Emu(box_h), WHITE,
-              line=RGBColor(0xB9, 0xC6, 0xDB), line_w=Pt(1.25))
+              line=RGBColor(0x33, 0x37, 0x40), line_w=Pt(1.25))
         if fg.get("src"):
             _img_fit(slide, fg["src"], Emu(fx + int(Inches(0.14))), Emu(fy + int(Inches(0.12))),
                      Emu(cw - int(Inches(0.28))), Emu(box_h - int(Inches(0.24))), frame=False)
@@ -2134,75 +2134,77 @@ def s_papertext(slide, d, idx):
 
 def s_archflow(slide, d, idx):
     """전체 아키텍쳐 흐름을 네이티브 도형(박스+화살표)으로 그린다(이미지 캡쳐 X).
-    세로 main 흐름(stages) + 우측 분기(branch, 운영 viewer). 각 stage 는 박스, 사이에 down-arrow."""
+    stage = 전폭 박스 또는 split(나란한 2개 박스). 사이에 down-arrow. 테두리 검정, 화살표 네이비."""
     _bg(slide, WHITE)
     _title_block(slide, d.get("kicker"), d["title"])
     def I(v): return int(Inches(v))
+    def _kr(t): return any('가' <= ch <= '힣' for ch in t)
     MONO = "Consolas"
-    LN = RGBColor(0xB9, 0xC6, 0xDB)
-    TINT = RGBColor(0xEE, 0xF2, 0xF8)
+    BD = RGBColor(0x33, 0x37, 0x40)
+    ARR = NAVY
+    TINT = RGBColor(0xF2, 0xF4, 0xF8)
     stages = d["stages"]
     n = len(stages)
-    cx = I(4.45); mw = I(7.4); mx = cx - mw // 2
-    top = I(2.05); bottom = I(6.92)
-    arrow_h = I(0.40)
+    cx = I(6.0); full_w = I(9.8); full_x = cx - full_w // 2
+    top = I(1.95); bottom = I(6.95)
+    arrow_h = I(0.32)
+
+    def box_h(b):
+        if b.get("lines"):
+            return I(0.36) + I(0.28) * len(b["lines"])
+        if b.get("sub"):
+            return I(0.74)
+        return I(0.52)
 
     def stage_h(st):
-        if st.get("lines"):
-            return I(0.40) + I(0.30) * len(st["lines"])
-        if st.get("sub"):
-            return I(0.84)
-        return I(0.60)
+        if st.get("split"):
+            return max(box_h(b) for b in st["split"])
+        return box_h(st)
+
+    def draw_box(bx, by, bw, bh, b, tint=False):
+        _rect(slide, Emu(bx), Emu(by), Emu(bw), Emu(bh),
+              (TINT if tint else WHITE), line=BD, line_w=Pt(1.4), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        if b.get("lines"):
+            _text(slide, Emu(bx + I(0.2)), Emu(by + I(0.05)), Emu(bw - I(0.4)), Emu(I(0.28)),
+                  [[(b["text"], dict(size=12, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+            ly = by + I(0.36)
+            for ln in b["lines"]:
+                _text(slide, Emu(bx + I(0.32)), Emu(ly), Emu(bw - I(0.46)), Emu(I(0.26)),
+                      [[(ln, dict(size=10.5, color=INK, name=(FONT if _kr(ln) else MONO)))]],
+                      anchor=MSO_ANCHOR.MIDDLE)
+                ly += I(0.28)
+        elif b.get("sub"):
+            _text(slide, Emu(bx), Emu(by + I(0.09)), Emu(bw), Emu(I(0.30)),
+                  [[(b["text"], dict(size=12.5, bold=True, color=NAVY))]],
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+            _text(slide, Emu(bx), Emu(by + I(0.40)), Emu(bw), Emu(I(0.28)),
+                  [[(b["sub"], dict(size=10.5, color=MUTED))]],
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        else:
+            _text(slide, Emu(bx), Emu(by), Emu(bw), Emu(bh),
+                  [[(b["text"], dict(size=12.5, bold=True, color=NAVY))]],
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+
     heights = [stage_h(s) for s in stages]
     total = sum(heights) + arrow_h * (n - 1)
     y = top + max(0, (bottom - top - total) // 2)
-    centers = []
     for i, st in enumerate(stages):
         bh = heights[i]
-        fill = TINT if st.get("lines") else WHITE
-        _rect(slide, Emu(mx), Emu(y), Emu(mw), Emu(bh), fill, line=LN, line_w=Pt(1.4),
-              shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-        if st.get("lines"):
-            _text(slide, Emu(mx + I(0.24)), Emu(y + I(0.05)), Emu(mw - I(0.48)), Emu(I(0.30)),
-                  [[(st["text"], dict(size=12.5, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
-            ly = y + I(0.38)
-            for ln in st["lines"]:
-                _text(slide, Emu(mx + I(0.36)), Emu(ly), Emu(mw - I(0.5)), Emu(I(0.28)),
-                      [[(ln, dict(size=11, color=INK, name=MONO))]], anchor=MSO_ANCHOR.MIDDLE)
-                ly += I(0.30)
-        elif st.get("sub"):
-            _text(slide, Emu(mx), Emu(y + I(0.11)), Emu(mw), Emu(I(0.34)),
-                  [[(st["text"], dict(size=13.5, bold=True, color=NAVY))]],
-                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-            _text(slide, Emu(mx), Emu(y + I(0.46)), Emu(mw), Emu(I(0.30)),
-                  [[(st["sub"], dict(size=11, color=MUTED))]],
-                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        if st.get("split"):
+            boxes = st["split"]; m = len(boxes); gap = I(0.5)
+            sw = (full_w - gap * (m - 1)) // m
+            for j, b in enumerate(boxes):
+                draw_box(full_x + j * (sw + gap), y, sw, bh, b, tint=True)
         else:
-            _text(slide, Emu(mx), Emu(y), Emu(mw), Emu(bh),
-                  [[(st["text"], dict(size=13.5, bold=True, color=NAVY))]],
-                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-        centers.append((y, bh))
+            draw_box(full_x, y, full_w, bh, st)
         if i < n - 1:
             ay = y + bh
-            _rect(slide, Emu(cx - I(0.13)), Emu(ay + I(0.03)), Emu(I(0.26)), Emu(arrow_h - I(0.06)),
-                  ACCENT, shape=MSO_SHAPE.DOWN_ARROW)
+            _rect(slide, Emu(cx - I(0.12)), Emu(ay + I(0.03)), Emu(I(0.24)), Emu(arrow_h - I(0.06)),
+                  ARR, shape=MSO_SHAPE.DOWN_ARROW)
             if st.get("arrow"):
-                _text(slide, Emu(cx + I(0.26)), Emu(ay), Emu(I(4.5)), Emu(arrow_h),
-                      [[(st["arrow"], dict(size=10.5, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
+                _text(slide, Emu(cx + I(0.28)), Emu(ay), Emu(I(4.4)), Emu(arrow_h),
+                      [[(st["arrow"], dict(size=10, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
         y = y + bh + arrow_h
-    br = d.get("branch")
-    if br:
-        sy, sbh = centers[br["from"]]
-        bw = I(3.45); bx = mx + mw + I(0.4); bhh = I(1.02); by = sy + (sbh - bhh) // 2
-        _rect(slide, Emu(mx + mw + I(0.02)), Emu(sy + sbh // 2 - I(0.1)), Emu(I(0.4)), Emu(I(0.2)),
-              ACCENT, shape=MSO_SHAPE.RIGHT_ARROW)
-        _rect(slide, Emu(bx), Emu(by), Emu(bw), Emu(bhh), RGBColor(0xE6, 0xF7, 0xF6),
-              line=ACCENT, line_w=Pt(1.4), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-        blines = [[(br["text"], dict(size=12.5, bold=True, color=NAVY))]]
-        for l in br.get("lines", []):
-            blines.append([(l, dict(size=10.5, color=INK))])
-        _text(slide, Emu(bx + I(0.22)), Emu(by + I(0.08)), Emu(bw - I(0.44)), Emu(bhh - I(0.16)),
-              blines, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
 

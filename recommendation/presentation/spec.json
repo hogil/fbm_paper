@@ -72,35 +72,44 @@
       "title": "raw log에서 운영·분석까지 — Failbit Map 전체 흐름",
       "stages": [
         {
-          "text": "raw EDS log (hex)",
-          "arrow": "Cython hex→Grade  +  32색 palette PNG"
+          "text": "EDS Test  (raw fail-map log)",
+          "arrow": "Cython parse + 1h auto-ingest"
         },
         {
-          "text": "Failbit Map (PNG) + positions JSON",
-          "sub": "좌표 보존 표현 — 이미지·좌표·계측을 같은 좌표계로 정합 적재",
-          "arrow": "같은 자산을 운영 viewer와 AI 분석이 공유"
+          "text": "Failbit Map (32색 palette PNG) + chip annotation (FTN / QTN / BIN)",
+          "sub": "좌표 보존 — 이미지·좌표·계측을 같은 wafer 좌표계로 정합 적재",
+          "arrow": "같은 자산을 Known·Unknown 두 경로가 공유"
         },
         {
-          "text": "AI 분석 (3 경로)",
-          "lines": [
-            "Known     :  CNN(ConvNeXtV2) -> ROI-YOLO 2-stage     [F1 0.95]",
-            "object-id :  chip-CNN -> 32x32 obj-id map            [dev]",
-            "Unknown   :  contrastive(MoCo/NeCo) -> HDBSCAN        [13->7]"
+          "split": [
+            {
+              "text": "Known path",
+              "lines": [
+                "ConvNeXtV2          (F1 0.92)",
+                "-> ROI-YOLO         (F1 0.95)",
+                "-> object-id map    [dev]"
+              ]
+            },
+            {
+              "text": "Unknown path",
+              "lines": [
+                "InfoNCE + grid36",
+                "-> HDBSCAN",
+                "-> candidate groups [13->7]"
+              ]
+            }
           ],
-          "arrow": "검토 결과를 라벨로 환류"
+          "arrow": "두 경로 결과를 한 화면으로"
         },
         {
-          "text": "현업 검토 -> 라벨 등록 -> 재학습   (human-in-the-loop)"
+          "text": "Analysis UI — fast view / overlay / labeling",
+          "sub": "운영 viewer (mapviewer): Numba 합성 · pyvips streaming",
+          "arrow": "human-in-the-loop: register -> label -> retrain"
+        },
+        {
+          "text": "Organizational asset base  (image-measure aligned, multimodal-ready)"
         }
-      ],
-      "branch": {
-        "from": 1,
-        "text": "운영 viewer (양산 중)",
-        "lines": [
-          "Numba 합성 · pyvips streaming",
-          "대량 map 조회·합성"
-        ]
-      }
+      ]
     },
     {
       "type": "papertext",
