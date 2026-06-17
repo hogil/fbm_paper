@@ -36,7 +36,7 @@
           "thumb": "trend_spike.png",
           "problem": "real anomaly label 부족 → validation bottleneck",
           "approach": "10년 현장 기준 → generator rules",
-          "result": "Normal/abnormal gate F1 0.9975 (synthetic/PoC)"
+          "result": "Normal/abnormal gate F1 0.9967 (synthetic/PoC)"
         }
       ]
     },
@@ -71,7 +71,7 @@
       "kicker": "P1 | 데이터 생성 (fail-map)",
       "title": "원천 EDS log → 좌표 보존 Failbit Map 생성",
       "bullets": [
-        "**왜** — 하루 약 2만 wafer의 EDS log를 좌표 보존 Failbit Map PNG와 positions JSON으로 변환·적재합니다. 핵심 변환은 측정값(hex)→Grade 무손실 변환과 색을 번호로 저장하는 palette PNG이며, ProcessPool로 24개 병렬 처리합니다"
+        "**왜** — 하루 약 2만 wafer의 EDS log를 좌표 보존 Failbit Map PNG와 positions JSON으로 바꿉니다. 핵심은 측정값(hex)→Grade 무손실 변환과 색을 번호로 저장하는 palette PNG이며, ProcessPool로 24개 병렬 처리합니다"
       ],
       "images": [
         {
@@ -87,7 +87,7 @@
       "body_h": 0.62,
       "img_tile": "#FFFFFF",
       "bullet_size": 13.5,
-      "img_note": "생성(fail-map) 단계 — 운영 뷰어(mapviewer)의 Numba 합성·pyvips 로드는 운영 슬라이드에서 별도로 다룹니다"
+      "img_note": "생성(fail-map) 단계입니다. 운영 뷰어(mapviewer)의 Numba 합성과 pyvips 로드는 운영 슬라이드에서 별도로 다룹니다"
     },
     {
       "type": "bullets",
@@ -303,34 +303,19 @@
       "title": "2-combo defect 학습: FCM-PM",
       "bullets": [
         "**Problem/constraint** — 2-combo ground truth 부족 → single-defect 원천으로 학습하고 2-combo evaluation set에서 검증",
-        "**① FCM-PM (data)** — Full-Cover Mixup + Pair Mask로 defect signal은 보존하고 pseudo-background loss는 차단",
+        "**① FCM-PM (data)** — Full-Cover Mixup(격자 cut+paste)으로 결함 coverage 보장, Pair Mask(masked paired chip 추가 학습)로 single 형상 보강",
         "**② val-margin (model selection)** — validation margin으로 checkpoint 선택. val-F1보다 test 성능 상관이 높아 +0.052 개선",
         "**③ NB reject (inference)** — max sigmoid prob < 0.55를 Normal로 reject해 Normal/Invalid/OOD FAR 차단"
       ],
       "images": [
         {
-          "src": "chip_eval_scratch_selected.png",
-          "caption": "Single defect (scratch)"
-        },
-        {
-          "src": "chip_combo_fork_scratch_selected.png",
-          "caption": "2-combo (중복결함)"
-        },
-        {
-          "src": "chip_eval_normal_selected.png",
-          "badge": "Normal",
-          "watermark": "Normal",
-          "caption": "Normal (defect-free)"
-        },
-        {
-          "src": "chip_ood_starburst_selected.png",
-          "caption": "OOD (Out-of-Distribution)"
+          "src": "fcm_pm_panel.png",
+          "caption": "A·B single-defect → Full-Cover Mixup(격자 cut+paste)으로 2-combo 합성 → Pair Mask(masked paired chip 추가)로 single 형상 보강"
         }
       ],
-      "grid_cols": 4,
+      "grid_cols": 1,
       "body_h": 1.46,
-      "grid_gap": 0.42,
-      "img_tile": "#E4EAF4",
+      "img_tile": "#FFFFFF",
       "img_badge": "single-defect 원천  →  2-combo defect detection",
       "img_note": "Normal은 균질 pattern이며, 현업 single-defect 원천에서 2-combo 학습/evaluation set을 구성"
     },
@@ -437,46 +422,14 @@
       ],
       "images": [
         {
-          "src": "trend_normal_nolegend.png",
-          "caption": "Normal / 기준선 주변",
-          "axis_cover": [
-            0.13,
-            0.14
-          ],
-          "axis_x": "Time order →",
-          "axis_y": "Measured value"
-        },
-        {
-          "src": "trend_mean_shift_nolegend.png",
-          "caption": "Abnormal / 기준선 이탈(mean shift 예)",
-          "band": [
-            0.76,
-            0.985
-          ],
-          "axis_cover": [
-            0.13,
-            0.14
-          ],
-          "axis_x": "Time order →",
-          "axis_y": "Measured value"
+          "src": "p3_trend_generation_formula.png",
+          "caption": "Region 계측밀도(5종) × Noise 분포(3종) × Anomaly 수식(5종) — 10년 현장 판정 기준을 generator rule로 코드화"
         }
       ],
-      "grid_cols": 2,
-      "body_h": 0.74,
-      "side_card": {
-        "head": "Normal vs Abnormal 판단 기준",
-        "rows": [
-          [
-            "Normal",
-            "기준선 주변에 분포"
-          ],
-          [
-            "Abnormal",
-            "기준선 이탈, 분산 확대, shift"
-          ]
-        ]
-      },
-      "img_note": "red=anomaly window, blue=normal points, horizontal line=baseline. anomaly 5종은 다음 장에서 전체 제시"
+      "grid_cols": 1,
+      "body_h": 0.92,
+      "img_note": "현장 판정 기준을 Region·Noise·Anomaly 수식으로 옮긴 생성 규칙. 생성 예시는 다음 장",
+      "img_tile": "#FFFFFF"
     },
     {
       "type": "image_grid",
