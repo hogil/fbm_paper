@@ -14,9 +14,9 @@
       "kicker": "P3 | 순차 episode 생성",
       "title": "순차 episode 기반 trend 생성 (Sequential Episode-Based)",
       "bullets": [
-        "fleet(여러 설비)가 함께 찍은 한 trend에서 한 설비(target)를 판정합니다. episode(자기완결 구간)를 순차 생성해 이어 붙여 정상 baseline을 만듭니다",
+        "기본 baseline에 노이즈 3종과 밀도(밀집/희소/결핍)를 episode마다 가중치로 조합해 여러 episode를 순차 생성하고 이어 붙여 정상 trend를 만듭니다",
         {
-          "t": "episode마다 길이/밀도/결측이 다르고, 노이즈는 chart당 1종 (episode = segment, 강화학습 개념 차용)",
+          "t": "한 trend는 여러 설비(fleet)가 함께 찍히고 그중 한 설비(target)를 판정. episode = 시작과 끝이 있는 자기완결 구간을 단어 뜻 그대로 사용",
           "lvl": 1
         }
       ],
@@ -54,48 +54,34 @@
     },
     {
       "type": "image_grid",
-      "kicker": "P3 | 조건별 실험",
-      "title": "조건별 실험으로 성능을 끌어올렸다 (F1 0.9944 → 0.9988)",
+      "kicker": "P3 | 결과",
+      "title": "생성 데이터로 학습한 1차 gate — 조건·백본·운영까지 검증",
       "bullets": [
-        "여러 학습 조건을 단독(single-axis)으로 바꿔 **14개 축 × 5-seed**로 검증했습니다 (baseline F1 0.9944, 놓친 불량 FN 4.6)",
-        "정상 비율↑, **stochastic depth 0.05**, **label smoothing 0.02**가 특히 효과적 — 놓친 불량을 **4.6 → 0.8**로, F1을 **0.9988**까지 올렸습니다",
-        {
-          "t": "각 막대는 단독 조건 실험. normal threshold(NT)를 올리면 FN↓ / FP↑ — 운영은 0.9 균형점",
-          "lvl": 1
-        }
+        "생성 데이터로 학습한 1차 gate를 여러 조건·백본·운영 임계값에서 검증했습니다. 정상 비율과 정규화로 놓친 불량을 **4.6→0.8**, F1을 **0.9944→0.9988**까지 올렸습니다 (전부 5-seed 평균)"
       ],
-      "body_h": 1.5,
+      "body_h": 0.62,
       "images": [
         {
-          "src": "p3_deck_ablation.png",
-          "caption": ""
+          "src": "p3r_normal_ratio.png",
+          "caption": "정상 비율 700→3300 — F1 0.9944→0.9988, FN 4.6→0.8"
+        },
+        {
+          "src": "p3r_gradcam.png",
+          "caption": "Grad-CAM 6종×6 — 색이 아니라 결함 패턴 위치로 판단"
+        },
+        {
+          "src": "p3r_nt_effect.png",
+          "caption": "운영 임계값 NT — FN/FP를 현장 비용에 맞춰 (319-run)"
+        },
+        {
+          "src": "p3r_stoch_depth.png",
+          "caption": "Stochastic Depth 0.05 — F1 0.9985, FN 0.8"
         }
       ],
-      "grid_cols": 1,
+      "grid_cols": 2,
+      "grid_gap": 0.3,
       "img_badge": "F1 0.9944 → 0.9988 / FN 4.6 → 0.8",
-      "img_note": "binary F1(좌)과 놓친 불량 FN(우) — 점선 = baseline, 막대 = 각 조건 단독 적용 (5-seed 평균)"
-    },
-    {
-      "type": "image_grid",
-      "kicker": "P3 | 백본 × 데이터셋 × 운영",
-      "title": "백본/데이터셋/임계값까지 동일 프로토콜로 검증",
-      "bullets": [
-        "백본을 키우면(ConvNeXtV2 Tiny→**Base**) 놓친 불량이 4.6→1.2로 줄고, 노이즈를 15% 키운 데이터셋에서도 F1 0.9944→**0.9960**으로 강건합니다 (모두 5-seed)",
-        "운영 임계값(NT)을 올리면 FN↓ / FP↑ — 현장 비용에 맞춰 조절, 기본 0.9",
-        {
-          "t": "백본 6종·데이터셋 강도 변형 8종을 동일 baseline·5-seed·자동 controller로 비교하는 프레임워크를 갖췄고, 첫 비교셀 검증 후 순차 확장 중입니다",
-          "lvl": 1
-        }
-      ],
-      "body_h": 1.5,
-      "images": [
-        {
-          "src": "p3_deck_robust.png",
-          "caption": ""
-        }
-      ],
-      "grid_cols": 1,
-      "img_note": "백본(좌) / 데이터셋 강건성(중) / 운영 임계값 NT trade-off(우) — 동일 baseline·5-seed 고정 비교"
+      "img_note": "backbone Tiny 0.9944 vs Base 0.9971 · noise +15%에도 F1 0.9960 · 2-stage(불량 유형 분류) pilot binary F1 0.9967 / 유형 acc 0.73 — 동일 baseline·5-seed 비교 프레임워크로 확장 중"
     }
   ]
 }
