@@ -85,9 +85,9 @@
             {
               "text": "Known path",
               "lines": [
-                "ConvNeXtV2          (F1 0.92)",
-                "-> ROI-YOLO         (F1 0.95)",
-                "-> object-id map    [dev]"
+                "ConvNeXtV2",
+                "-> ROI-YOLO  (selective)",
+                "-> object-id map  [dev]"
               ]
             },
             {
@@ -95,7 +95,7 @@
               "lines": [
                 "InfoNCE + grid36",
                 "-> HDBSCAN",
-                "-> candidate groups [13->7]"
+                "-> candidate groups"
               ]
             }
           ],
