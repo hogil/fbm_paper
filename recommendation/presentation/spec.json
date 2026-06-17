@@ -352,12 +352,21 @@
       ],
       "images": [
         {
-          "src": "_fig_cluster.png",
-          "caption": "contrastive 임베딩 + HDBSCAN 군집 — 라벨 없이 같은 신규 결함 패턴끼리 (C형·십자·대각 scratch)"
+          "src": "wafer_ringdots.png",
+          "caption": "RingDots"
+        },
+        {
+          "src": "wafer_brokenring.png",
+          "caption": "BrokenRing"
+        },
+        {
+          "src": "wafer_crescentarc.png",
+          "caption": "CrescentArc (신규)"
         }
       ],
-      "grid_cols": 1,
-      "body_h": 0.9
+      "grid_cols": 3,
+      "body_h": 0.9,
+      "img_note": "contrastive 임베딩 + HDBSCAN으로 이런 신규 패턴을 후보 group으로 압축 (운영: 13개 후보 중 7개 진성 불량 확인)"
     },
     {
       "type": "papertext",
