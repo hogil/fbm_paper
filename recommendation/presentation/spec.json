@@ -352,8 +352,8 @@
       ],
       "images": [
         {
-          "src": "wafer_ringdots.png",
-          "caption": "RingDots"
+          "src": "wafer_edge_ring_scratch_rot.png",
+          "caption": "Edge-Ring"
         },
         {
           "src": "wafer_brokenring.png",
