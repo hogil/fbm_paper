@@ -813,189 +813,117 @@ def s_two_col(slide, d, idx):
 
 
 def _bytes_compare_diagram(slide, x, y, w, h):
-    """slide6 우측 타일용 네이티브 도식: RGB 3바이트 vs 팔레트 1바이트 + 저장 75%↓ 막대.
-    작고 평면적인 코드 스크린샷을 대체해 '저장 절감' 메시지를 임원 시점에 즉시 전달한다.
-    셀 하단 캡션(약 0.34") 영역을 침범하지 않도록 전체 높이를 셀 높이에 맞춰 압축한다."""
-    x, y, w, h = int(x), int(y), int(w), int(h)
-    cap_reserve = int(Inches(0.40))   # 셀 하단 캡션 영역(침범 금지)
-    avail = h - cap_reserve
-    # 기준 레이아웃 총 높이(약 2.86") 대비 가용 높이 비율로 세로 간격을 압축
-    base_total = int(Inches(2.86))
-    vs = min(1.0, avail / base_total) if base_total else 1.0
-    def V(inch):
-        return int(int(Inches(inch)) * vs)
-    # 가로 스케일: 셀(w)이 정사각으로 줄면 고정폭(1.45+3셀+막대 2.7)이 셀 우측 경계를 넘어
-    # '3바이트'·'100%' 가 잘렸음 → 기준 가로폭(약 4.55") 대비 셀 폭 비율로 모든 가로 치수를 스케일.
-    base_w = int(Inches(4.55))
-    hs = min(1.0, (w - int(Inches(0.2))) / base_w) if base_w else 1.0
-    def Hs(inch):
-        return int(int(Inches(inch)) * hs)
-    cellw = Hs(0.46); cellh = V(0.44); cgap = Hs(0.06)
-    # 상단: 한 픽셀 저장 방식 비교
-    # 좌측 hex_to_grade 도식이 카드 하단(Cython 콜아웃)까지 꽉 차는 데 비해, 우측 막대 도식은
-    # 내용이 위로 몰려 카드 하단이 비어 '우측이 위로 떠' 보였다(slide6 low) → 상단 시작점과 블록
-    # 간 세로 간격을 키워 막대 블록 하단이 좌측 카드와 같은 baseline 까지 내려오도록 수직 분포를
-    # 균형 있게 펼친다(두 도식 시각 무게·중심선 정렬).
-    row1y = y + V(0.42)
-    lblw = Hs(1.45)
-    _text(slide, Emu(x + int(Inches(0.2))), Emu(row1y - int(Inches(0.26))),
-          Emu(w - int(Inches(0.4))), Inches(0.24),
-          [[("픽셀 1개를 저장하는 방식", dict(size=11.5, bold=True, color=NAVY))]],
-          align=PP_ALIGN.CENTER)
-    # RGB 행: 3칸(R G B)
-    rgb_cols = [("R", RGBColor(0xE2,0x4A,0x3B)), ("G", RGBColor(0x2E,0xA0,0x55)),
-                ("B", RGBColor(0x2F,0x6F,0xD6))]
-    bx0 = x + Hs(0.30)
-    _text(slide, Emu(x + int(Inches(0.2))), Emu(row1y + cellh//2 - int(Inches(0.13))),
-          Emu(lblw), Inches(0.26),
-          [[("RGB", dict(size=10.5, bold=True, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
-    rx = bx0 + lblw
-    for j, (lab, col) in enumerate(rgb_cols):
-        cxx = rx + j * (cellw + cgap)
-        _rect(slide, Emu(cxx), Emu(row1y), Emu(cellw), Emu(cellh), col)
-        _text(slide, Emu(cxx), Emu(row1y), Emu(cellw), Emu(cellh),
-              [[(lab, dict(size=13, bold=True, color=WHITE))]],
-              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    _text(slide, Emu(rx + 3*(cellw+cgap) + int(Inches(0.05))), Emu(row1y),
-          Emu(int(Inches(1.0))), Emu(cellh),
-          [[("3바이트", dict(size=11, bold=True, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
-    # 팔레트 행: 1칸(인덱스)
-    row2y = row1y + cellh + V(0.30)
-    _text(slide, Emu(x + int(Inches(0.2))), Emu(row2y + cellh//2 - int(Inches(0.13))),
-          Emu(lblw), Inches(0.26),
-          [[("팔레트", dict(size=10.5, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
-    _rect(slide, Emu(rx), Emu(row2y), Emu(cellw), Emu(cellh), ACCENT)
-    _text(slide, Emu(rx), Emu(row2y), Emu(cellw), Emu(cellh),
-          [[("idx", dict(size=12, bold=True, color=WHITE))]],
-          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    _text(slide, Emu(rx + (cellw+cgap) + int(Inches(0.05))), Emu(row2y),
-          Emu(int(Inches(2.0))), Emu(cellh),
-          [[("1바이트 ", dict(size=11, bold=True, color=INK)),
-            ("(반복색 1회 저장)", dict(size=9.5, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
-    # 하단: 저장 파일크기 막대(RGB vs 팔레트) — 75%↓ 시각화
-    # 팔레트 행과 '같은 무손실 PNG 파일크기' 막대 블록 사이 수직 간격을 키워(0.58→0.74) 막대
-    # 블록 하단이 좌측 hex_to_grade 카드 하단과 같은 baseline 까지 내려오게 한다(slide6 low).
-    bary = row2y + cellh + V(0.74)
-    _text(slide, Emu(x + int(Inches(0.2))), Emu(bary - int(Inches(0.24))),
-          Emu(w - int(Inches(0.4))), Inches(0.24),
-          [[("같은 무손실 PNG 파일크기", dict(size=11.5, bold=True, color=NAVY))]],
-          align=PP_ALIGN.CENTER)
-    # 막대 블록: 라벨 폭(RGB/팔레트) + 막대 + 트레일 라벨(100% / 25%)이 셀 우측 안에 들어오도록
-    # 막대 최대폭을 셀 폭에서 좌측 라벨·우측 트레일 여백을 뺀 값으로 동적 산출(우측 잘림 제거).
-    bar_h = V(0.28); bgapy = V(0.13)
-    bar_lbl_w = Hs(1.0)
-    bar_x = x + Hs(0.30) + bar_lbl_w
-    bar_full = max(int(Inches(0.8)), (x + w - int(Inches(0.20))) - bar_x - int(Inches(0.62)))
-    _text(slide, Emu(x + int(Inches(0.2))), Emu(bary + bar_h//2 - int(Inches(0.12))),
-          Emu(bar_lbl_w - int(Inches(0.1))), Inches(0.24),
-          [[("RGB", dict(size=10, bold=True, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
-    _rect(slide, Emu(bar_x), Emu(bary), Emu(bar_full), Emu(bar_h), RGBColor(0xC6,0xD0,0xDF))
-    _text(slide, Emu(bar_x + bar_full - int(Inches(0.6))), Emu(bary), Emu(int(Inches(0.55))), Emu(bar_h),
-          [[("100%", dict(size=9.5, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    bary2 = bary + bar_h + bgapy
-    _text(slide, Emu(x + int(Inches(0.2))), Emu(bary2 + bar_h//2 - int(Inches(0.12))),
-          Emu(bar_lbl_w - int(Inches(0.1))), Inches(0.24),
-          [[("팔레트", dict(size=10, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
-    _rect(slide, Emu(bar_x), Emu(bary2), Emu(int(bar_full*0.25)), Emu(bar_h), ACCENT)
-    _text(slide, Emu(bar_x + int(bar_full*0.25) + int(Inches(0.08))), Emu(bary2),
-          Emu(int(Inches(1.4))), Emu(bar_h),
-          [[("25% ", dict(size=10, bold=True, color=NAVY)),
-            ("(저장 75%↓)", dict(size=10, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
-
-
-def _hex_to_grade_diagram(slide, x, y, w, h):
-    """Cython 파서의 실제 원리(논문 2.1): raw hex payload를 256-entry 정적 lookup table +
-    memoryview stride 접근으로 chip tile array 로 복원 → 순수 Python 대비 약 100x.
-    데이터는 monospace 셀/격자로 표현(논문 figure 스타일). 캡션은 외부에서 그려짐."""
+    """Palette-indexed PNG(논문 2.1, Fig 2) — paper-figure 스타일: 단색 + monospace + 얇은 선.
+    24-bit RGB(픽셀마다 3 byte) vs 8-bit 팔레트(PLTE 표 + 인덱스 1 byte) → 약 75% 축소, 무손실.
+    컬러 RGB 박스/틸 바 없이 monospace 튜플과 grayscale 막대로 학술 figure처럼 표현."""
     x, y, w, h = int(x), int(y), int(w), int(h)
     def I(v): return int(Inches(v))
     MONO = "Consolas"
-    GRADE = [RGBColor(0xEC, 0xEF, 0xF4), RGBColor(0xCF, 0xE6, 0xE4), RGBColor(0xA9, 0xD8, 0xD4),
-             RGBColor(0x7F, 0xC8, 0xC2), RGBColor(0x53, 0xBA, 0xB3), RGBColor(0x2C, 0xAD, 0xA6),
-             RGBColor(0x1E, 0x8F, 0x89), RGBColor(0x13, 0x6E, 0x69)]
-    LN = RGBColor(0xB9, 0xC6, 0xDB)
-    _text(slide, Emu(x), Emu(y + I(0.08)), Emu(w), Emu(I(0.26)),
-          [[("Cython 파서 — 256-entry LUT + memoryview stride", dict(size=11.5, bold=True, color=NAVY))]],
+    INKD = RGBColor(0x1A, 0x1F, 0x2E)
+    LBL = RGBColor(0x6B, 0x72, 0x80)
+    LN = RGBColor(0xC4, 0xCC, 0xD8)
+    _text(slide, Emu(x), Emu(y + I(0.07)), Emu(w), Emu(I(0.24)),
+          [[("Palette-indexed PNG", dict(size=11, bold=True, color=NAVY)),
+            ("    24-bit RGB → 8-bit 인덱스 (무손실)", dict(size=9, color=LBL))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
-    callout_h = I(0.40)
-    cby = y + h - callout_h - I(0.06)
-    # ── Stage 1: raw hex payload (monospace 셀 strip) ──
-    s1_lbl_y = y + I(0.44)
-    _text(slide, Emu(x + I(0.26)), Emu(s1_lbl_y), Emu(w - I(0.5)), Emu(I(0.20)),
-          [[("raw hex payload (EDS log)", dict(size=9.5, bold=True, color=NAVY)),
-            ("   ← memoryview stride 접근 (버퍼 직접 읽기)", dict(size=9, color=MUTED))]],
+    # RGB PNG 행 (monospace 튜플)
+    r1 = y + I(0.48)
+    _text(slide, Emu(x + I(0.26)), Emu(r1), Emu(w - I(0.5)), Emu(I(0.20)),
+          [[("RGB PNG  (픽셀마다 3 byte):", dict(size=9.5, color=NAVY, bold=True))]], anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, Emu(x + I(0.40)), Emu(r1 + I(0.22)), Emu(w - I(0.7)), Emu(I(0.20)),
+          [[("(123,54,24) (123,54,24) (90,12,40) (123,54,24) …", dict(size=9, color=INKD, name=MONO))]],
           anchor=MSO_ANCHOR.MIDDLE)
+    # Palette PNG 행
+    r2 = r1 + I(0.56)
+    _text(slide, Emu(x + I(0.26)), Emu(r2), Emu(w - I(0.5)), Emu(I(0.20)),
+          [[("Palette PNG  (PLTE 표 + 인덱스 1 byte):", dict(size=9.5, color=NAVY, bold=True))]], anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, Emu(x + I(0.40)), Emu(r2 + I(0.22)), Emu(w - I(0.7)), Emu(I(0.20)),
+          [[("PLTE[3]=(123,54,24) … 32색   →   픽셀 = ", dict(size=9, color=INKD, name=MONO)),
+            ("3 3 5 3 7 3 …", dict(size=9, bold=True, color=NAVY, name=MONO))]], anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, Emu(x + I(0.26)), Emu(r2 + I(0.46)), Emu(w - I(0.5)), Emu(I(0.18)),
+          [[("색 32종뿐 → 반복색은 PLTE에 1회만, 픽셀은 번호만 저장 (PLTE 교체로 색 scheme 즉시 변경)",
+             dict(size=8.5, color=LBL))]], anchor=MSO_ANCHOR.MIDDLE)
+    # grayscale 파일크기 막대 (틸 금지)
+    bary = r2 + I(1.02)
+    _text(slide, Emu(x + I(0.26)), Emu(bary - I(0.26)), Emu(w - I(0.5)), Emu(I(0.20)),
+          [[("같은 무손실 PNG 파일 크기", dict(size=9.5, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+    bx = x + I(1.15); bmax = (x + w - I(0.95)) - bx; bh = I(0.24)
+    _text(slide, Emu(x + I(0.26)), Emu(bary), Emu(I(0.85)), Emu(bh),
+          [[("RGB", dict(size=9, color=LBL))]], anchor=MSO_ANCHOR.MIDDLE)
+    _rect(slide, Emu(bx), Emu(bary), Emu(bmax), Emu(bh), RGBColor(0xC6, 0xD0, 0xDF), line=LN, line_w=Pt(0.5))
+    _text(slide, Emu(bx + bmax - I(0.62)), Emu(bary), Emu(I(0.55)), Emu(bh),
+          [[("100%", dict(size=9, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    bary2 = bary + bh + I(0.12)
+    _text(slide, Emu(x + I(0.26)), Emu(bary2), Emu(I(0.85)), Emu(bh),
+          [[("팔레트", dict(size=9, color=LBL))]], anchor=MSO_ANCHOR.MIDDLE)
+    _rect(slide, Emu(bx), Emu(bary2), Emu(int(bmax * 0.25)), Emu(bh), RGBColor(0x48, 0x52, 0x60))
+    _text(slide, Emu(bx + int(bmax * 0.25) + I(0.10)), Emu(bary2), Emu(I(2.0)), Emu(bh),
+          [[("25%   (약 75% 축소, 무손실)", dict(size=9, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+
+
+def _hex_to_grade_diagram(slide, x, y, w, h):
+    """Cython 파서(논문 2.1) — paper-figure 스타일: 단색(네이비/그레이) + monospace + 얇은 선.
+    raw hex payload(memoryview stride) → 256-entry 정적 C 배열 LUT[b] O(1) 조회 → chip tile
+    array(Grade 격자), 순수 Python 대비 ~100x. 장식(틸 띠/컬러 셀) 없이 학술 figure로 표현."""
+    x, y, w, h = int(x), int(y), int(w), int(h)
+    def I(v): return int(Inches(v))
+    MONO = "Consolas"
+    INKD = RGBColor(0x1A, 0x1F, 0x2E)
+    LBL = RGBColor(0x6B, 0x72, 0x80)
+    LN = RGBColor(0xC4, 0xCC, 0xD8)
+    GREY = [RGBColor(0xFB, 0xFC, 0xFD), RGBColor(0xEC, 0xEF, 0xF3), RGBColor(0xD9, 0xDF, 0xE7),
+            RGBColor(0xC0, 0xC8, 0xD3), RGBColor(0xA2, 0xAC, 0xBA), RGBColor(0x84, 0x8F, 0x9F),
+            RGBColor(0x66, 0x70, 0x80), RGBColor(0x48, 0x52, 0x60)]
+    # 제목 (네이비, 부제 그레이 — 큰 틸 제목 금지)
+    _text(slide, Emu(x), Emu(y + I(0.07)), Emu(w), Emu(I(0.24)),
+          [[("Cython hex→Grade 파서", dict(size=11, bold=True, color=NAVY)),
+            ("    memoryview stride · 256-entry LUT", dict(size=9, color=LBL))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+    # raw hex payload — monospace 셀(흰 칸 + 얇은 선)
+    rl_y = y + I(0.42)
+    _text(slide, Emu(x + I(0.26)), Emu(rl_y), Emu(w - I(0.5)), Emu(I(0.18)),
+          [[("raw payload (memoryview stride 접근):", dict(size=9, color=LBL))]], anchor=MSO_ANCHOR.MIDDLE)
     hxs = ["3A", "0C", "C1", "0E", "A7", "5B", "0C", "FF"]
-    hcw = I(0.40); hgap = I(0.05); hh = I(0.32)
-    hx0 = x + I(0.26); hy = s1_lbl_y + I(0.24)
-    for i, hxv in enumerate(hxs):
-        hxx = hx0 + i * (hcw + hgap)
-        _rect(slide, Emu(hxx), Emu(hy), Emu(hcw), Emu(hh), RGBColor(0xF4, 0xF7, 0xFB), line=LN, line_w=Pt(0.75))
+    hcw = I(0.40); hg = I(0.04); hh = I(0.28); hx0 = x + I(0.26); hy = rl_y + I(0.22)
+    for i, v in enumerate(hxs):
+        hxx = hx0 + i * (hcw + hg)
+        _rect(slide, Emu(hxx), Emu(hy), Emu(hcw), Emu(hh), WHITE, line=LN, line_w=Pt(0.75))
         _text(slide, Emu(hxx), Emu(hy), Emu(hcw), Emu(hh),
-              [[(hxv, dict(size=10.5, bold=True, color=INK, name=MONO))]],
-              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    _text(slide, Emu(hx0 + len(hxs) * (hcw + hgap) + I(0.06)), Emu(hy), Emu(I(1.2)), Emu(hh),
-          [[("픽셀당 1 byte", dict(size=8.5, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
-    # 아래 화살표 + LUT[byte] 라벨
-    arr_y = hy + hh + I(0.05)
-    _rect(slide, Emu(hx0 + I(0.18)), Emu(arr_y), Emu(I(0.22)), Emu(I(0.26)), ACCENT, shape=MSO_SHAPE.DOWN_ARROW)
-    _text(slide, Emu(hx0 + I(0.50)), Emu(arr_y), Emu(w - I(1.0)), Emu(I(0.26)),
-          [[("LUT[byte] — 사전 계산된 C 배열 O(1) 조회 (분기·연산 없음)", dict(size=9, bold=True, color=ACCENT))]],
+              [[(v, dict(size=10, color=INKD, name=MONO))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, Emu(hx0 + len(hxs) * (hcw + hg) + I(0.06)), Emu(hy), Emu(I(1.2)), Emu(hh),
+          [[("1 byte/픽셀", dict(size=8.5, color=LBL))]], anchor=MSO_ANCHOR.MIDDLE)
+    # LUT 라인 — monospace
+    lut_y = hy + hh + I(0.12)
+    _text(slide, Emu(x + I(0.26)), Emu(lut_y), Emu(w - I(0.5)), Emu(I(0.20)),
+          [[("LUT[256] 정적 C 배열:  ", dict(size=9.5, color=NAVY, bold=True)),
+            ("0x0C→3   0x1A→5   0xFF→7   …  (사전 계산, O(1))", dict(size=9.5, color=INKD, name=MONO))]],
           anchor=MSO_ANCHOR.MIDDLE)
-    # ── Stage 2: 256-entry LUT 표 ──► chip tile array 격자 ──
-    row2_y = arr_y + I(0.34)
-    # LUT 2-col mini table
-    lut_x = x + I(0.30); colw = I(0.85); lut_w = colw * 2
-    _text(slide, Emu(lut_x), Emu(row2_y), Emu(lut_w), Emu(I(0.20)),
-          [[("256-entry static LUT", dict(size=9.5, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
-    tbl_y = row2_y + I(0.24)
-    rows = [("byte", "grade", True), ("0x0C", "3", False), ("0x1A", "5", False), ("0xFF", "7", False)]
-    rh = min(I(0.28), (cby - tbl_y - I(0.04)) // len(rows))
-    for ri, (a, b, hd) in enumerate(rows):
-        ry = tbl_y + ri * rh
-        fc = RGBColor(0xE6, 0xF7, 0xF6) if hd else WHITE
-        col = NAVY if hd else INK
-        akw = dict(size=9, bold=True, color=col) if hd else dict(size=9, color=col, name=MONO)
-        bkw = dict(size=9, bold=True, color=col) if hd else dict(size=9, color=col, name=MONO)
-        _rect(slide, Emu(lut_x), Emu(ry), Emu(colw), Emu(rh), fc, line=LN, line_w=Pt(0.75))
-        _rect(slide, Emu(lut_x + colw), Emu(ry), Emu(colw), Emu(rh), fc, line=LN, line_w=Pt(0.75))
-        _text(slide, Emu(lut_x), Emu(ry), Emu(colw), Emu(rh), [[(a, akw)]],
-              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, Emu(lut_x + colw), Emu(ry), Emu(colw), Emu(rh), [[(b, bkw)]],
-              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    # 화살표 → 복원
-    mid2_y = tbl_y + (len(rows) * rh) // 2
-    arr2_x = lut_x + lut_w + I(0.18)
-    _rect(slide, Emu(arr2_x), Emu(mid2_y - I(0.12)), Emu(I(0.55)), Emu(I(0.24)), ACCENT, shape=MSO_SHAPE.RIGHT_ARROW)
-    _text(slide, Emu(arr2_x - I(0.08)), Emu(mid2_y - I(0.40)), Emu(I(0.72)), Emu(I(0.20)),
-          [[("복원", dict(size=8.5, color=MUTED))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    # chip tile array (NxN grade 격자)
-    grid_x = arr2_x + I(0.78)
-    gn = 5
-    gcell = min(I(0.32), (cby - row2_y - I(0.28)) // gn, (x + w - I(0.30) - grid_x) // gn)
-    _text(slide, Emu(grid_x), Emu(row2_y), Emu(gcell * gn + I(0.9)), Emu(I(0.20)),
-          [[("chip tile array", dict(size=9.5, bold=True, color=NAVY)),
-            ("  (복원된 wafer 격자)", dict(size=8.5, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
-    g_y = row2_y + I(0.24)
-    patt = [[0, 0, 1, 0, 0],
-            [0, 2, 4, 2, 0],
-            [1, 4, 6, 4, 1],
-            [0, 2, 4, 2, 0],
-            [0, 0, 1, 0, 0]]
+    # 하단: 좌 Python/Cython 대비 박스, 우 chip tile array
+    low_y = lut_y + I(0.34)
+    cbx = x + I(0.26); cbw = I(3.10); cbh = (y + h) - low_y - I(0.10)
+    _rect(slide, Emu(cbx), Emu(low_y), Emu(cbw), Emu(cbh), RGBColor(0xFA, 0xFB, 0xFC), line=LN, line_w=Pt(0.9))
+    _text(slide, Emu(cbx + I(0.14)), Emu(low_y + I(0.05)), Emu(cbw - I(0.28)), Emu(cbh - I(0.10)),
+          [[("순수 Python  vs  Cython", dict(size=9, bold=True, color=NAVY))],
+           [("Python:  g = f(b)    # 인터프리터", dict(size=9, color=INKD, name=MONO))],
+           [("Cython:  g = LUT[b]  # C배열 컴파일", dict(size=9, color=INKD, name=MONO))],
+           [("                     → 약 100배", dict(size=9.5, bold=True, color=NAVY, name=MONO))]],
+          anchor=MSO_ANCHOR.MIDDLE)
+    # chip tile array — grayscale Grade 격자(digit), 컬러 채움 없음
+    gx0 = cbx + cbw + I(0.26)
+    _text(slide, Emu(gx0), Emu(low_y), Emu((x + w) - gx0 - I(0.2)), Emu(I(0.18)),
+          [[("chip tile array (Grade)", dict(size=9, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+    gn = 5; gtop = low_y + I(0.22)
+    gcell = min(I(0.30), (((y + h) - I(0.12)) - gtop) // gn, ((x + w) - I(0.2) - gx0) // gn)
+    patt = [[0, 0, 1, 0, 0], [0, 2, 4, 2, 0], [1, 4, 6, 4, 1], [0, 2, 4, 2, 0], [0, 0, 1, 0, 0]]
     for r in range(gn):
         for c in range(gn):
-            gv = patt[r][c]
-            gx = grid_x + c * gcell; gyy = g_y + r * gcell
-            _rect(slide, Emu(gx), Emu(gyy), Emu(gcell - I(0.015)), Emu(gcell - I(0.015)),
-                  GRADE[gv], line=WHITE, line_w=Pt(0.5))
-    # ── 하단 콜아웃: Python vs Cython ──
-    _rect(slide, Emu(x + I(0.25)), Emu(cby), Emu(w - I(0.5)), Emu(callout_h),
-          RGBColor(0xE6, 0xF7, 0xF6), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-    _rect(slide, Emu(x + I(0.25)), Emu(cby), Emu(I(0.09)), Emu(callout_h), ACCENT)
-    _text(slide, Emu(x + I(0.42)), Emu(cby), Emu(w - I(0.70)), Emu(callout_h),
-          [[("순수 Python 인터프리터 루프 → Cython 컴파일 + C 배열 lookup + stride ", dict(size=9.5, bold=True, color=NAVY)),
-            ("→ 약 100배", dict(size=10.5, bold=True, color=ACCENT))]],
-          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+            gv = patt[r][c]; gx = gx0 + c * gcell; gyy = gtop + r * gcell
+            _rect(slide, Emu(gx), Emu(gyy), Emu(gcell - I(0.012)), Emu(gcell - I(0.012)),
+                  GREY[gv], line=LN, line_w=Pt(0.5))
+            tc = WHITE if gv >= 5 else INKD
+            _text(slide, Emu(gx), Emu(gyy), Emu(gcell - I(0.012)), Emu(gcell - I(0.012)),
+                  [[(str(gv), dict(size=8.5, color=tc, name=MONO))]],
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
 
 def _numba_composite_diagram(slide, x, y, w, h):
