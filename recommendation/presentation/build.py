@@ -18,7 +18,7 @@ FIG_DIR = os.path.abspath(os.path.join(HERE, "..", "figures"))
 # ---- 디자인 시스템 ----
 NAVY   = RGBColor(0x0F, 0x1E, 0x3D)
 NAVY2  = RGBColor(0x1B, 0x32, 0x60)
-ACCENT = RGBColor(0x5B, 0x9B, 0xD5)   # light sky-blue
+ACCENT = RGBColor(0x96, 0xA0, 0xAD)   # neutral gray accent
 GOLD   = RGBColor(0xF2, 0xB7, 0x05)   # awards/highlight
 INK    = RGBColor(0x1A, 0x1F, 0x2E)
 MUTED  = RGBColor(0x6B, 0x72, 0x80)
@@ -32,7 +32,7 @@ EMU_W, EMU_H = Inches(13.333), Inches(7.5)
 FOOTER = "최호길 | QIE Data Science | AI Specialist 인증"
 
 
-_NAMED = {"navy": "0F1E3D", "navy2": "1B3260", "accent": "12B5B0", "gold": "F2B705",
+_NAMED = {"navy": "0F1E3D", "navy2": "1B3260", "accent": "96A0AD", "gold": "F2B705",
           "panel": "F2F5FA", "white": "FFFFFF", "ink": "1A1F2E", "muted": "6B7280",
           "line": "D7DEEA"}
 
@@ -107,7 +107,7 @@ def _text(slide, x, y, w, h, lines, align=PP_ALIGN.LEFT, anchor=MSO_ANCHOR.TOP, 
     return tb
 
 
-def _chip(slide, x, y, text, fill=ACCENT, fg=WHITE, w=Inches(0.95), h=Inches(0.38), size=13):
+def _chip(slide, x, y, text, fill=ACCENT, fg=NAVY, w=Inches(0.95), h=Inches(0.38), size=13):
     sp = _rect(slide, x, y, w, h, fill, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
     tf = sp.text_frame; tf.word_wrap = False
     tf.margin_left = 0; tf.margin_right = 0; tf.margin_top = 0; tf.margin_bottom = 0
@@ -143,6 +143,40 @@ def _img_fit(slide, path, x, y, maxw, maxh, frame=True):
     # 배치된 이미지의 실제 사각형(px,py,w,h)을 함께 돌려줘 호출부가 그 위에 주석(원/화살표)을
     # 정확히 얹을 수 있게 한다(이미지 가공 없이 좌표 기반 오버레이용).
     pic._fit_rect = (px, py, w, h)
+    return pic
+
+
+def _img_cover(slide, path, x, y, w, h, focus_x=0.5, focus_y=0.5):
+    """이미지를 박스에 꽉 채우되 비율을 유지하도록 PowerPoint crop만 적용한다."""
+    if not os.path.isabs(path):
+        cand = os.path.join(FIG_DIR, path)
+        path = cand if os.path.exists(cand) else os.path.join(HERE, path)
+    if not os.path.exists(path):
+        ph = _rect(slide, x, y, w, h, PANEL, line=LINE)
+        _text(slide, x, y+h/2-Inches(0.12), w, Inches(0.24),
+              [[("(이미지 없음)", dict(size=7.5, color=MUTED))]], align=PP_ALIGN.CENTER)
+        return ph
+    try:
+        from PIL import Image
+        iw, ih = Image.open(path).size
+    except Exception:
+        iw, ih = 4, 3
+    ar = iw / ih
+    box_ar = w / h
+    pic = slide.shapes.add_picture(path, x, y, width=w, height=h)
+    if ar > box_ar:
+        visible = box_ar / ar
+        crop_total = max(0.0, 1.0 - visible)
+        left = crop_total * min(max(focus_x, 0.0), 1.0)
+        pic.crop_left = left
+        pic.crop_right = crop_total - left
+    else:
+        visible = ar / box_ar
+        crop_total = max(0.0, 1.0 - visible)
+        top = crop_total * min(max(focus_y, 0.0), 1.0)
+        pic.crop_top = top
+        pic.crop_bottom = crop_total - top
+    pic.shadow.inherit = False
     return pic
 
 
@@ -214,11 +248,11 @@ def _annot_over(slide, rect, annots, accent=RGBColor(0xE5, 0x3A, 0x1F)):
             _set_font(r0, size=10.5, bold=True, color=accent)
 
 
-def _footer(slide, idx):
+def _footer(slide, idx, size=9):
     _text(slide, Inches(0.5), Inches(7.04), Inches(9), Inches(0.32),
-          [[(FOOTER, dict(size=9, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
+          [[(FOOTER, dict(size=size, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
     _text(slide, Inches(12.0), Inches(7.04), Inches(0.83), Inches(0.32),
-          [[(str(idx), dict(size=9, color=MUTED))]], align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+          [[(str(idx), dict(size=size, color=MUTED))]], align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
 
 
 def _title_block(slide, kicker, title, x=Inches(0.7), y=Inches(0.55), w=Inches(11.9)):
@@ -363,9 +397,9 @@ def s_section(slide, d, idx):
         wy = Inches(4.58); wh = Inches(0.82)
         _rect(slide, Inches(4.0), wy, Inches(8.6), wh, RGBColor(0xF2,0xF5,0xFA))
         _rect(slide, Inches(4.0), wy, Inches(0.09), wh, ACCENT)
-        _text(slide, Inches(4.22), wy, Inches(1.1), wh,
-              [[("WHY", dict(size=10.5, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, Inches(5.05), wy, Inches(7.4), wh,
+        _text(slide, Inches(4.22), wy, Inches(1.18), wh,
+              [[("Rationale", dict(size=10.5, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, Inches(5.45), wy, Inches(6.95), wh,
               [[(d["desc"], dict(size=13, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
     # 좌측 사이드바 하단(레일 라벨 우측)의 빈 1/4 영역을, 이 과제의 핵심 수치를 직접 적은
     # 미니 요약 카드로 채워 '미완성' 인상을 제거(우측 본문 블록과 별개로 사이드바 자체를 완결).
@@ -405,7 +439,7 @@ def s_section(slide, d, idx):
                 (ba.get("before", ""), dict(size=12.5, bold=True, color=INK))]],
               anchor=MSO_ANCHOR.MIDDLE)
         bx2 = Emu(int(bx)+int(bcw)+int(bgap))
-        _rect(slide, bx2, by, bcw, bh, RGBColor(0xE6,0xF7,0xF6))
+        _rect(slide, bx2, by, bcw, bh, RGBColor(0xF4,0xF6,0xF8))
         _rect(slide, bx2, by, Inches(0.09), bh, ACCENT)
         _text(slide, bx2+Inches(0.18), by, Emu(int(bcw)-int(Inches(0.36))), bh,
               [[("After  ", dict(size=10.5, bold=True, color=ACCENT)),
@@ -527,7 +561,7 @@ def s_bullets(slide, d, idx):
         # 지표 밴드를 본문 블록 하단(≈5.40")에서 충분히 띄워(5.74→5.92, ≈0.5") footer(7.04") 위
         # 안전선 안에서 내린다 → 본문 마지막 줄 받침과 밴드 윗선 사이 여백을 확보(slide2 medium).
         lmy = Inches(5.92); lmh = Inches(0.98)
-        _rect(slide, bx, lmy, bw, lmh, RGBColor(0xE6, 0xF7, 0xF6),
+        _rect(slide, bx, lmy, bw, lmh, RGBColor(0xF4, 0xF6, 0xF8),
               shape=MSO_SHAPE.ROUNDED_RECTANGLE)
         _rect(slide, bx, lmy, Inches(0.1), lmh, ACCENT)
         cells = lead[:3]; ncl = len(cells)
@@ -726,7 +760,7 @@ def _twotrack_diagram(slide, x, y, w, h):
         # '예정/대기' 칩을 점선 크림+골드 아웃라이어 대신 팔레트 내 변형으로 통일:
         # 옅은 teal 틴트 채움 + teal 점선 외곽으로 일관화하고, 마지막 '배포 예정' 칩만 한 단계
         # 진한 teal 틴트로 위계를 준다(운영 트랙 solid teal 과 한 팔레트로 묶임 — slide10 low).
-        fill = RGBColor(0xE6, 0xF7, 0xF6) if not last else RGBColor(0xCF, 0xEE, 0xED)
+        fill = RGBColor(0xF4, 0xF6, 0xF8) if not last else RGBColor(0xE6, 0xEA, 0xEF)
         line_c = ACCENT
         sp = _rect(slide, Emu(bx), Emu(ty2), Emu(bw), Emu(th), fill,
                    line=line_c, line_w=Pt(1.4), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
@@ -985,7 +1019,7 @@ def _numba_composite_diagram(slide, x, y, w, h):
           [[("hot-spot composite", dict(size=9, color=MUTED))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     cby = y + avail - callout_h
     _rect(slide, Emu(x + I(0.3)), Emu(cby), Emu(w - I(0.6)), Emu(callout_h),
-          RGBColor(0xE6, 0xF7, 0xF6), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+          RGBColor(0xF4, 0xF6, 0xF8), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
     _rect(slide, Emu(x + I(0.3)), Emu(cby), Emu(I(0.09)), Emu(callout_h), ACCENT)
     _text(slide, Emu(x + I(0.46)), Emu(cby), Emu(w - I(0.76)), Emu(callout_h),
           [[("반복 픽셀 합산을 기계어로 컴파일 + 병렬 ", dict(size=9.5, bold=True, color=NAVY)),
@@ -1020,7 +1054,7 @@ def _pyvips_stream_diagram(slide, x, y, w, h):
             tx = bx + c * ts; ty = by + r * ts
             if (r, c) in loaded:
                 _rect(slide, Emu(tx), Emu(ty), Emu(ts - I(0.02)), Emu(ts - I(0.02)),
-                      RGBColor(0xCF, 0xEE, 0xED), line=ACCENT, line_w=Pt(1))
+                      RGBColor(0xE6, 0xEA, 0xEF), line=ACCENT, line_w=Pt(1))
             else:
                 sp = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Emu(tx), Emu(ty),
                                             Emu(ts - I(0.02)), Emu(ts - I(0.02)))
@@ -1043,12 +1077,109 @@ def _pyvips_stream_diagram(slide, x, y, w, h):
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     cby = y + avail - callout_h
     _rect(slide, Emu(x + I(0.3)), Emu(cby), Emu(w - I(0.6)), Emu(callout_h),
-          RGBColor(0xE6, 0xF7, 0xF6), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+          RGBColor(0xF4, 0xF6, 0xF8), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
     _rect(slide, Emu(x + I(0.3)), Emu(cby), Emu(I(0.09)), Emu(callout_h), ACCENT)
     _text(slide, Emu(x + I(0.46)), Emu(cby), Emu(w - I(0.76)), Emu(callout_h),
           [[("전체 메모리 적재 대신 타일 streaming ", dict(size=9.5, bold=True, color=NAVY)),
             ("→ viewer 로드 경량화", dict(size=9.5, bold=True, color=ACCENT))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+
+
+def _episode_trend_diagram(slide, x, y, w, h):
+    """순차 episode 기반 정상 baseline 생성을 네이티브 객체로 표현(사용자가 직접 편집 가능).
+    상단(a): episode 밴드(밀도별 Dense/Sparse/Missing/Thin) + 회색 fleet/파랑 target 산점 dot +
+    점선 baseline, 밴드 라벨은 밴드 위 중앙정렬(=trend 와 정렬). 하단(b): 노이즈 3종 미니 패널."""
+    import random
+    rnd = random.Random(7)
+    x, y, w, h = int(x), int(y), int(w), int(h)
+    def I(v): return int(Inches(v))
+    BLUE = RGBColor(0x3A, 0x6F, 0xD0); GRAY = RGBColor(0xAE, 0xB4, 0xBD)
+    RED = RGBColor(0xCC, 0x33, 0x28); NV = RGBColor(0x0F, 0x1E, 0x3D)
+    TL = RGBColor(0x12, 0xB5, 0xB0); MU = RGBColor(0x6B, 0x72, 0x80)
+
+    def dot(cx, cy, d, color):
+        sp = slide.shapes.add_shape(MSO_SHAPE.OVAL, Emu(int(cx - d / 2)), Emu(int(cy - d / 2)), Emu(int(d)), Emu(int(d)))
+        sp.fill.solid(); sp.fill.fore_color.rgb = color; sp.line.fill.background(); sp.shadow.inherit = False
+
+    top_h = int(h * 0.60)
+    # ── (a) baseline panel ──
+    secA = y + I(0.04)
+    _text(slide, Emu(x + I(0.15)), Emu(secA), Emu(w - I(0.3)), Emu(I(0.26)),
+          [[("(a) Normal baseline  —  sequential episodes", dict(size=13, bold=True, color=NV)),
+            ("    gray = fleet,  blue = target", dict(size=10.5, color=MU))]],
+          anchor=MSO_ANCHOR.MIDDLE)
+    px0 = x + I(0.25); px1 = x + w - I(0.25)
+    lbl_y = secA + I(0.30)
+    pa_top = lbl_y + I(0.26); pa_bot = y + top_h - I(0.05)
+    base_y = (pa_top + pa_bot) // 2
+    half = (pa_bot - pa_top) // 2 - I(0.04)
+    episodes = [("Dense", 1.5), ("Sparse", 1.0), ("Missing", 0.7), ("Dense", 1.4),
+                ("Thin", 0.9), ("Dense", 1.3), ("Sparse", 1.0)]
+    tw = sum(e[1] for e in episodes)
+    edgec = {"Dense": NV, "Sparse": RGBColor(0xC9, 0x8A, 0x22), "Missing": RED, "Thin": MU}
+    bandfill = {"Dense": RGBColor(0xEA, 0xF0, 0xF8), "Sparse": RGBColor(0xFB, 0xF4, 0xE5),
+                "Missing": RGBColor(0xFB, 0xEC, 0xEA), "Thin": RGBColor(0xF2, 0xF3, 0xF6)}
+    density = {"Dense": 15, "Sparse": 7, "Missing": 0, "Thin": 4}
+    dotd = I(0.05); jx = I(0.018)
+    cxr = px0
+    for (kind, wt) in episodes:
+        bw = int((px1 - px0) * wt / tw)
+        _rect(slide, Emu(cxr), Emu(pa_top), Emu(bw - I(0.02)), Emu(pa_bot - pa_top), bandfill[kind])
+        _text(slide, Emu(cxr), Emu(lbl_y), Emu(bw), Emu(I(0.24)),
+              [[(kind, dict(size=12.5, bold=True, color=edgec[kind]))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+        n = density[kind]
+        for k in range(n):
+            ddx = cxr + int(bw * (k + 0.5) / max(1, n)) + rnd.randint(-jx, jx)
+            ddy = base_y + int(rnd.uniform(-0.55, 0.55) * half)
+            dot(ddx, ddy, dotd, BLUE)
+        gn = max(0, n // 3)
+        for k in range(gn):
+            ddx = cxr + int(bw * (k + 0.4) / max(1, gn))
+            ddy = base_y - int(0.52 * half) + int(rnd.uniform(-0.22, 0.22) * half)
+            dot(ddx, ddy, int(dotd * 0.82), GRAY)
+        cxr += bw
+    dn = 46; seg = (px1 - px0) // dn
+    for i in range(0, dn, 2):
+        _rect(slide, Emu(px0 + i * seg), Emu(base_y - I(0.006)), Emu(int(seg * 1.1)), Emu(I(0.012)),
+              RGBColor(0x8A, 0x92, 0x9E))
+    # ── (b) noise panels ──
+    secB = y + top_h + I(0.03)
+    _text(slide, Emu(x + I(0.15)), Emu(secB), Emu(w - I(0.3)), Emu(I(0.24)),
+          [[("(b) Measurement noise  —  one type per chart", dict(size=13, bold=True, color=NV))]],
+          anchor=MSO_ANCHOR.MIDDLE)
+    np_top = secB + I(0.28); np_bot = y + h - I(0.05)
+    gap = I(0.3); pw = (w - I(0.3) - 2 * gap) // 3
+    titles = ["Gaussian iid", "Correlated AR(1)", "Laplacian"]
+    subs = ["base dispersion", "equipment drift", "hunting (heavy-tail)"]
+    for pi in range(3):
+        bx = x + I(0.15) + pi * (pw + gap)
+        _rect(slide, Emu(bx), Emu(np_top), Emu(pw), Emu(np_bot - np_top), RGBColor(0xFC, 0xFD, 0xFE),
+              line=RGBColor(0xD7, 0xDE, 0xEA), line_w=Pt(1))
+        _text(slide, Emu(bx), Emu(np_top + I(0.03)), Emu(pw), Emu(I(0.22)),
+              [[(titles[pi], dict(size=11.5, bold=True, color=NV))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+        sk_top = np_top + I(0.30); sk_bot = np_bot - I(0.24)
+        sk_mid = (sk_top + sk_bot) // 2; sk_half = (sk_bot - sk_top) // 2
+        sx0 = bx + I(0.18); sx1 = bx + pw - I(0.18); nn = 16
+        if pi == 0:
+            for k in range(nn):
+                dot(sx0 + int((sx1 - sx0) * k / (nn - 1)), sk_mid + int(rnd.uniform(-0.62, 0.62) * sk_half), I(0.042), NV)
+        elif pi == 1:
+            v = 0.0
+            for k in range(nn):
+                v = max(-0.85, min(0.85, 0.78 * v + rnd.uniform(-0.30, 0.30)))
+                dot(sx0 + int((sx1 - sx0) * k / (nn - 1)), sk_mid - int(v * sk_half), I(0.042), TL)
+        else:
+            spikes = {4: 0.92, 11: -0.96}
+            for k in range(nn):
+                px = sx0 + int((sx1 - sx0) * k / (nn - 1))
+                if k in spikes:
+                    dot(px, sk_mid - int(spikes[k] * sk_half), I(0.058), RED)
+                else:
+                    dot(px, sk_mid + int(rnd.uniform(-0.16, 0.16) * sk_half), I(0.042), NV)
+        _text(slide, Emu(bx), Emu(sk_bot + I(0.02)), Emu(pw), Emu(I(0.2)),
+              [[(subs[pi], dict(size=9.5, color=MU))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
 
 
 def _caption_runs(text, sz):
@@ -1094,7 +1225,7 @@ def s_image_grid(slide, d, idx):
         long_title = title_right > int(Inches(6.3))
         if not long_title:
             bay = Inches(0.62)
-            _rect(slide, bx, bay, bw, bh2, RGBColor(0xE6,0xF7,0xF6), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+            _rect(slide, bx, bay, bw, bh2, RGBColor(0xF4,0xF6,0xF8), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
             _rect(slide, bx, bay, Inches(0.09), bh2, ACCENT)
             _text(slide, bx+Inches(0.2), bay, Emu(int(bw)-int(Inches(0.36))), bh2,
                   [[(d["img_badge"], dict(size=13.5, bold=True, color=NAVY))]],
@@ -1116,7 +1247,7 @@ def s_image_grid(slide, d, idx):
                 bx = Emu(int(Inches(0.7)) + (int(Inches(12.0)) - int(bw)) // 2)
             else:
                 bx = Emu(int(Inches(12.7)) - int(bw))
-            _rect(slide, bx, bay, bw, bh2, RGBColor(0xE6,0xF7,0xF6), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+            _rect(slide, bx, bay, bw, bh2, RGBColor(0xF4,0xF6,0xF8), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
             _rect(slide, bx, bay, Inches(0.09), bh2, ACCENT)
             _text(slide, bx+Inches(0.2), bay, Emu(int(bw)-int(Inches(0.36))), bh2,
                   [[(d["img_badge"], dict(size=13.5, bold=True, color=NAVY))]],
@@ -1243,6 +1374,8 @@ def s_image_grid(slide, d, idx):
                 _numba_composite_diagram(slide, x, y, cw, img_h)
             if im["diagram"] == "pyvips_stream":
                 _pyvips_stream_diagram(slide, x, y, cw, img_h)
+            if im["diagram"] == "episode_trend":
+                _episode_trend_diagram(slide, x, y, cw, img_h)
             if im.get("caption"):
                 cap_pad = int(gx) // 2
                 _text(slide, Emu(int(x) - cap_pad), Emu(int(y)+int(chh)-int(cap_h)),
@@ -1508,7 +1641,7 @@ def s_table(slide, d, idx):
         for j, val in enumerate(row):
             cell = gtbl.cell(i+1, j)
             if hl is not None and i == hl:
-                cell.fill.solid(); cell.fill.fore_color.rgb = RGBColor(0xE6,0xF7,0xF6)
+                cell.fill.solid(); cell.fill.fore_color.rgb = RGBColor(0xF4,0xF6,0xF8)
             else:
                 cell.fill.solid(); cell.fill.fore_color.rgb = WHITE if i % 2 == 0 else PANEL
             cell.vertical_anchor = MSO_ANCHOR.MIDDLE
@@ -1641,13 +1774,13 @@ def _flow_box(slide, x, y, w, h, b):
     color = b.get("color", "panel")
     _rect(slide, x, y, w, h, color, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
     dark = _is_dark(color)
-    # teal(accent) 배경 위에서는 앰버(gold)가 저대비로 진동하므로, teal 박스의 강조(sub·tag)는
-    # 흰색 볼드로 통일하고, 앰버는 남색(navy/navy2) 배경에만 한정한다(배경별 대비 보장).
-    is_teal = str(_col(color)).upper() == "12B5B0"
+    # Accent 배경 위에서는 gold가 저대비로 보일 수 있어 흰색 볼드로 통일하고,
+    # gold는 navy/navy2 배경 강조에만 사용한다.
+    is_accent = str(_col(color)).upper() == "96A0AD"
     tcol = WHITE if dark else NAVY
-    if is_teal:
-        scol = RGBColor(0xEA, 0xFB, 0xFA)   # teal 위 밝은 본문
-        tagcol = WHITE                       # teal 위 강조는 흰색 볼드
+    if is_accent:
+        scol = WHITE
+        tagcol = WHITE
     elif dark:
         scol = RGBColor(0xD2, 0xDE, 0xF3)    # navy 위 본문
         tagcol = GOLD                        # navy 위 강조만 앰버
@@ -1747,7 +1880,7 @@ def s_timeline(slide, d, idx):
     axy = int(Inches(4.08))
     # 상단 요약 배지(완료/예정)를 제목 줄 우측(0.66")에 정렬해 고립감을 줄이고 제목과 한 라인에 둠.
     n_done = sum(1 for it in items if it.get("done"))
-    _chip(slide, Inches(9.45), Inches(0.66), f"완료 {n_done}", fill=ACCENT, fg=WHITE,
+    _chip(slide, Inches(9.45), Inches(0.66), f"완료 {n_done}", fill=ACCENT, fg=NAVY,
           w=Inches(1.45), h=Inches(0.44), size=13)
     _chip(slide, Inches(11.05), Inches(0.66), f"예정 {n - n_done}", fill=PANEL, fg=MUTED,
           w=Inches(1.45), h=Inches(0.44), size=13)
@@ -1758,14 +1891,14 @@ def s_timeline(slide, d, idx):
         cx = ax0 + i * step if n > 1 else ax0 + (ax1 - ax0) // 2
         done = it.get("done", False)
         above = (i % 2 == 0)
-        # 노드↔라벨 사이를 가는 teal 스템으로 연결해 위/아래 라벨이 떠 보이지 않게 함
+        # 노드↔라벨 사이를 가는 회색 스템으로 연결해 위/아래 라벨이 떠 보이지 않게 함
         stem_h = int(Inches(0.5))
         if above:
             _rect(slide, Emu(cx - int(Pt(0.9))), Emu(axy - rr - stem_h), Emu(int(Pt(1.8))), Emu(stem_h),
-                  RGBColor(0xBF, 0xE6, 0xE4))
+                  RGBColor(0xC7, 0xCF, 0xDA))
         else:
             _rect(slide, Emu(cx - int(Pt(0.9))), Emu(axy + rr), Emu(int(Pt(1.8))), Emu(stem_h),
-                  RGBColor(0xBF, 0xE6, 0xE4))
+                  RGBColor(0xC7, 0xCF, 0xDA))
         if done:
             _rect(slide, Emu(cx - rr), Emu(axy - rr + int(Pt(1.5))), Emu(2 * rr), Emu(2 * rr),
                   ACCENT, shape=MSO_SHAPE.OVAL)
@@ -1787,10 +1920,10 @@ def s_timeline(slide, d, idx):
         else:
             ty = int(Inches(4.44)); bh = Inches(1.32)
         # 노드 라벨 뒤에 옅은 카드 박스를 깔아 타임라인 상·하단 빈 띠를 채우고 시각 밀도를 높임
-        # (완료=연한 teal 틴트, 예정=연회색 패널). 카드 상단에 가는 강조 바로 단계 위계를 줌.
+        # (완료=연회색 강조, 예정=연회색 패널). 카드 상단에 가는 강조 바로 단계 위계를 줌.
         card_h = int(Inches(1.16))
         cy = ty if above else ty + (int(bh) - card_h)
-        card_fill = RGBColor(0xE9, 0xF7, 0xF6) if done else PANEL
+        card_fill = RGBColor(0xF4, 0xF6, 0xF8) if done else PANEL
         _rect(slide, Emu(bx), Emu(cy), Emu(box_w), Emu(card_h), card_fill,
               shape=MSO_SHAPE.ROUNDED_RECTANGLE)
         _rect(slide, Emu(bx), Emu(cy), Emu(box_w), Inches(0.07),
@@ -1878,7 +2011,7 @@ def s_cards(slide, d, idx):
             if is_result:
                 # 결과 줄은 옅은 틸 틴트 배경 + 좌측 틸 바로 강조
                 _rect(slide, Emu(rx - int(Inches(0.08))), Emu(ry), Emu(rw + int(Inches(0.16))),
-                      Emu(rh), RGBColor(0xE6, 0xF7, 0xF6), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+                      Emu(rh), RGBColor(0xF4, 0xF6, 0xF8), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
                 _rect(slide, Emu(rx - int(Inches(0.08))), Emu(ry), Emu(int(Inches(0.08))),
                       Emu(rh), ACCENT)
             # 라벨 칩(틸 텍스트) + 본문
@@ -1923,7 +2056,7 @@ def _ba_row(slide, x, y, w, h, label, before, after):
           shape=MSO_SHAPE.RIGHT_ARROW)
     # after 박스(틸 틴트 + 좌측 틸 바)
     ax2 = ax + arr_w
-    _rect(slide, Emu(ax2), Emu(y), Emu(box_w), Emu(h), RGBColor(0xE6, 0xF7, 0xF6),
+    _rect(slide, Emu(ax2), Emu(y), Emu(box_w), Emu(h), RGBColor(0xF4, 0xF6, 0xF8),
           line=ACCENT, line_w=Pt(1.1), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
     _rect(slide, Emu(ax2), Emu(y), Emu(int(Inches(0.08))), Emu(h), ACCENT)
     _text(slide, Emu(ax2 + int(Inches(0.16))), Emu(y), Emu(box_w - int(Inches(0.26))), Emu(h),
@@ -1957,7 +2090,7 @@ def _tech_card(slide, x, y, w, h, d):
     _rect(slide, Emu(ax), Emu(fy + int(Inches(0.08))), Emu(arr_w), Emu(int(Inches(0.20))),
           ACCENT, shape=MSO_SHAPE.RIGHT_ARROW)
     bx2 = ax + arr_w + node_gap
-    _rect(slide, Emu(bx2), Emu(fy), Emu(node_w), Emu(fh), RGBColor(0xE6, 0xF7, 0xF6),
+    _rect(slide, Emu(bx2), Emu(fy), Emu(node_w), Emu(fh), RGBColor(0xF4, 0xF6, 0xF8),
           line=ACCENT, line_w=Pt(0.9), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
     _text(slide, Emu(bx2 + int(Inches(0.06))), Emu(fy), Emu(node_w - int(Inches(0.12))), Emu(fh),
           [[(d["after"], dict(size=8.8, bold=True, color=NAVY))]],
@@ -1984,11 +2117,11 @@ def s_pipeline(slide, d, idx):
         _rect(slide, Emu(int(Inches(0.7))), Emu(wy), Emu(int(Inches(12.0))), Emu(wy_h),
               RGBColor(0xF2, 0xF5, 0xFA), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
         _rect(slide, Emu(int(Inches(0.7))), Emu(wy), Emu(int(Inches(0.1))), Emu(wy_h), ACCENT)
-        _text(slide, Emu(int(Inches(0.92))), Emu(wy), Emu(int(Inches(1.2))), Emu(wy_h),
-              [[("WHY", dict(size=12, bold=True, color=ACCENT))],
+        _text(slide, Emu(int(Inches(0.92))), Emu(wy), Emu(int(Inches(1.35))), Emu(wy_h),
+              [[("Rationale", dict(size=12, bold=True, color=ACCENT))],
                [("Need", dict(size=9.5, bold=True, color=MUTED))]],
               anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, Emu(int(Inches(1.92))), Emu(wy), Emu(int(Inches(10.6))), Emu(wy_h),
+        _text(slide, Emu(int(Inches(2.26))), Emu(wy), Emu(int(Inches(10.18))), Emu(wy_h),
               [[(why, dict(size=12.5, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
     if d.get("tech_cards"):
         col_top = top + wy_h + (int(Inches(0.18)) if why else 0)
@@ -2089,134 +2222,320 @@ def s_pipeline(slide, d, idx):
 
 
 def _draw_hardneg(slide, X, Y, W, H):
-    """Hard-negative 선택 개념을 네이티브 PPT 도형으로 그린다(이미지 X → PowerPoint 에서 직접 편집 가능).
-    q(query) 기준으로 d+(positive) 와 세 부류의 negative: Too Hard(=false negative, 제외) /
-    Ambiguous(유용한 hard negative, 사용) / Too Easy(무의미) 를 임베딩 산포로 표현."""
+    """Paper-style hard-negative filtering diagram.
+    q 주변의 inner exclusion zone, hard-negative band, easy-negative outer region을
+    embedding geometry로 표현한다."""
     def PX(f): return int(X + f * W)
     def PY(f): return int(Y + f * H)
     NAVY = RGBColor(0x0F, 0x1E, 0x3D); INK = RGBColor(0x22, 0x26, 0x2E)
     RED = RGBColor(0xCC, 0x33, 0x28); BLUE = RGBColor(0x2B, 0x66, 0xD9)
     ORANGE = RGBColor(0xE0, 0x8A, 0x1E); GRAYL = RGBColor(0xCF, 0xD4, 0xDB)
-    ARRC = RGBColor(0x9A, 0xA4, 0xB2)
-    M = int(Inches(0.17))
-    # 1) 이웃(neighborhood) 경계를 점선 타원으로 — q 주변 가까운 표본 영역
-    ell = slide.shapes.add_shape(MSO_SHAPE.OVAL, Emu(PX(0.04)), Emu(PY(0.13)),
-                                 Emu(int(0.50 * W)), Emu(int(0.78 * H)))
-    ell.fill.background(); ell.line.color.rgb = ARRC; ell.line.width = Pt(1.6)
-    ell.shadow.inherit = False
-    _ln = ell.line._get_or_add_ln()
-    _ln.append(_ln.makeelement(qn('a:prstDash'), {'val': 'dash'}))
-    # 2) q -> 각 표본 화살표(마커 뒤에 먼저 그림)
-    qx, qy = PX(0.30), PY(0.56)
-    for fx, fy in [(0.42, 0.24), (0.24, 0.36), (0.12, 0.64), (0.68, 0.72)]:
-        cn = slide.shapes.add_connector(1, Emu(qx), Emu(qy), Emu(PX(fx)), Emu(PY(fy)))
-        cn.line.color.rgb = ARRC; cn.line.width = Pt(1.1); cn.shadow.inherit = False
-    def mk(fx, fy, shp, fill, line=None):
-        _rect(slide, Emu(PX(fx) - M // 2), Emu(PY(fy) - M // 2), Emu(M), Emu(M),
-              fill, line=line, shape=shp, line_w=Pt(1.4))
-    def lbl(fx, fy, t):
-        _text(slide, Emu(PX(fx)), Emu(PY(fy)), Emu(int(0.13 * W)), Emu(int(Inches(0.26))),
-              [[(t, dict(size=14, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
-    # 3) 마커
-    mk(0.30, 0.56, MSO_SHAPE.OVAL, NAVY); lbl(0.205, 0.55, 'q')
-    mk(0.42, 0.24, MSO_SHAPE.OVAL, WHITE, line=INK); lbl(0.455, 0.205, 'd⁺')
-    mk(0.24, 0.36, MSO_SHAPE.DIAMOND, RED); mk(0.40, 0.42, MSO_SHAPE.DIAMOND, RED)
-    mk(0.12, 0.64, MSO_SHAPE.ISOSCELES_TRIANGLE, BLUE); mk(0.19, 0.30, MSO_SHAPE.ISOSCELES_TRIANGLE, BLUE)
-    mk(0.68, 0.72, MSO_SHAPE.RECTANGLE, ORANGE); mk(0.60, 0.88, MSO_SHAPE.RECTANGLE, ORANGE)
-    # 4) 범례(우상단)
-    lx, ly = PX(0.60), PY(0.04); lw, lh = int(0.39 * W), int(0.45 * H)
-    _rect(slide, Emu(lx), Emu(ly), Emu(lw), Emu(lh), WHITE, line=GRAYL, line_w=Pt(1))
-    rows = [(MSO_SHAPE.OVAL, WHITE, INK, 'Positive (d⁺)'),
-            (MSO_SHAPE.ISOSCELES_TRIANGLE, BLUE, None, 'Ambiguous (사용)'),
-            (MSO_SHAPE.DIAMOND, RED, None, 'Too Hard=false neg(제외)'),
-            (MSO_SHAPE.RECTANGLE, ORANGE, None, 'Too Easy (무의미)')]
-    rh = lh // len(rows); mm = int(Inches(0.14))
-    for i, (shp, fl, li, txt) in enumerate(rows):
-        ry = ly + i * rh + rh // 2
-        _rect(slide, Emu(lx + int(Inches(0.12))), Emu(ry - mm // 2), Emu(mm), Emu(mm),
-              fl, line=li, shape=shp, line_w=Pt(1.2))
-        _text(slide, Emu(lx + int(Inches(0.36))), Emu(ry - int(Inches(0.13))),
-              Emu(lw - int(Inches(0.44))), Emu(int(Inches(0.26))),
-              [[(txt, dict(size=9.5, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
+    SOFT = RGBColor(0xE2, 0xE7, 0xEF); GRID = RGBColor(0xEC, 0xF0, 0xF5)
+    GREEN = RGBColor(0x2B, 0xA6, 0x6B); MUTED = RGBColor(0x6F, 0x78, 0x86)
+    ARRC = RGBColor(0x94, 0x9E, 0xAD)
+    M = int(Inches(0.13))
+
+    def rect(fx, fy, fw, fh, fill, line=None, shape=MSO_SHAPE.RECTANGLE, lw=0.8):
+        return _rect(slide, Emu(PX(fx)), Emu(PY(fy)), Emu(int(fw * W)), Emu(int(fh * H)),
+                     fill, line=line, shape=shape, line_w=Pt(lw))
+
+    def txt(fx, fy, fw, fh, text, size=8.5, bold=False, color=INK,
+            align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, name=FONT):
+        _text(slide, Emu(PX(fx)), Emu(PY(fy)), Emu(int(fw * W)), Emu(int(fh * H)),
+              [[(text, dict(size=size, bold=bold, color=color, name=name))]],
+              align=align, anchor=anchor)
+
+    def dashed(sp):
+        ln = sp.line._get_or_add_ln()
+        ln.append(ln.makeelement(qn('a:prstDash'), {'val': 'dash'}))
+
+    def line(fx1, fy1, fx2, fy2, color=ARRC, width=0.9, dash=False):
+        cn = slide.shapes.add_connector(1, Emu(PX(fx1)), Emu(PY(fy1)), Emu(PX(fx2)), Emu(PY(fy2)))
+        cn.line.color.rgb = color
+        cn.line.width = Pt(width)
+        cn.shadow.inherit = False
+        if dash:
+            dashed(cn)
+        return cn
+
+    def mk(fx, fy, shp, fill, line_c=None, size=1.0, lw=1.2):
+        mm = int(M * size)
+        return _rect(slide, Emu(PX(fx) - mm // 2), Emu(PY(fy) - mm // 2), Emu(mm), Emu(mm),
+                     fill, line=line_c, shape=shp, line_w=Pt(lw))
+
+    # Panel and light embedding axes.
+    rect(0.02, 0.02, 0.96, 0.95, RGBColor(0xFA, 0xFB, 0xFD), line=SOFT, lw=0.9)
+    txt(0.055, 0.055, 0.40, 0.06, "embedding space around anchor a", size=8.5,
+        bold=True, color=NAVY, align=PP_ALIGN.LEFT)
+    txt(0.625, 0.055, 0.28, 0.055, "s(a,x)=cos(a,x)", size=7.8, bold=True,
+        color=MUTED, align=PP_ALIGN.RIGHT, name="Consolas")
+
+    # Coordinate frame.
+    line(0.11, 0.69, 0.75, 0.69, color=GRID, width=0.8)
+    line(0.18, 0.18, 0.18, 0.76, color=GRID, width=0.8)
+    txt(0.835, 0.705, 0.08, 0.04, "z₁", size=7.5, color=MUTED)
+    txt(0.125, 0.165, 0.08, 0.04, "z₂", size=7.5, color=MUTED)
+
+    qx, qy = 0.36, 0.50
+    # Rings centered on the anchor. Outer ring = retrieved hard-neighbor candidates, including p+ and false negatives.
+    # Inner ring = positive-neighbor margin where same-pattern false negatives are excluded.
+    inner = slide.shapes.add_shape(MSO_SHAPE.OVAL, Emu(PX(qx - 0.165)), Emu(PY(qy - 0.185)),
+                                   Emu(int(0.33 * W)), Emu(int(0.37 * H)))
+    inner.fill.background(); inner.line.color.rgb = RED; inner.line.width = Pt(1.1)
+    inner.shadow.inherit = False; dashed(inner)
+    outer = slide.shapes.add_shape(MSO_SHAPE.OVAL, Emu(PX(qx - 0.300)), Emu(PY(qy - 0.330)),
+                                   Emu(int(0.60 * W)), Emu(int(0.66 * H)))
+    outer.fill.background(); outer.line.color.rgb = ARRC; outer.line.width = Pt(1.25)
+    outer.shadow.inherit = False; dashed(outer)
+    txt(qx - 0.16, qy - 0.23, 0.30, 0.04, "positive-neighbor margin", size=7.3,
+        bold=True, color=RED, align=PP_ALIGN.LEFT)
+    txt(qx + 0.13, qy + 0.205, 0.34, 0.04, "semi-hard annulus: keep", size=7.3,
+        bold=True, color=BLUE, align=PP_ALIGN.LEFT)
+
+    # Similarity spokes; too-hard points are deliberately near the anchor/p+.
+    for fx, fy, col, dash in [
+        (0.47, 0.37, ARRC, False),   # positive
+        (0.43, 0.42, RED, True),     # too hard
+        (0.51, 0.47, RED, True),     # too hard
+        (0.15, 0.33, BLUE, False),   # ambiguous
+        (0.13, 0.64, BLUE, False),   # ambiguous
+        (0.72, 0.64, ORANGE, False), # easy
+    ]:
+        line(qx, qy, fx, fy, color=col if dash else ARRC, width=0.85, dash=dash)
+
+    mk(qx, qy, MSO_SHAPE.OVAL, NAVY, size=1.25)
+    txt(qx - 0.075, qy + 0.025, 0.06, 0.04, "a", size=11, bold=True, color=NAVY)
+    mk(0.47, 0.37, MSO_SHAPE.OVAL, WHITE, line_c=INK, size=1.15, lw=1.4)
+    txt(0.495, 0.325, 0.08, 0.04, "p⁺", size=11, bold=True, color=NAVY)
+
+    # Too-hard false negatives placed closest to the anchor/positive.
+    mk(0.43, 0.42, MSO_SHAPE.DIAMOND, RED, size=1.05)
+    mk(0.51, 0.47, MSO_SHAPE.DIAMOND, RED, size=1.05)
+    txt(0.535, 0.455, 0.12, 0.035, "false neg", size=7.2, bold=True, color=RED)
+    # Useful hard negatives in the middle band.
+    mk(0.15, 0.33, MSO_SHAPE.ISOSCELES_TRIANGLE, BLUE, size=1.10)
+    mk(0.13, 0.64, MSO_SHAPE.ISOSCELES_TRIANGLE, BLUE, size=1.10)
+    mk(0.61, 0.53, MSO_SHAPE.ISOSCELES_TRIANGLE, BLUE, size=1.10)
+    # Too easy far negatives.
+    mk(0.72, 0.64, MSO_SHAPE.RECTANGLE, ORANGE, size=1.05)
+    mk(0.82, 0.50, MSO_SHAPE.RECTANGLE, ORANGE, size=1.05)
+
+    # Direct legend as compact paper-style labels.
+    legend = [
+        (MSO_SHAPE.OVAL, WHITE, INK, "positive p⁺"),
+        (MSO_SHAPE.DIAMOND, RED, None, "too hard / false neg"),
+        (MSO_SHAPE.ISOSCELES_TRIANGLE, BLUE, None, "semi-hard / keep"),
+        (MSO_SHAPE.RECTANGLE, ORANGE, None, "too easy"),
+    ]
+    lx, ly = 0.70, 0.13
+    for i, (shp, fill, line_c, label) in enumerate(legend):
+        yy = ly + i * 0.075
+        mk(lx, yy, shp, fill, line_c=line_c, size=0.80, lw=1.0)
+        txt(lx + 0.035, yy - 0.020, 0.23, 0.04, label, size=7.5, color=INK,
+            align=PP_ALIGN.LEFT)
+
+    # Loss role strip: what positive/negative samples do mathematically.
+    role_boxes = [
+        (0.065, 0.275, GREEN, "positive p⁺", "numerator term\nattractive pull"),
+        (0.365, 0.275, RED, "negative n", "denominator term\nrepulsive term"),
+        (0.665, 0.280, BLUE, "semi-hard n", "outside margin\nboundary pressure"),
+    ]
+    for x0, w0, col, head, body in role_boxes:
+        rect(x0, 0.790, w0, 0.140, WHITE, line=RGBColor(0xD3, 0xDA, 0xE3), lw=0.9)
+        rect(x0, 0.790, 0.012, 0.140, col)
+        txt(x0 + 0.025, 0.800, w0 - 0.045, 0.030, head, size=6.9, bold=True,
+            color=col, align=PP_ALIGN.LEFT)
+        txt(x0 + 0.025, 0.835, w0 - 0.045, 0.078, body, size=5.8, bold=True,
+            color=INK, align=PP_ALIGN.LEFT)
 
 
 def _draw_numba(slide, X, Y, W, H):
-    """일반 Python(매 pixel interpreter 해석) vs Numba(@njit 컴파일 후 기계어 loop + parallel) 흐름 도식."""
-    GRAY = RGBColor(0xF2, 0xF4, 0xF8); TEAL = RGBColor(0xE6, 0xF7, 0xF6)
-    INK = RGBColor(0x22, 0x26, 0x2E); MUT = RGBColor(0x6B, 0x72, 0x80)
-    BD = RGBColor(0x33, 0x37, 0x40); MONO = "Consolas"
+    """학술 발표용 텍스트 시각화: Numba가 Python loop overhead를 줄이는 원리."""
+    BG = RGBColor(0xF7, 0xF7, 0xF7)
+    CARD = RGBColor(0xFF, 0xFF, 0xFF)
+    BD = RGBColor(0x99, 0x99, 0x99)
+    SOFT = RGBColor(0xD4, 0xD4, 0xD4)
+    PY_BG = RGBColor(0xF1, 0xF1, 0xF1)
+    PY_LINE = RGBColor(0x8A, 0x8A, 0x8A)
+    JIT_BG = RGBColor(0xE9, 0xE9, 0xE9)
+    CORE_BG = RGBColor(0xEF, 0xEF, 0xEF)
+    INK = RGBColor(0x1C, 0x1C, 0x1C)
+    MUTED_INK = RGBColor(0x5F, 0x5F, 0x5F)
+    DARK = RGBColor(0x5A, 0x5A, 0x5A)
+    ARROW = RGBColor(0x9A, 0x9A, 0x9A)
     def PX(f): return int(X + f * W)
     def PY(f): return int(Y + f * H)
-    def _kr(t): return any('가' <= c <= '힣' for c in t)
-    def box(x0, y0, w0, h0, lines, fill, fs=10.0):
-        _rect(slide, Emu(PX(x0)), Emu(PY(y0)), Emu(int(w0 * W)), Emu(int(h0 * H)),
-              fill, line=BD, line_w=Pt(1.2), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-        tl = [[(ln, dict(size=fs, bold=(i == 0), color=(NAVY if i == 0 else INK),
-                         name=(FONT if _kr(ln) else MONO)))] for i, ln in enumerate(lines)]
-        _text(slide, Emu(PX(x0)), Emu(PY(y0)), Emu(int(w0 * W)), Emu(int(h0 * H)),
-              tl, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    def arr(x0, y0, x1, y1):
-        cn = slide.shapes.add_connector(1, Emu(PX(x0)), Emu(PY(y0)), Emu(PX(x1)), Emu(PY(y1)))
-        cn.line.color.rgb = NAVY; cn.line.width = Pt(1.6); cn.shadow.inherit = False
-        le = cn.line._get_or_add_ln()
-        le.append(le.makeelement(qn('a:tailEnd'), {'type': 'triangle', 'w': 'med', 'len': 'med'}))
-    def lab(x0, y0, t, w0=0.5, fs=11, color=NAVY, bold=True):
-        _text(slide, Emu(PX(x0)), Emu(PY(y0)), Emu(int(w0 * W)), Emu(int(0.09 * H)),
-              [[(t, dict(size=fs, bold=bold, color=color))]], anchor=MSO_ANCHOR.MIDDLE)
-    # Lane 1 — 일반 Python: 매 pixel 이 interpreter 를 거침
-    lab(0.0, 0.01, '일반 Python', fs=11.5)
-    box(0.02, 0.11, 0.38, 0.15, ['pixel 1, 2, …, N'], GRAY, fs=11)
-    arr(0.41, 0.185, 0.50, 0.185)
-    box(0.51, 0.07, 0.47, 0.22, ['Python interpreter', '매 pixel 타입확인/객체처리/해석'], GRAY, fs=9.5)
-    lab(0.02, 0.30, '→ 픽셀마다 해석 반복 (느림)', w0=0.6, fs=9.5, color=MUT, bold=False)
-    # Lane 2 — Numba: 한 번 컴파일 후 기계어 loop + parallel
-    lab(0.0, 0.42, 'Numba @njit', fs=11.5)
-    box(0.02, 0.52, 0.40, 0.17, ['첫 호출 → 입력 타입 기준', '기계어(native) 컴파일'], TEAL, fs=9.5)
-    arr(0.43, 0.605, 0.50, 0.605)
-    box(0.51, 0.52, 0.47, 0.17, ['pixel 1..N', '기계어 loop (해석 없음)'], TEAL, fs=9.5)
-    box(0.02, 0.72, 0.96, 0.12, ['parallel=True → 영역을 CPU 코어 여러 개로 분할 후 merge'], GRAY, fs=9.5)
-    lab(0.02, 0.86, '→ 한 번 컴파일 후 직접 실행 + 병렬 (빠름)', w0=0.8, fs=9.5,
-        color=RGBColor(0x12, 0xB5, 0xB0), bold=True)
+
+    def box(cx, cy, cw, ch, fill=CARD, line=SOFT, shape=MSO_SHAPE.ROUNDED_RECTANGLE, lw=0.8):
+        return _rect(slide, Emu(PX(cx)), Emu(PY(cy)), Emu(int(cw * W)), Emu(int(ch * H)),
+                     fill, line=line, shape=shape, line_w=Pt(lw))
+
+    def txt(cx, cy, cw, ch, text, size=9, bold=False, color=INK,
+            align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, name=FONT):
+        _text(slide, Emu(PX(cx)), Emu(PY(cy)), Emu(int(cw * W)), Emu(int(ch * H)),
+              [[(text, dict(size=size, bold=bold, color=color, name=name))]],
+              align=align, anchor=anchor)
+
+    def arrow(cx, cy, cw, ch, color=ARROW):
+        _rect(slide, Emu(PX(cx)), Emu(PY(cy)), Emu(int(cw * W)), Emu(int(ch * H)),
+              color, shape=MSO_SHAPE.RIGHT_ARROW)
+
+    def down_arrow(cx, cy, cw, ch, color=ARROW):
+        _rect(slide, Emu(PX(cx)), Emu(PY(cy)), Emu(int(cw * W)), Emu(int(ch * H)),
+              color, shape=MSO_SHAPE.DOWN_ARROW)
+
+    box(0.02, 0.02, 0.96, 0.95, BG, line=BD, shape=MSO_SHAPE.RECTANGLE, lw=0.9)
+
+    # Before: Python runtime appears inside the per-pixel loop.
+    box(0.055, 0.07, 0.89, 0.34, CARD, line=SOFT)
+    box(0.08, 0.10, 0.16, 0.08, PY_BG, line=PY_LINE)
+    txt(0.08, 0.102, 0.16, 0.076, "BEFORE", size=12.0, bold=True, color=INK)
+    txt(0.27, 0.095, 0.40, 0.08, "Interpreter overhead inside loop", size=12.0, bold=True, color=INK)
+    txt(0.70, 0.10, 0.18, 0.08, "N times", size=15, bold=True, color=PY_LINE)
+
+    nodes = [
+        (0.085, 0.245, 0.085, 0.085, "pixel", CARD, SOFT),
+        (0.205, 0.225, 0.105, 0.125, "PY", PY_BG, PY_LINE),
+        (0.350, 0.245, 0.085, 0.085, "pixel", CARD, SOFT),
+        (0.470, 0.225, 0.105, 0.125, "PY", PY_BG, PY_LINE),
+        (0.615, 0.245, 0.085, 0.085, "...", CARD, SOFT),
+        (0.735, 0.225, 0.105, 0.125, "PY", PY_BG, PY_LINE),
+    ]
+    for nx, ny, nw, nh, label, fill, line in nodes:
+        box(nx, ny, nw, nh, fill, line=line, shape=MSO_SHAPE.RECTANGLE)
+        txt(nx, ny, nw, nh, label, size=12.0, bold=(label == "PY"),
+            color=(PY_LINE if label == "PY" else INK), name="Consolas")
+    for ax in [0.172, 0.312, 0.438, 0.577, 0.703]:
+        arrow(ax, 0.268, 0.030, 0.035, color=ARROW)
+    txt(0.20, 0.352, 0.64, 0.035, "per-pixel interpreter dispatch", size=12.0, bold=True, color=MUTED_INK)
+
+    # After: the first call builds native code, then that code executes the loop.
+    box(0.055, 0.47, 0.89, 0.43, CARD, line=SOFT)
+    box(0.08, 0.50, 0.16, 0.08, JIT_BG, line=BD)
+    txt(0.08, 0.502, 0.16, 0.076, "AFTER", size=12.0, bold=True, color=INK)
+    txt(0.265, 0.495, 0.42, 0.08, "First call JIT-compiles typed loop", size=12.0, bold=True, color=INK)
+
+    box(0.095, 0.590, 0.185, 0.070, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT, shape=MSO_SHAPE.RECTANGLE)
+    txt(0.100, 0.594, 0.175, 0.062, "input dtype", size=12.0, bold=True, color=INK)
+    arrow(0.292, 0.612, 0.040, 0.032)
+    box(0.345, 0.580, 0.175, 0.090, JIT_BG, line=BD, shape=MSO_SHAPE.RECTANGLE)
+    txt(0.350, 0.584, 0.165, 0.080, "JIT\ncompile", size=12.0, bold=True, color=INK)
+    arrow(0.535, 0.612, 0.040, 0.032)
+    box(0.590, 0.590, 0.255, 0.070, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT, shape=MSO_SHAPE.RECTANGLE)
+    txt(0.595, 0.594, 0.245, 0.062, "native loop reused", size=12.0, bold=True, color=INK)
+
+    box(0.075, 0.735, 0.205, 0.075, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT, shape=MSO_SHAPE.RECTANGLE)
+    txt(0.080, 0.739, 0.195, 0.067, "input data", size=12.0, bold=True, color=INK)
+    arrow(0.292, 0.756, 0.035, 0.032)
+    box(0.315, 0.700, 0.430, 0.145, DARK, line=DARK, shape=MSO_SHAPE.RECTANGLE)
+    txt(0.330, 0.715, 0.400, 0.115, "native loop", size=16.0, bold=True, color=WHITE)
+    arrow(0.760, 0.756, 0.040, 0.032)
+    box(0.815, 0.735, 0.100, 0.075, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT, shape=MSO_SHAPE.RECTANGLE)
+    txt(0.815, 0.739, 0.100, 0.067, "result", size=12.0, bold=True, color=INK)
 
 
 def _draw_pyvips(slide, X, Y, W, H):
-    """원본 → row/tile streaming → 출력. 결과는 전체 완성, 중간 메모리만 작게."""
-    GRAY = RGBColor(0xF2, 0xF4, 0xF8); TEAL = RGBColor(0xE6, 0xF7, 0xF6)
-    STRIP = RGBColor(0xDD, 0xE4, 0xEE); MUT = RGBColor(0x6B, 0x72, 0x80); BD = RGBColor(0x33, 0x37, 0x40)
+    """학술 발표용 텍스트 시각화: libvips streaming/lazy evaluation 설명."""
+    BG = RGBColor(0xF7, 0xF7, 0xF7)
+    CARD_BG = RGBColor(0xFF, 0xFF, 0xFF)
+    LINE_C = RGBColor(0x99, 0x99, 0x99)
+    SOFT_LINE = RGBColor(0xD4, 0xD4, 0xD4)
+    HOT = RGBColor(0xF1, 0xF1, 0xF1)
+    HOT_LINE = RGBColor(0x8A, 0x8A, 0x8A)
+    COOL = RGBColor(0xE9, 0xE9, 0xE9)
+    COOL_LINE = RGBColor(0xA8, 0xA8, 0xA8)
+    STRIPE = RGBColor(0x6A, 0x6A, 0x6A)
+    INK = RGBColor(0x1C, 0x1C, 0x1C)
+    MUTED_INK = RGBColor(0x5F, 0x5F, 0x5F)
+    ARROW = RGBColor(0x9A, 0x9A, 0x9A)
     def PX(f): return int(X + f * W)
     def PY(f): return int(Y + f * H)
-    def lab(x0, y0, t, w0=0.5, fs=10, color=NAVY, bold=True, align=PP_ALIGN.LEFT):
-        _text(slide, Emu(PX(x0)), Emu(PY(y0)), Emu(int(w0 * W)), Emu(int(0.09 * H)),
-              [[(t, dict(size=fs, bold=bold, color=color))]], align=align, anchor=MSO_ANCHOR.MIDDLE)
-    def arr(x0, y0, x1, y1):
-        cn = slide.shapes.add_connector(1, Emu(PX(x0)), Emu(PY(y0)), Emu(PX(x1)), Emu(PY(y1)))
-        cn.line.color.rgb = NAVY; cn.line.width = Pt(1.6); cn.shadow.inherit = False
-        le = cn.line._get_or_add_ln()
-        le.append(le.makeelement(qn('a:tailEnd'), {'type': 'triangle', 'w': 'med', 'len': 'med'}))
-    # 원본 박스 + 지금 읽는 구간(상단 strip)
-    ox, oy, ow, oh = 0.04, 0.18, 0.38, 0.50
-    lab(ox, oy - 0.11, '원본 (수천×수천 px)', w0=0.42, fs=10)
-    _rect(slide, Emu(PX(ox)), Emu(PY(oy)), Emu(int(ow * W)), Emu(int(oh * H)), WHITE, line=BD, line_w=Pt(1.3))
-    _rect(slide, Emu(PX(ox)), Emu(PY(oy)), Emu(int(ow * W)), Emu(int(0.09 * H)), STRIP)
-    lab(ox + 0.01, oy + 0.005, '지금 읽는 구간', w0=0.36, fs=8.5, bold=False)
-    # 화살표
-    arr(0.44, 0.40, 0.55, 0.40)
-    lab(0.43, 0.30, 'row/tile 1 계산', w0=0.16, fs=8.5, color=MUT, bold=False)
-    # 출력 박스 + 완성된 row(상단 strip)
-    tx, ty, tw, th = 0.57, 0.18, 0.30, 0.50
-    lab(tx, ty - 0.11, '출력 (thumbnail)', w0=0.34, fs=10)
-    _rect(slide, Emu(PX(tx)), Emu(PY(ty)), Emu(int(tw * W)), Emu(int(th * H)), WHITE, line=BD, line_w=Pt(1.3))
-    _rect(slide, Emu(PX(tx)), Emu(PY(ty)), Emu(int(tw * W)), Emu(int(0.07 * H)), TEAL)
-    lab(tx + 0.01, ty + 0.002, 'row 1 완성', w0=0.28, fs=8.5, bold=False)
-    lab(0.89, 0.37, 'row 2,3', w0=0.11, fs=8.5, color=MUT, bold=False)
-    lab(0.89, 0.44, '… 반복', w0=0.11, fs=8.5, color=MUT, bold=False)
-    # 하단 핵심 note
-    _rect(slide, Emu(PX(0.04)), Emu(PY(0.80)), Emu(int(0.92 * W)), Emu(int(0.15 * H)),
-          GRAY, line=BD, line_w=Pt(1), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-    _text(slide, Emu(PX(0.06)), Emu(PY(0.80)), Emu(int(0.88 * W)), Emu(int(0.15 * H)),
-          [[('원본 전체를 메모리에 펼치지 않음 → 결과는 전체 완성, 중간 메모리만 작게',
-             dict(size=9.5, bold=True, color=NAVY))]],
-          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+
+    def box(cx, cy, cw, ch, fill=CARD_BG, line=SOFT_LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE, lw=0.8):
+        return _rect(slide, Emu(PX(cx)), Emu(PY(cy)), Emu(int(cw * W)), Emu(int(ch * H)),
+                     fill, line=line, shape=shape, line_w=Pt(lw))
+
+    def txt(cx, cy, cw, ch, text, size=9, bold=False, color=INK,
+            align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, name=FONT):
+        _text(slide, Emu(PX(cx)), Emu(PY(cy)), Emu(int(cw * W)), Emu(int(ch * H)),
+              [[(text, dict(size=size, bold=bold, color=color, name=name))]],
+              align=align, anchor=anchor)
+
+    def arrow(cx, cy, cw, ch, color=ARROW):
+        _rect(slide, Emu(PX(cx)), Emu(PY(cy)), Emu(int(cw * W)), Emu(int(ch * H)),
+              color, shape=MSO_SHAPE.RIGHT_ARROW)
+
+    def down_arrow(cx, cy, cw, ch, color=ARROW):
+        _rect(slide, Emu(PX(cx)), Emu(PY(cy)), Emu(int(cw * W)), Emu(int(ch * H)),
+              color, shape=MSO_SHAPE.DOWN_ARROW)
+
+    box(0.02, 0.02, 0.96, 0.95, BG, line=LINE_C, shape=MSO_SHAPE.RECTANGLE, lw=0.9)
+
+    # Full-buffer path: one wide row avoids cramped nested boxes.
+    box(0.055, 0.085, 0.89, 0.285, CARD_BG, line=SOFT_LINE)
+    box(0.080, 0.115, 0.145, 0.075, HOT, line=HOT_LINE)
+    txt(0.080, 0.118, 0.145, 0.068, "PILLOW", size=12.0, bold=True, color=INK)
+    txt(0.255, 0.120, 0.225, 0.060, "full-frame buffer", size=12.0, bold=True, color=MUTED_INK)
+
+    box(0.095, 0.222, 0.090, 0.072, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT_LINE, shape=MSO_SHAPE.RECTANGLE)
+    for i in range(3):
+        y = 0.236 + i * 0.014
+        _rect(slide, Emu(PX(0.108)), Emu(PY(y)), Emu(int(0.064 * W)), Emu(int(0.006 * H)),
+              RGBColor(0xB8, 0xB8, 0xB8), shape=MSO_SHAPE.RECTANGLE)
+    txt(0.075, 0.298, 0.130, 0.040, "FILE", size=12.0, bold=True, color=INK)
+    arrow(0.205, 0.258, 0.035, 0.032)
+    box(0.260, 0.210, 0.145, 0.100, HOT, line=HOT_LINE, shape=MSO_SHAPE.RECTANGLE)
+    for i in range(5):
+        y = 0.225 + i * 0.014
+        _rect(slide, Emu(PX(0.275)), Emu(PY(y)), Emu(int(0.115 * W)), Emu(int(0.007 * H)),
+              STRIPE, shape=MSO_SHAPE.RECTANGLE)
+    txt(0.230, 0.314, 0.205, 0.035, "full RGB frame", size=10.2, bold=True, color=INK)
+    arrow(0.425, 0.258, 0.035, 0.032)
+    box(0.485, 0.207, 0.210, 0.128, HOT, line=HOT_LINE, shape=MSO_SHAPE.RECTANGLE)
+    txt(0.490, 0.214, 0.200, 0.034, "full-image", size=12.0, bold=True, color=INK)
+    txt(0.500, 0.258, 0.180, 0.066, "decode\nencode", size=12.0, bold=True, color=MUTED_INK)
+    arrow(0.710, 0.258, 0.035, 0.032)
+    box(0.790, 0.222, 0.090, 0.072, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT_LINE, shape=MSO_SHAPE.RECTANGLE)
+    for i in range(4):
+        y = 0.235 + i * 0.012
+        _rect(slide, Emu(PX(0.803)), Emu(PY(y)), Emu(int(0.064 * W)), Emu(int(0.006 * H)),
+              STRIPE, shape=MSO_SHAPE.RECTANGLE)
+    txt(0.765, 0.298, 0.140, 0.040, "output", size=12.0, bold=True, color=INK)
+
+    # libvips path: one wide row with a single C pipeline block.
+    box(0.055, 0.455, 0.89, 0.315, CARD_BG, line=SOFT_LINE)
+    box(0.080, 0.485, 0.160, 0.075, COOL, line=COOL_LINE)
+    txt(0.080, 0.488, 0.160, 0.068, "LIBVIPS", size=12.0, bold=True, color=INK)
+    txt(0.255, 0.490, 0.225, 0.060, "active-stripe buffer", size=12.0, bold=True, color=MUTED_INK)
+
+    box(0.095, 0.606, 0.090, 0.072, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT_LINE, shape=MSO_SHAPE.RECTANGLE)
+    for i in range(3):
+        y = 0.620 + i * 0.014
+        _rect(slide, Emu(PX(0.108)), Emu(PY(y)), Emu(int(0.064 * W)), Emu(int(0.006 * H)),
+              RGBColor(0xB8, 0xB8, 0xB8), shape=MSO_SHAPE.RECTANGLE)
+    txt(0.075, 0.690, 0.130, 0.040, "FILE", size=12.0, bold=True, color=INK)
+    arrow(0.205, 0.642, 0.035, 0.035)
+    box(0.260, 0.592, 0.145, 0.100, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT_LINE, shape=MSO_SHAPE.RECTANGLE)
+    for i in range(5):
+        y = 0.607 + i * 0.014
+        fill = STRIPE if i == 2 else RGBColor(0xD8, 0xD8, 0xD8)
+        _rect(slide, Emu(PX(0.275)), Emu(PY(y)), Emu(int(0.115 * W)), Emu(int(0.007 * H)),
+              fill, shape=MSO_SHAPE.RECTANGLE)
+    txt(0.245, 0.696, 0.175, 0.035, "RGB stripe", size=10.8, bold=True, color=INK)
+    arrow(0.425, 0.642, 0.035, 0.035)
+    box(0.485, 0.585, 0.210, 0.150, COOL, line=COOL_LINE, shape=MSO_SHAPE.RECTANGLE)
+    txt(0.490, 0.588, 0.200, 0.060, "streaming\nC pipeline", size=9.4, bold=True, color=INK)
+    txt(0.500, 0.655, 0.180, 0.050, "decode\nencode", size=10.4, bold=True, color=MUTED_INK)
+    arrow(0.710, 0.642, 0.035, 0.035)
+    box(0.790, 0.606, 0.090, 0.072, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT_LINE, shape=MSO_SHAPE.RECTANGLE)
+    for i in range(4):
+        y = 0.619 + i * 0.012
+        _rect(slide, Emu(PX(0.803)), Emu(PY(y)), Emu(int(0.064 * W)), Emu(int(0.006 * H)),
+              STRIPE, shape=MSO_SHAPE.RECTANGLE)
+    txt(0.765, 0.690, 0.140, 0.040, "output", size=12.0, bold=True, color=INK)
+
+    box(0.145, 0.840, 0.710, 0.070, RGBColor(0xEA, 0xEA, 0xEA), line=SOFT_LINE, shape=MSO_SHAPE.RECTANGLE)
+    txt(0.145, 0.846, 0.710, 0.058, "same output with bounded active rows", size=12.0, bold=True, color=INK)
 
 
 def s_papertext(slide, d, idx):
@@ -2227,8 +2546,9 @@ def s_papertext(slide, d, idx):
     top = int(Inches(2.0))
     if d.get("bullets"):
         bh = int(Inches(d.get("body_h", 0.7)))
+        marker_color = RGBColor(0x6A, 0x6A, 0x6A) if d.get("grayscale") else ACCENT
         _bullets_tf(slide, Inches(0.7), Emu(top), Inches(12.0), Emu(bh),
-                    d["bullets"], size=d.get("bullet_size", 14), gap=5)
+                    d["bullets"], size=d.get("bullet_size", 14), gap=5, marker=marker_color)
         top = top + bh + int(Inches(0.14))
     figs = d["figs"]
     n = len(figs)
@@ -2236,7 +2556,7 @@ def s_papertext(slide, d, idx):
     rows = (n + cols - 1) // cols
     bottom = int(Inches(6.95))
     area_h = bottom - top
-    cap_h = int(Inches(0.36))
+    cap_h = 0 if d.get("hide_fig_captions") else int(Inches(0.36))
     gx = int(Inches(0.4)); gy = int(Inches(0.28))
     x0 = int(Inches(0.7)); total_w = int(Inches(12.0))
     cw = (total_w - gx * (cols - 1)) // cols
@@ -2249,8 +2569,12 @@ def s_papertext(slide, d, idx):
         fx = x0 + c * (cw + gx)
         fy = top + r * (chh + gy)
         if fg.get("diagram") == "hardneg":
-            # 네이티브 도형으로 그린 hard-negative 개념도(이미지 X → PowerPoint 직접 편집 가능)
-            _draw_hardneg(slide, fx, fy, cw, box_h)
+            # 반장 레이아웃: wafer 후보, loss 포함/제외, embedding 결과를 한 셀 안에 요약
+            _draw_hardneg_half(slide, Emu(fx), Emu(fy), Emu(cw), Emu(box_h))
+        elif fg.get("diagram") == "simclr_big":
+            _draw_simclr_big(slide, Emu(fx), Emu(fy), Emu(cw), Emu(box_h))
+        elif fg.get("diagram") == "pos_neg_hard":
+            _draw_pos_neg_hard(slide, Emu(fx), Emu(fy), Emu(cw), Emu(box_h))
         elif fg.get("diagram") == "numba":
             _draw_numba(slide, fx, fy, cw, box_h)
         elif fg.get("diagram") == "pyvips":
@@ -2277,10 +2601,12 @@ def s_papertext(slide, d, idx):
             _text(slide, Emu(fx + int(Inches(0.30))), Emu(fy + int(Inches(0.14))),
                   Emu(cw - int(Inches(0.54))), Emu(box_h - int(Inches(0.28))),
                   lines, anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, Emu(fx), Emu(fy + box_h + int(Inches(0.03))), Emu(cw), Emu(cap_h),
-              [[(fg["caption"], dict(size=12.5, bold=True, color=NAVY))]],
-              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    _footer(slide, idx)
+        if cap_h:
+            caption_color = RGBColor(0x1C, 0x1C, 0x1C) if d.get("grayscale") else NAVY
+            _text(slide, Emu(fx), Emu(fy + box_h + int(Inches(0.03))), Emu(cw), Emu(cap_h),
+                  [[(fg["caption"], dict(size=12.5, bold=True, color=caption_color))]],
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _footer(slide, idx, size=d.get("footer_size", 9))
 
 
 def s_archflow(slide, d, idx):
@@ -2391,65 +2717,91 @@ def _image_pair(slide, x, y, w, h, img1, img2, lab1, lab2):
 
 def s_p2_intro(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P2 | Chip multi-label", "single-defect 원천으로 2-combo 학습 신호를 만든 구조")
+    _title_block_compact(slide, "P2 | Chip multi-label", "Single-defect source to 2-combo evaluation setting")
 
-    # Left narrative
-    x = Inches(0.75); y = Inches(1.92); w = Inches(4.35); h = Inches(4.15)
+    # Problem definition only: source와 eval을 분리해서 보여준다.
+    x = Inches(0.75); y = Inches(1.82); w = Inches(3.75); h = Inches(4.88)
     _rect(slide, x, y, w, h, PANEL, line=LINE)
     _rect(slide, x, y, Inches(0.10), h, COVER_BAR)
     lines = [
         [("Problem", dict(size=15, bold=True, color=NAVY))],
-        [("real 2-combo ground truth가 부족해 multi-label 학습과 검증이 막힘", dict(size=15, bold=True, color=NAVY))],
+        [("real 2-combo ground truth가 부족해 multi-label 학습과 검증이 막힘", dict(size=14.6, bold=True, color=NAVY))],
         [(" ", dict(size=4, color=WHITE))],
         [("Source", dict(size=15, bold=True, color=NAVY))],
-        [("현업 single-defect chip 원천을 먼저 split하고, train 원천에서만 조합 생성", dict(size=14.3, color=INK))],
+        [("single-defect chip 이미지는 확보되어 있지만, 그대로는 2-combo label을 학습하기 어렵습니다.", dict(size=13.2, color=INK))],
         [(" ", dict(size=4, color=WHITE))],
-        [("Method", dict(size=15, bold=True, color=NAVY))],
-        [("FCM은 weak combo의 pos prob를 올리고, Pair Mask는 Normal/OOD FAR tail을 누름", dict(size=14.3, color=INK))],
+        [("Eval", dict(size=15, bold=True, color=NAVY))],
+        [("평가는 2-combo와 Normal/Invalid/OOD까지 포함합니다. 결국 source와 eval의 분포가 다릅니다.", dict(size=13.2, color=INK))],
     ]
     _text(slide, x+Inches(0.28), y+Inches(0.28), w-Inches(0.55), h-Inches(0.45), lines)
 
-    # Right visual process
-    rx = Inches(5.45); ry = Inches(2.0); rw = Inches(7.10); rh = Inches(3.28)
-    _mini_title(slide, rx, ry-Inches(0.48), rw, "single-defect source chips  →  full-cover 2-combo training sample")
-    card_w = Inches(2.05); gap = Inches(0.28)
-    _rect(slide, rx, ry, card_w, rh, WHITE, line=LINE)
-    _image_pair(slide, rx+Inches(0.12), ry+Inches(0.25), card_w-Inches(0.24), rh-Inches(0.55),
-                "fcm_pm_step_a.png", "fcm_pm_step_b.png", "A", "B")
-    _text(slide, rx, ry+Inches(0.05), card_w, Inches(0.24),
-          [[("source", dict(size=11, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
-    arrx = Emu(int(rx)+int(card_w)+int(Inches(0.05)))
-    _rect(slide, arrx, ry+Inches(1.38), Inches(0.28), Inches(0.24), COVER_BAR, shape=MSO_SHAPE.RIGHT_ARROW)
+    def chip_tile(img, label, tx, ty, tw, th):
+        _rect(slide, tx, ty, tw, th, WHITE, line=RGBColor(0xD6,0xDE,0xEA))
+        _img_fit(slide, img, tx+Inches(0.06), ty+Inches(0.06), tw-Inches(0.12), th-Inches(0.34), frame=False)
+        _text(slide, tx+Inches(0.04), ty+th-Inches(0.25), tw-Inches(0.08), Inches(0.18),
+              [[(label, dict(size=8.1, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
-    mx = Emu(int(rx)+int(card_w)+int(gap))
-    _rect(slide, mx, ry, card_w, rh, WHITE, line=LINE)
-    _image_pair(slide, mx+Inches(0.12), ry+Inches(0.25), card_w-Inches(0.24), rh-Inches(0.55),
-                "fcm_pm_step_mixed_a.png", "fcm_pm_step_mixed_b.png", "A label", "B label")
-    _text(slide, mx, ry+Inches(0.05), card_w, Inches(0.24),
-          [[("full-cover mix", dict(size=11, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
-    arrx2 = Emu(int(mx)+int(card_w)+int(Inches(0.05)))
-    _rect(slide, arrx2, ry+Inches(1.38), Inches(0.28), Inches(0.24), COVER_BAR, shape=MSO_SHAPE.RIGHT_ARROW)
+    rx = Inches(4.85); rw = Inches(7.70)
+    src_y = Inches(1.82); src_h = Inches(2.08)
+    eval_y = Inches(4.34); eval_h = Inches(2.36)
 
-    px = Emu(int(mx)+int(card_w)+int(gap))
-    _rect(slide, px, ry, card_w, rh, WHITE, line=LINE)
-    _image_pair(slide, px+Inches(0.12), ry+Inches(0.25), card_w-Inches(0.24), rh-Inches(0.55),
-                "fcm_pm_step_masked_a.png", "fcm_pm_step_masked_b.png", "A-only", "B-only")
-    _text(slide, px, ry+Inches(0.05), card_w, Inches(0.24),
-          [[("pair mask", dict(size=11, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
+    _rect(slide, rx, src_y, rw, src_h, WHITE, line=LINE)
+    _rect(slide, rx, src_y, Inches(0.10), src_h, COVER_BAR)
+    _text(slide, rx+Inches(0.24), src_y+Inches(0.16), rw-Inches(0.48), Inches(0.28),
+          [[("Source bank: single-defect 원천", dict(size=13.8, bold=True, color=NAVY))]])
+    _text(slide, rx+Inches(0.24), src_y+Inches(0.48), rw-Inches(0.48), Inches(0.20),
+          [[("train 원천을 먼저 split한 뒤, train source 안에서만 synthetic 조합을 만듭니다.",
+             dict(size=9.8, color=MUTED))]])
+    source_imgs = [
+        ("chip_eval_bank_boundary_selected.png", "bb"),
+        ("chip_eval_fork_selected.png", "fk"),
+        ("chip_eval_scratch_selected.png", "sc"),
+        ("chip_eval_scratch_rot_selected.png", "sr"),
+    ]
+    tile_w = Inches(1.24); tile_h = Inches(1.12); gap = Inches(0.30)
+    tx0 = int(rx) + int(Inches(0.42)); ty = src_y + Inches(0.78)
+    for i, (img, lab) in enumerate(source_imgs):
+        chip_tile(img, lab, Emu(tx0 + i*(int(tile_w)+int(gap))), ty, tile_w, tile_h)
 
-    # Metrics
-    my = Inches(5.72); mw = Inches(2.25); mh = Inches(0.95)
-    _metric_card_compact(slide, Inches(5.45), my, mw, mh, "0.9927", "bit-F1", "single model")
-    _metric_card_compact(slide, Inches(7.90), my, mw, mh, "0.00%", "Total FAR", "Normal/Invalid/OOD")
-    _metric_card_compact(slide, Inches(10.35), my, mw, mh, "controlled", "validation", "synthetic benchmark")
-    _footer(slide, idx)
+    _rect(slide, rx+Inches(2.95), Inches(3.96), Inches(1.60), Inches(0.28),
+          COVER_BAR, shape=MSO_SHAPE.DOWN_ARROW)
+    _text(slide, rx+Inches(4.72), Inches(3.95), Inches(2.7), Inches(0.28),
+          [[("eval에서 요구되는 조합/negative는 더 복잡함", dict(size=9.3, bold=True, color=MUTED))]],
+          align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+
+    _rect(slide, rx, eval_y, rw, eval_h, WHITE, line=LINE)
+    _rect(slide, rx, eval_y, Inches(0.10), eval_h, RGBColor(0x2B,0xA6,0x6B))
+    _text(slide, rx+Inches(0.24), eval_y+Inches(0.16), rw-Inches(0.48), Inches(0.28),
+          [[("Eval target: 2-combo + negative tail", dict(size=13.8, bold=True, color=NAVY))]])
+    _text(slide, rx+Inches(0.24), eval_y+Inches(0.48), rw-Inches(0.48), Inches(0.20),
+          [[("맞혀야 하는 이미지는 2-combo 6종뿐 아니라 Normal, Invalid, OOD까지 포함합니다.",
+             dict(size=9.8, color=MUTED))]])
+    eval_imgs = [
+        ("chip_combo_bb_fork_selected.png", "bb+fk"),
+        ("chip_combo_bb_scratch_selected.png", "bb+sc"),
+        ("chip_combo_fork_scratch_rot_selected.png", "fk+sr"),
+        ("chip_eval_normal_selected.png", "normal"),
+        ("chip_eval_invalid_selected.png", "invalid"),
+    ]
+    tile_w2 = Inches(1.12); tile_h2 = Inches(1.20); gap2 = Inches(0.17)
+    tx0 = int(rx) + int(Inches(0.34)); ty = eval_y + Inches(0.86)
+    for i, (img, lab) in enumerate(eval_imgs):
+        chip_tile(img, lab, Emu(tx0 + i*(int(tile_w2)+int(gap2))), ty, tile_w2, tile_h2)
+
+    _rect(slide, x+Inches(0.28), y+h-Inches(0.88), w-Inches(0.56), Inches(0.58),
+          WHITE, line=RGBColor(0xD6,0xDE,0xEA))
+    _text(slide, x+Inches(0.45), y+h-Inches(0.82), w-Inches(0.90), Inches(0.46),
+          [[("핵심: source와 eval 분포가 달라 probability structure와 reject 설계가 필요합니다.",
+             dict(size=9.7, bold=True, color=NAVY))]],
+          anchor=MSO_ANCHOR.MIDDLE)
+    _footer(slide, idx, size=d.get("footer_size", 9))
 
 
 def s_p2_fcmpm(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P2 | FCM-PM 원리", "FCM은 pos prob를 올리고, Pair Mask는 FAR tail을 낮춘다")
+    _title_block_compact(slide, "P2 | FCM-PM 원리", "FCM-PM: positive-probability gain with FAR-tail control")
     _text(slide, Inches(0.85), Inches(1.52), Inches(11.75), Inches(0.34),
-          [[("FCM은 full-cover 합성으로 weak 2-combo의 positive probability를 올립니다. 대신 합성 배경까지 positive support가 넓어질 수 있어, Pair Mask로 background loss를 분리합니다.",
+          [[("FCM은 full-cover 합성으로 weak 2-combo pos prob를 올립니다. Pair Mask는 합성 배경 loss를 분리해 Normal/OOD FAR tail을 낮춥니다.",
              dict(size=13.4, color=INK))]])
 
     fig_x, fig_y, fig_w, fig_h = Inches(0.78), Inches(1.98), Inches(11.78), Inches(2.30)
@@ -2459,34 +2811,40 @@ def s_p2_fcmpm(slide, d, idx):
 
     card_y = Inches(4.52); card_h = Inches(1.05); card_w = Inches(3.70); gap = Inches(0.22); x0 = Inches(0.78)
     cards = [
-        ("Full-Cover Mixup", "weak combo min_pos 상승\npos prob 확보, tail risk 동반"),
-        ("Pair Mask", "complement pixel loss 분리\nNormal/OOD FAR tail 억제"),
-        ("Ablation evidence", "isolated pair-off: FAR 0.00% -> 11.81%\nbit-F1 변화보다 FAR 방어가 핵심"),
+        ("Normal baseline", "pos prob: weak combo 낮음\nFAR tail: 낮지만 recall 부족"),
+        ("FCM", "pos prob: 상승\nFAR tail: 같이 상승할 risk"),
+        ("FCM-PM", "pos prob: 유지\nFAR tail: 0.00%까지 억제"),
     ]
     for i, (head, body) in enumerate(cards):
         x = Emu(int(x0) + i*(int(card_w)+int(gap)))
-        _rect(slide, x, card_y, card_w, card_h, PANEL if i < 2 else RGBColor(0xFF,0xF7,0xE8),
-              line=LINE if i < 2 else RGBColor(0xF2,0xC4,0x6D))
-        _rect(slide, x, card_y, Inches(0.09), card_h, COVER_BAR if i < 2 else RGBColor(0xF2,0xC4,0x6D))
+        fill = PANEL if i != 2 else RGBColor(0xED,0xF7,0xF2)
+        line = LINE if i != 2 else RGBColor(0x8D,0xC8,0xA5)
+        bar = COVER_BAR if i != 2 else RGBColor(0x2B,0xA6,0x6B)
+        _rect(slide, x, card_y, card_w, card_h, fill, line=line)
+        _rect(slide, x, card_y, Inches(0.09), card_h, bar)
         _text(slide, x+Inches(0.22), card_y+Inches(0.12), card_w-Inches(0.40), Inches(0.24),
               [[(head, dict(size=12.2, bold=True, color=NAVY))]])
         _text(slide, x+Inches(0.22), card_y+Inches(0.43), card_w-Inches(0.40), Inches(0.48),
               [[(body, dict(size=10.4, bold=(i==2), color=NAVY if i==2 else INK,
                             name=FONT))]],
               anchor=MSO_ANCHOR.MIDDLE)
+        if i < 2:
+            ax = Emu(int(x) + int(card_w) + int(gap)//2 - int(Inches(0.10)))
+            _rect(slide, ax, card_y+Inches(0.42), Inches(0.20), Inches(0.20),
+                  RGBColor(0xC7,0xCF,0xDA), shape=MSO_SHAPE.RIGHT_ARROW)
 
     _rect(slide, Inches(1.02), Inches(5.92), Inches(11.22), Inches(0.42), WHITE, line=LINE)
     _rect(slide, Inches(1.02), Inches(5.92), Inches(0.10), Inches(0.42), COVER_BAR)
     _text(slide, Inches(1.20), Inches(5.92), Inches(10.88), Inches(0.42),
-          [[("핵심 메시지: FCM은 rare 2-combo를 배우게 만드는 장치이고, Pair Mask는 그 과정에서 같이 커지는 false alarm tail을 loss 단계에서 누르는 장치입니다.",
-             dict(size=11.4, bold=True, color=NAVY))]],
+          [[("Interpretation: FCM raises weak 2-combo positive probability; FCM-PM preserves the gain while suppressing FAR tail.",
+             dict(size=11.2, bold=True, color=NAVY))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
 
 def s_p2_validation(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P2 | 검증 결과", "데이터 구성과 val-margin이 FAR collapse를 막았다")
+    _title_block_compact(slide, "P2 | 검증 결과", "val-margin 선택 이후 recipe ladder 성능")
 
     # ladder table
     x = Inches(0.75); y = Inches(1.85); w = Inches(7.35); h = Inches(4.95)
@@ -2495,6 +2853,7 @@ def s_p2_validation(slide, d, idx):
     _text(slide, x+Inches(0.18), y, w-Inches(0.36), Inches(0.45),
           [[("Recipe ladder (single model 기준)", dict(size=13.2, bold=True, color=WHITE))]], anchor=MSO_ANCHOR.MIDDLE)
     rows = [
+        ("CE + LS 0.10 (early)", "0.8634*", "-"),
         ("BCE + Label Smoothing", "0.1093", "99.47%"),
         ("Focal / ASL", "0.7980 / 0.6435", "45.72% / 100%"),
         ("Random CutMix", "0.9359", "42.05%"),
@@ -2502,69 +2861,176 @@ def s_p2_validation(slide, d, idx):
         ("FCM-PM + val-F1", "0.9652", "0.15%"),
         ("FCM-PM + val-margin", "0.9927", "0.00%"),
     ]
-    yy = int(y) + int(Inches(0.62)); row_h = int(Inches(0.62))
+    yy = int(y) + int(Inches(0.60)); row_h = int(Inches(0.52))
     for i, (name, f1, far) in enumerate(rows):
         fill = RGBColor(0xE8,0xEC,0xF2) if i == len(rows)-1 else (PANEL if i % 2 == 0 else WHITE)
         _rect(slide, x+Inches(0.14), Emu(yy+i*row_h), w-Inches(0.28), Emu(row_h-int(Pt(1))), fill, line=RGBColor(0xE0,0xE6,0xEF))
         _text(slide, x+Inches(0.32), Emu(yy+i*row_h), Inches(3.25), Emu(row_h),
-              [[(name, dict(size=11.3, bold=(i==len(rows)-1), color=NAVY if i==len(rows)-1 else INK))]], anchor=MSO_ANCHOR.MIDDLE)
+              [[(name, dict(size=10.6, bold=(i==len(rows)-1), color=NAVY if i==len(rows)-1 else INK))]], anchor=MSO_ANCHOR.MIDDLE)
         _text(slide, x+Inches(3.85), Emu(yy+i*row_h), Inches(1.35), Emu(row_h),
-              [[(f1, dict(size=11.3, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+              [[(f1, dict(size=10.6, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
         _text(slide, x+Inches(5.55), Emu(yy+i*row_h), Inches(1.25), Emu(row_h),
-              [[(far, dict(size=11.3, bold=True, color=RGBColor(0xCC,0x33,0x28) if far!="0.00%" else RGBColor(0x2B,0xA6,0x6B))) ]],
+              [[(far, dict(size=10.6, bold=True, color=RGBColor(0xCC,0x33,0x28) if far not in ["0.00%", "-"] else (RGBColor(0x2B,0xA6,0x6B) if far == "0.00%" else MUTED))) ]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _text(slide, x+Inches(3.80), y+Inches(0.47), Inches(1.45), Inches(0.20),
           [[("bit-F1", dict(size=9.5, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
     _text(slide, x+Inches(5.55), y+Inches(0.47), Inches(1.25), Inches(0.20),
           [[("Total FAR", dict(size=9.5, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
+    _text(slide, x+Inches(0.32), y+Inches(4.66), w-Inches(0.64), Inches(0.18),
+          [[("*CE row는 early macro-F1, 이후 rows는 bit-F1 / Total FAR 기준", dict(size=7.6, color=MUTED))]])
 
-    # val-margin selection diagram
-    rx = Inches(8.00); rw = Inches(4.55)
-    _rect(slide, rx, Inches(1.85), rw, Inches(2.05), WHITE, line=LINE)
-    _rect(slide, rx, Inches(1.85), Inches(0.09), Inches(2.05), COVER_BAR)
-    _text(slide, rx+Inches(0.24), Inches(2.02), rw-Inches(0.45), Inches(0.25),
-          [[("val-margin best model select", dict(size=13.6, bold=True, color=NAVY))]])
-    _text(slide, rx+Inches(0.24), Inches(2.34), rw-Inches(0.45), Inches(0.22),
-          [[("margin = mean(p_pos) - mean(p_neg)", dict(size=10.8, bold=True, color=INK, name="Consolas"))]])
+    rx = Inches(8.35); ry = Inches(1.85); rw = Inches(4.20); rh = Inches(4.95)
+    _rect(slide, rx, ry, rw, rh, PANEL, line=LINE)
+    _rect(slide, rx, ry, Inches(0.10), rh, COVER_BAR)
+    _text(slide, rx+Inches(0.28), ry+Inches(0.28), rw-Inches(0.56), Inches(0.36),
+          [[("Final recipe", dict(size=15, bold=True, color=NAVY))]])
+    _metric_card_compact(slide, rx+Inches(0.35), ry+Inches(0.90), Inches(3.45), Inches(0.95),
+                         "0.9927", "bit-F1", "single model")
+    _metric_card_compact(slide, rx+Inches(0.35), ry+Inches(2.05), Inches(3.45), Inches(0.95),
+                         "0.00%", "Total FAR", "Normal / Invalid / OOD")
+    _metric_card_compact(slide, rx+Inches(0.35), ry+Inches(3.20), Inches(3.45), Inches(0.95),
+                         "FCM-PM", "best recipe", "val-margin selected")
+    _text(slide, rx+Inches(0.28), ry+Inches(4.38), rw-Inches(0.56), Inches(0.32),
+          [[("앞 장의 val-margin / NB reject 설계가 FAR tail을 줄이는 근거입니다.",
+             dict(size=10.0, bold=True, color=NAVY))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
-    chart_x = int(rx) + int(Inches(0.38)); chart_y = int(Inches(2.82))
-    base_y = chart_y + int(Inches(0.58)); bar_w = int(Inches(0.16)); step = int(Inches(0.52))
-    vals_f1 = [0.42, 0.52, 0.62, 0.86, 0.74]
-    vals_margin = [0.18, 0.25, 0.36, 0.50, 0.82]
+    _footer(slide, idx, size=d.get("footer_size", 9))
+
+
+def s_p2_selection(slide, d, idx):
+    _bg(slide, WHITE)
+    _title_block_compact(slide, "P2 | selection & reject", "val-margin selection and GaussianNB rejection protocol")
+
+    # Left: val-margin selection
+    lx = Inches(0.75); ly = Inches(1.78); lw = Inches(5.70); lh = Inches(4.95)
+    _rect(slide, lx, ly, lw, lh, WHITE, line=LINE)
+    _rect(slide, lx, ly, Inches(0.10), lh, COVER_BAR)
+    _text(slide, lx+Inches(0.28), ly+Inches(0.22), lw-Inches(0.56), Inches(0.32),
+          [[("val-margin best model select", dict(size=15.0, bold=True, color=NAVY))]])
+    _text(slide, lx+Inches(0.28), ly+Inches(0.62), lw-Inches(0.56), Inches(0.25),
+          [[("margin = mean(p_pos) - mean(p_neg)", dict(size=12.0, bold=True, color=INK, name="Consolas"))]])
+
+    chart_x = int(lx) + int(Inches(0.62)); chart_y = int(ly) + int(Inches(1.46))
+    base_y = chart_y + int(Inches(1.55)); bar_w = int(Inches(0.16)); step = int(Inches(0.78))
+    vals_f1 = [0.42, 0.52, 0.64, 0.86, 0.72]
+    vals_margin = [0.18, 0.27, 0.39, 0.54, 0.82]
+    vals_eval = [0.20, 0.30, 0.44, 0.57, 0.84]
+    colors = [RGBColor(0xB8,0xC2,0xD0), RGBColor(0x2F,0x3A,0x4F), RGBColor(0x78,0xB8,0x8D)]
+    labels = ["val-F1", "val-margin", "eval-F1"]
+    for li, (lab, col) in enumerate(zip(labels, colors)):
+        xx = int(lx) + int(Inches(0.68)) + li * int(Inches(1.18))
+        _rect(slide, Emu(xx), ly+Inches(1.02), Inches(0.12), Inches(0.12), col)
+        _text(slide, Emu(xx+int(Inches(0.16))), ly+Inches(0.98), Inches(0.88), Inches(0.18),
+              [[(lab, dict(size=8.3, bold=True, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
     for i in range(5):
         bx = chart_x + i*step
-        hf1 = int(Inches(vals_f1[i] * 0.55))
-        hm = int(Inches(vals_margin[i] * 0.55))
-        _rect(slide, Emu(bx), Emu(base_y-hf1), Emu(bar_w), Emu(hf1), RGBColor(0xB8,0xC2,0xD0))
-        _rect(slide, Emu(bx+bar_w+int(Inches(0.05))), Emu(base_y-hm), Emu(bar_w), Emu(hm),
-              RGBColor(0x2F,0x3A,0x4F) if i < 4 else RGBColor(0x2B,0xA6,0x6B))
-        _text(slide, Emu(bx-int(Inches(0.03))), Emu(base_y+int(Inches(0.05))), Inches(0.42), Inches(0.14),
-              [[(f"{i+1}", dict(size=6.8, color=MUTED))]], align=PP_ALIGN.CENTER)
-    _rect(slide, Emu(chart_x-int(Inches(0.05))), Emu(base_y), Inches(2.80), Pt(1), LINE)
-    _text(slide, rx+Inches(3.15), Inches(2.72), Inches(1.00), Inches(0.20),
-          [[("selected", dict(size=9.0, bold=True, color=RGBColor(0x2B,0xA6,0x6B)))]], align=PP_ALIGN.CENTER)
-    _text(slide, rx+Inches(0.26), Inches(3.56), rw-Inches(0.52), Inches(0.18),
-          [[("gray: val-F1   dark: val-margin   test 상관 ρ +0.56", dict(size=8.7, color=MUTED))]],
+        hf1 = int(Inches(vals_f1[i] * 1.12))
+        hm = int(Inches(vals_margin[i] * 1.12))
+        he = int(Inches(vals_eval[i] * 1.12))
+        _rect(slide, Emu(bx), Emu(base_y-hf1), Emu(bar_w), Emu(hf1), colors[0])
+        _rect(slide, Emu(bx+bar_w+int(Inches(0.06))), Emu(base_y-hm), Emu(bar_w), Emu(hm),
+              colors[1] if i < 4 else RGBColor(0x2B,0xA6,0x6B))
+        _rect(slide, Emu(bx+2*bar_w+int(Inches(0.12))), Emu(base_y-he), Emu(bar_w), Emu(he),
+              colors[2] if i < 4 else RGBColor(0x2B,0xA6,0x6B))
+        _text(slide, Emu(bx-int(Inches(0.02))), Emu(base_y+int(Inches(0.07))), Inches(0.58), Inches(0.16),
+              [[(f"epoch {i+1}", dict(size=7.2, color=MUTED))]], align=PP_ALIGN.CENTER)
+    _rect(slide, Emu(chart_x-int(Inches(0.08))), Emu(base_y), Inches(4.08), Pt(1), LINE)
+    _text(slide, lx+Inches(4.12), ly+Inches(1.26), Inches(0.92), Inches(0.22),
+          [[("selected", dict(size=9.2, bold=True, color=RGBColor(0x2B,0xA6,0x6B)))]], align=PP_ALIGN.CENTER)
+    _text(slide, lx+Inches(0.34), ly+Inches(3.72), lw-Inches(0.68), Inches(0.20),
+          [[("measured impact: train/class 200, eval/class 20000", dict(size=8.4, bold=True, color=MUTED))]],
           align=PP_ALIGN.CENTER)
+    card_y = ly+Inches(3.98); card_h = Inches(0.56); card_w = Inches(2.28)
+    impacts = [
+        ("bit-F1", "0.9928 → 0.9958", "+0.0030"),
+        ("Total FAR", "11.93% → 0.29%", "-11.64pp"),
+    ]
+    for ii, (head, val, delta) in enumerate(impacts):
+        cx = Emu(int(lx)+int(Inches(0.46))+ii*(int(card_w)+int(Inches(0.30))))
+        _rect(slide, cx, card_y, card_w, card_h, RGBColor(0xF4,0xF7,0xFB), line=RGBColor(0xD7,0xDE,0xE8))
+        _rect(slide, cx, card_y, Inches(0.07), card_h, RGBColor(0x2B,0xA6,0x6B))
+        _text(slide, cx+Inches(0.14), card_y+Inches(0.06), Inches(0.70), Inches(0.18),
+              [[(head, dict(size=8.2, bold=True, color=MUTED))]])
+        _text(slide, cx+Inches(0.14), card_y+Inches(0.24), Inches(1.42), Inches(0.22),
+              [[(val, dict(size=9.0, bold=True, color=NAVY))]])
+        _text(slide, cx+Inches(1.58), card_y+Inches(0.18), Inches(0.56), Inches(0.25),
+              [[(delta, dict(size=9.0, bold=True, color=RGBColor(0x2B,0xA6,0x6B)))]],
+              align=PP_ALIGN.RIGHT)
 
-    # NB reject figure
-    _rect(slide, rx, Inches(4.18), rw, Inches(2.48), WHITE, line=LINE)
-    _rect(slide, rx, Inches(4.18), Inches(0.09), Inches(2.48), COVER_BAR)
-    _text(slide, rx+Inches(0.24), Inches(4.34), rw-Inches(0.45), Inches(0.24),
-          [[("GaussianNB reject", dict(size=13.6, bold=True, color=NAVY))]])
-    _img_fit(slide, "nb_reject_4class_dist_crop.png", rx+Inches(0.18), Inches(4.70), rw-Inches(0.36), Inches(1.38), frame=False)
-    _text(slide, rx+Inches(0.24), Inches(6.14), rw-Inches(0.48), Inches(0.30),
-          [[("max-prob만 보면 애매한/OOD 분포를 놓치므로, 4-bit 확률 분포 모양으로 reject합니다.",
-             dict(size=9.3, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    # Right: GaussianNB reject
+    rx = Inches(6.85); ry = Inches(1.78); rw = Inches(5.70); rh = Inches(4.95)
+    _rect(slide, rx, ry, rw, rh, WHITE, line=LINE)
+    _rect(slide, rx, ry, Inches(0.10), rh, RGBColor(0x2B,0xA6,0x6B))
+    _text(slide, rx+Inches(0.28), ry+Inches(0.22), rw-Inches(0.56), Inches(0.32),
+          [[("GaussianNB reject", dict(size=15.0, bold=True, color=NAVY))]])
+    _text(slide, rx+Inches(0.28), ry+Inches(0.60), rw-Inches(0.56), Inches(0.28),
+          [[("single 4 + 2-combo 6 = known 10 class의 4-bit 분포를 기억",
+             dict(size=9.7, bold=True, color=INK))]])
+
+    bit_labels = ["bb", "fk", "sc", "sr"]
+    bit_colors = [RGBColor(0x2F,0x67,0xF6), RGBColor(0x18,0xA9,0x7D),
+                  RGBColor(0xF5,0xA6,0x23), RGBColor(0xD9,0x3A,0x5A)]
+    for bi, (lab, col) in enumerate(zip(bit_labels, bit_colors)):
+        bx = int(rx) + int(Inches(0.32)) + bi * int(Inches(0.48))
+        _rect(slide, Emu(bx), ry+Inches(1.02), Inches(0.11), Inches(0.11), col)
+        _text(slide, Emu(bx+int(Inches(0.15))), ry+Inches(0.985), Inches(0.28), Inches(0.16),
+              [[(lab, dict(size=6.8, bold=True, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
+
+    panels = [
+        ("single bb", [0.84, 0.12, 0.13, 0.11], "accept"),
+        ("2-combo bb+sc", [0.62, 0.13, 0.60, 0.12], "accept"),
+        ("tail / OOD", [0.55, 0.33, 0.31, 0.29], "reject"),
+    ]
+    px0 = int(rx) + int(Inches(0.42)); py0 = int(ry) + int(Inches(1.42))
+    pw = int(Inches(1.42)); ph = int(Inches(1.46)); pg = int(Inches(0.24))
+    for pi, (name, probs, tag) in enumerate(panels):
+        px = px0 + pi * (pw + pg)
+        _rect(slide, Emu(px), Emu(py0), Emu(pw), Emu(ph), RGBColor(0xF7,0xF9,0xFC), line=RGBColor(0xD7,0xDE,0xE8))
+        _text(slide, Emu(px+int(Inches(0.08))), Emu(py0+int(Inches(0.06))), Emu(pw-int(Inches(0.16))), Inches(0.16),
+              [[(name, dict(size=7.8, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
+        base = py0 + int(Inches(1.08)); max_h = int(Inches(0.72)); bw = int(Inches(0.17)); gap = int(Inches(0.10))
+        bars_w = 4 * bw + 3 * gap
+        bx0 = px + (pw - bars_w)//2
+        _rect(slide, Emu(bx0-int(Inches(0.04))), Emu(base), Emu(bars_w+int(Inches(0.08))), Pt(1), LINE)
+        for bj, val in enumerate(probs):
+            bh = int(max_h * val)
+            bx = bx0 + bj * (bw + gap)
+            _rect(slide, Emu(bx), Emu(base-bh), Emu(bw), Emu(bh), bit_colors[bj])
+        _text(slide, Emu(px+int(Inches(0.08))), Emu(py0+int(Inches(1.16))), Emu(pw-int(Inches(0.16))), Inches(0.18),
+              [[(tag, dict(size=7.6, bold=True, color=RGBColor(0x2B,0xA6,0x6B) if tag == "accept" else RGBColor(0xCC,0x33,0x28)))]],
+              align=PP_ALIGN.CENTER)
+    _text(slide, rx+Inches(0.34), ry+Inches(3.34), rw-Inches(0.68), Inches(0.20),
+          [[("measured impact: NB reject sidecar", dict(size=8.4, bold=True, color=MUTED))]],
+          align=PP_ALIGN.CENTER)
+    card_y = ry+Inches(3.60); card_h = Inches(0.56); card_w = Inches(2.28)
+    impacts = [
+        ("accepted F1", "0.9962 → 0.9965", "+0.0003"),
+        ("false accept NEG", "small → 0", "tail off"),
+    ]
+    for ii, (head, val, delta) in enumerate(impacts):
+        cx = Emu(int(rx)+int(Inches(0.46))+ii*(int(card_w)+int(Inches(0.30))))
+        _rect(slide, cx, card_y, card_w, card_h, RGBColor(0xF4,0xF7,0xFB), line=RGBColor(0xD7,0xDE,0xE8))
+        _rect(slide, cx, card_y, Inches(0.07), card_h, RGBColor(0x2B,0xA6,0x6B))
+        _text(slide, cx+Inches(0.14), card_y+Inches(0.06), Inches(1.02), Inches(0.18),
+              [[(head, dict(size=8.2, bold=True, color=MUTED))]])
+        _text(slide, cx+Inches(0.14), card_y+Inches(0.24), Inches(1.35), Inches(0.22),
+              [[(val, dict(size=9.0, bold=True, color=NAVY))]])
+        _text(slide, cx+Inches(1.45), card_y+Inches(0.18), Inches(0.68), Inches(0.25),
+              [[(delta, dict(size=9.0, bold=True, color=RGBColor(0x2B,0xA6,0x6B)))]],
+              align=PP_ALIGN.RIGHT)
+    _text(slide, rx+Inches(0.52), ry+Inches(4.34), rw-Inches(1.04), Inches(0.25),
+          [[("trade-off: reject-empty bit-F1 0.9954, POS false reject 282",
+             dict(size=8.2, color=MUTED))]], align=PP_ALIGN.CENTER)
 
     _footer(slide, idx)
 
 
 def s_p3_intro(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P3 | Trend anomaly generator", "real abnormal label 부족을 generator benchmark로 전환")
+    _title_block_compact(slide, "P3 | Trend anomaly generator", "Real-label scarcity addressed by generator benchmark")
     _text(slide, Inches(0.85), Inches(1.86), Inches(6.2), Inches(0.52),
-          [[("핵심은 모델 성능 자랑이 아니라, 검증 데이터가 없던 문제를 현장 판정 기준 기반 생성 규칙으로 푼 것입니다.",
+          [[("Core contribution — field decision criteria를 generator rule로 정식화해 label-scarce 조건에서도 validation benchmark를 구축했습니다.",
              dict(size=16, bold=True, color=NAVY))]])
     # left flow
     steps = [
@@ -2731,12 +3197,436 @@ def _number_chip(slide, x, y, n, label, body, w=Inches(2.55), h=Inches(0.72), fi
           [[(body, dict(size=9.7, color=MUTED))]])
 
 
+def _draw_simclr_big(slide, x, y, w, h):
+    """SimCLR half: crop the reference figure whitespace and redraw loss large."""
+    def PX(f): return Emu(int(x) + int(f * int(w)))
+    def PY(f): return Emu(int(y) + int(f * int(h)))
+    def WW(f): return Emu(int(f * int(w)))
+    def HH(f): return Emu(int(f * int(h)))
+
+    def label(fx, fy, fw, fh, text, size=8.0, bold=False, color=INK,
+              align=PP_ALIGN.CENTER, name=FONT):
+        _text(slide, PX(fx), PY(fy), WW(fw), HH(fh),
+              [[(text, dict(size=size, bold=bold, color=color, name=name))]],
+              align=align, anchor=MSO_ANCHOR.MIDDLE)
+
+    _rect(slide, x, y, w, h, WHITE, line=RGBColor(0xEA, 0xEE, 0xF4), line_w=Pt(1.0))
+
+    # Reference figure: use a whitespace-trimmed paper crop so the SimCLR mechanism is readable.
+    _img_fit(slide, "ref_simclr_framework_crop.png", PX(0.015), PY(0.010), WW(0.97), HH(0.660), frame=False)
+
+    # Loss is a crop from the paper figure, not a retyped approximation.
+    _img_fit(slide, "ref_simclr_loss_crop.png", PX(0.040), PY(0.690), WW(0.92), HH(0.275), frame=False)
+
+
+def _draw_pos_neg_hard_old(slide, x, y, w, h):
+    """Three-column explanation: positive / negative / hard negative."""
+    BLACK = RGBColor(0x16, 0x18, 0x1D)
+    DARK = NAVY
+    MID = RGBColor(0x55, 0x60, 0x70)
+    LIGHT = RGBColor(0xEA, 0xEE, 0xF4)
+    HARD_FILL = RGBColor(0xC5, 0xCB, 0xD6)
+    SOFT = RGBColor(0xF8, 0xFA, 0xFC)
+
+    def PX(f): return Emu(int(x) + int(f * int(w)))
+    def PY(f): return Emu(int(y) + int(f * int(h)))
+    def WW(f): return Emu(int(f * int(w)))
+    def HH(f): return Emu(int(f * int(h)))
+
+    def label(fx, fy, fw, fh, text, size=8.0, bold=False, color=INK,
+              align=PP_ALIGN.CENTER, name=FONT):
+        _text(slide, PX(fx), PY(fy), WW(fw), HH(fh),
+              [[(text, dict(size=size, bold=bold, color=color, name=name))]],
+              align=align, anchor=MSO_ANCHOR.MIDDLE)
+
+    def connector(fx1, fy1, fx2, fy2, color, width=1.0):
+        cn = slide.shapes.add_connector(1, PX(fx1), PY(fy1), PX(fx2), PY(fy2))
+        cn.line.color.rgb = color
+        cn.line.width = Pt(width)
+        cn.shadow.inherit = False
+        return cn
+
+    def dot(fx, fy, color, shape=MSO_SHAPE.OVAL, size=0.026, line=None):
+        sz = WW(size)
+        _rect(slide, Emu(int(PX(fx)) - int(sz) // 2), Emu(int(PY(fy)) - int(sz) // 2),
+              sz, sz, color, line=line, shape=shape, line_w=Pt(1.1))
+
+    _rect(slide, x, y, w, h, WHITE, line=LIGHT, line_w=Pt(1.0))
+
+    cols = [
+        ("Positive", "NUMERATOR", "sim ↑", "pull\ncompact"),
+        ("Negative", "DENOMINATOR", "sim low", "weak push"),
+        ("Hard negative", "DENOMINATOR", "sim high", "boundary"),
+    ]
+    col_x = [0.030, 0.350, 0.670]
+    col_w = 0.300
+    for i, (head, role, loss_txt, emb_txt) in enumerate(cols):
+        cx = col_x[i]
+        _rect(slide, PX(cx), PY(0.045), WW(col_w), HH(0.875), SOFT, line=LIGHT)
+        _rect(slide, PX(cx), PY(0.045), WW(col_w), HH(0.018), COVER_BAR)
+        label(cx, 0.080, col_w, 0.075, head, size=15.2, bold=True, color=NAVY)
+
+        # local embedding sketch
+        qx, qy = cx + col_w * 0.34, 0.335
+        dot(qx, qy, BLACK, size=0.044)
+        label(qx - 0.055, qy + 0.052, 0.065, 0.055, "q", size=15.0, bold=True,
+              color=BLACK, name="Cambria Math")
+        if i == 0:
+            sx, sy = cx + col_w * 0.68, 0.260
+            dot(sx, sy, WHITE, line=BLACK, size=0.052)
+            connector(sx, sy, qx, qy, DARK, width=1.4)
+            label(sx + 0.030, sy - 0.070, 0.09, 0.055, "p⁺", size=15.0,
+                  bold=True, color=BLACK, name="Cambria Math")
+        elif i == 1:
+            sx, sy = cx + col_w * 0.76, 0.385
+            dot(sx, sy, DARK, MSO_SHAPE.ISOSCELES_TRIANGLE, size=0.050)
+            connector(qx, qy, sx, sy, MID, width=1.0)
+            label(sx - 0.025, sy + 0.058, 0.09, 0.055, "n⁻", size=14.8,
+                  bold=True, color=DARK, name="Cambria Math")
+        else:
+            sx, sy = cx + col_w * 0.60, 0.300
+            dot(sx, sy, DARK, MSO_SHAPE.DIAMOND, size=0.052)
+            connector(qx, qy, sx, sy, DARK, width=1.6)
+            label(sx + 0.030, sy - 0.070, 0.10, 0.055, "h⁻", size=14.8,
+                  bold=True, color=DARK, name="Cambria Math")
+
+        _rect(slide, PX(cx + 0.020), PY(0.515), WW(col_w - 0.040), HH(0.155),
+              WHITE, line=LIGHT)
+        label(cx + 0.035, 0.528, col_w - 0.070, 0.052, role,
+              size=12.4, bold=True, color=NAVY, name="Consolas")
+        label(cx + 0.035, 0.585, col_w - 0.070, 0.058, loss_txt,
+              size=14.0, bold=True, color=BLACK)
+
+        _rect(slide, PX(cx + 0.020), PY(0.720), WW(col_w - 0.040), HH(0.135),
+              WHITE, line=LIGHT)
+        label(cx + 0.035, 0.740, col_w - 0.070, 0.090, emb_txt,
+              size=14.0, bold=True, color=BLACK)
+
+
+def _draw_pos_neg_hard(slide, x, y, w, h):
+    """Paper-style role panel: no nested text boxes; large labels and separators."""
+    BLACK = RGBColor(0x16, 0x18, 0x1D)
+    DARK = NAVY
+    MID = RGBColor(0x55, 0x60, 0x70)
+    LIGHT = RGBColor(0xEA, 0xEE, 0xF4)
+    HARD_FILL = RGBColor(0xC5, 0xCB, 0xD6)
+
+    def PX(f): return Emu(int(x) + int(f * int(w)))
+    def PY(f): return Emu(int(y) + int(f * int(h)))
+    def WW(f): return Emu(int(f * int(w)))
+    def HH(f): return Emu(int(f * int(h)))
+
+    def label(fx, fy, fw, fh, text, size=12.0, bold=False, color=INK,
+              align=PP_ALIGN.CENTER, name=FONT):
+        _text(slide, PX(fx), PY(fy), WW(fw), HH(fh),
+              [[(text, dict(size=size, bold=bold, color=color, name=name))]],
+              align=align, anchor=MSO_ANCHOR.MIDDLE)
+
+    def connector(fx1, fy1, fx2, fy2, color, width=1.0):
+        cn = slide.shapes.add_connector(1, PX(fx1), PY(fy1), PX(fx2), PY(fy2))
+        cn.line.color.rgb = color
+        cn.line.width = Pt(width)
+        cn.shadow.inherit = False
+        return cn
+
+    def dot(fx, fy, color, shape=MSO_SHAPE.OVAL, size=0.026, line=None):
+        sz = WW(size)
+        _rect(slide, Emu(int(PX(fx)) - int(sz) // 2), Emu(int(PY(fy)) - int(sz) // 2),
+              sz, sz, color, line=line, shape=shape, line_w=Pt(1.1))
+
+    def vline(fx, fy1, fy2, width=1.0):
+        cn = slide.shapes.add_connector(1, PX(fx), PY(fy1), PX(fx), PY(fy2))
+        cn.line.color.rgb = LIGHT
+        cn.line.width = Pt(width)
+        cn.shadow.inherit = False
+
+    def hline(fx1, fx2, fy, width=1.0):
+        cn = slide.shapes.add_connector(1, PX(fx1), PY(fy), PX(fx2), PY(fy))
+        cn.line.color.rgb = LIGHT
+        cn.line.width = Pt(width)
+        cn.shadow.inherit = False
+
+    _rect(slide, x, y, w, h, WHITE, line=LIGHT, line_w=Pt(1.0))
+    vline(0.335, 0.07, 0.93)
+    vline(0.665, 0.07, 0.93)
+    hline(0.055, 0.945, 0.535)
+
+    cols = [
+        ("Positive", "PULL TERM", "similar", "pull closer", 0.035),
+        ("Negative", "PUSH TERM", "far away", "weak push", 0.365),
+        ("Hard negative", "PUSH TERM", "very similar", "strong push", 0.695),
+    ]
+    col_w = 0.270
+    for i, (head, role, loss_txt, emb_txt, cx) in enumerate(cols):
+        label(cx, 0.070, col_w, 0.075, head, size=16.2, bold=True, color=NAVY)
+
+        qx, qy = cx + col_w * 0.33, 0.325
+        dot(qx, qy, BLACK, size=0.050)
+        label(qx - 0.062, qy + 0.060, 0.070, 0.060, "q",
+              size=16.0, bold=True, color=BLACK, name="Cambria Math")
+        if i == 0:
+            sx, sy = cx + col_w * 0.70, 0.245
+            dot(sx, sy, WHITE, line=BLACK, size=0.060)
+            connector(sx, sy, qx, qy, DARK, width=1.55)
+            label(sx + 0.032, sy - 0.075, 0.095, 0.060, "p⁺",
+                  size=16.0, bold=True, color=BLACK, name="Cambria Math")
+        elif i == 1:
+            sx, sy = cx + col_w * 0.76, 0.385
+            dot(sx, sy, DARK, MSO_SHAPE.ISOSCELES_TRIANGLE, size=0.058)
+            connector(qx, qy, sx, sy, MID, width=1.0)
+            label(sx - 0.025, sy + 0.065, 0.095, 0.060, "n⁻",
+                  size=15.8, bold=True, color=DARK, name="Cambria Math")
+        else:
+            sx, sy = cx + col_w * 0.62, 0.295
+            dot(sx, sy, HARD_FILL, line=BLACK, size=0.060)
+            connector(qx, qy, sx, sy, DARK, width=1.6)
+            label(sx + 0.032, sy - 0.075, 0.10, 0.060, "h⁻",
+                  size=15.8, bold=True, color=DARK, name="Cambria Math")
+
+        label(cx, 0.590, col_w, 0.060, role, size=13.5,
+              bold=True, color=NAVY, name="Consolas")
+        label(cx, 0.665, col_w, 0.070, loss_txt, size=16.2,
+              bold=True, color=BLACK)
+        label(cx, 0.815, col_w, 0.090, emb_txt, size=15.0,
+              bold=True, color=BLACK)
+
+
+def _draw_hardneg_half_old(slide, x, y, w, h):
+    """Legacy half-slide hard-negative explanation.
+    Shows sample role -> loss inclusion -> embedding effect without turning it into a full slide."""
+    RED = RGBColor(0xC9, 0x35, 0x2B)
+    BLUE = RGBColor(0x2B, 0x66, 0xD9)
+    GREEN = RGBColor(0x2B, 0xA6, 0x6B)
+    ORANGE = RGBColor(0xE0, 0x8A, 0x1E)
+    SOFT = RGBColor(0xF7, 0xF9, 0xFC)
+    SOFT_RED = RGBColor(0xFF, 0xF1, 0xEE)
+    SOFT_BLUE = RGBColor(0xF0, 0xF5, 0xFF)
+    SOFT_GREEN = RGBColor(0xEC, 0xF8, 0xF2)
+    GRID = RGBColor(0xE8, 0xEC, 0xF2)
+
+    _rect(slide, x, y, w, h, WHITE, line=LINE)
+    head_h = Inches(0.36)
+    note_h = Inches(0.20)
+    _rect(slide, x, y, w, head_h, NAVY)
+    _text(slide, x, y, w, head_h,
+          [[("B. hard-negative filtering: loss에 넣을 negative를 다시 고른다",
+             dict(size=11.9, bold=True, color=WHITE))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+
+    bx, by = x + Inches(0.16), y + Inches(0.48)
+    bw = w - Inches(0.32)
+    col_gap = Inches(0.11)
+    col_w = Emu((int(bw) - int(col_gap) * 2) // 3)
+    img_h = Inches(0.55)
+    cap_h = Inches(0.18)
+    role_h = Inches(0.32)
+    samples = [
+        ("Positive", "wafer_center_scratch.png", 0.50, 0.50, GREEN, SOFT_GREEN, "numerator\nanchor로 당김"),
+        ("False negative", "wafer_edge_top_scratch.png", 0.50, 0.00, RED, SOFT_RED, "exclude from Σ\n잘못된 반발 제거"),
+        ("Semi-hard negative", "wafer_ringdots.png", 0.50, 0.50, BLUE, SOFT_BLUE, "denominator\n경계 학습 유지"),
+    ]
+    for i, (label, img, fx_focus, fy_focus, color, fill, role) in enumerate(samples):
+        cx = Emu(int(bx) + i * (int(col_w) + int(col_gap)))
+        _rect(slide, cx, by, col_w, img_h + cap_h + role_h, fill, line=LINE)
+        _img_cover(slide, img, cx + Inches(0.08), by + Inches(0.06),
+                   col_w - Inches(0.16), img_h - Inches(0.07),
+                   focus_x=fx_focus, focus_y=fy_focus)
+        _text(slide, cx + Inches(0.04), by + img_h + Inches(0.01),
+              col_w - Inches(0.08), cap_h,
+              [[(label, dict(size=6.9, bold=True, color=color))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        _rect(slide, cx + Inches(0.09), by + img_h + cap_h + Inches(0.02),
+              col_w - Inches(0.18), role_h - Inches(0.10), WHITE, line=RGBColor(0xD9,0xE0,0xEA))
+        _text(slide, cx + Inches(0.12), by + img_h + cap_h + Inches(0.055),
+              col_w - Inches(0.24), role_h - Inches(0.16),
+              [[(role, dict(size=5.9, bold=True, color=NAVY))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+
+    eq_y = by + Inches(1.16)
+    eq_h = Inches(0.32)
+    _rect(slide, bx, eq_y, bw, eq_h, RGBColor(0xFA,0xFB,0xFD), line=LINE)
+    _text(slide, bx + Inches(0.08), eq_y + Inches(0.04), bw - Inches(0.16), eq_h - Inches(0.08),
+          [[("L = -log exp(s(a,p+)/τ) / [exp(s(a,p+)/τ)+Σkeep exp(s(a,n)/τ)]   FN 제외",
+             dict(size=7.7, bold=True, color=NAVY, name="Consolas"))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+
+    plot_y = eq_y + eq_h + Inches(0.13)
+    note_y = y + h - note_h - Inches(0.10)
+    plot_h = Emu(max(int(Inches(0.72)), int(note_y - plot_y - Inches(0.08))))
+    plot_w = Emu((int(bw) - int(Inches(0.22))) // 2)
+
+    def dot(cx, cy, color, shape=MSO_SHAPE.OVAL, sz=0.09):
+        _rect(slide, cx - Inches(sz/2), cy - Inches(sz/2), Inches(sz), Inches(sz),
+              color, shape=shape)
+
+    def connector(x1, y1, x2, y2, color):
+        cn = slide.shapes.add_connector(1, x1, y1, x2, y2)
+        cn.line.color.rgb = color
+        cn.line.width = Pt(1.0)
+        cn.shadow.inherit = False
+        return cn
+
+    # Before: false negative remains in denominator, causing repulsion inside the same pattern.
+    px1 = bx
+    _rect(slide, px1, plot_y, plot_w, plot_h, WHITE, line=LINE)
+    _text(slide, px1 + Inches(0.08), plot_y + Inches(0.05), plot_w - Inches(0.16), Inches(0.16),
+          [[("Naive denominator", dict(size=7.8, bold=True, color=RED))]],
+          align=PP_ALIGN.CENTER)
+    base_x, base_y = px1 + Emu(int(plot_w * 0.42)), plot_y + Emu(int(plot_h * 0.58))
+    for dx, dy in [(-0.10, -0.06), (-0.02, 0.03), (0.07, -0.02)]:
+        dot(base_x + Inches(dx), base_y + Inches(dy), GREEN)
+    fnx, fny = base_x + Inches(0.20), base_y - Inches(0.12)
+    dot(fnx, fny, RED, MSO_SHAPE.DIAMOND, sz=0.105)
+    connector(base_x + Inches(0.08), base_y - Inches(0.02), fnx + Inches(0.23), fny - Inches(0.13), RED)
+    _text(slide, px1 + Inches(0.10), plot_y + plot_h - Inches(0.24), plot_w - Inches(0.20), Inches(0.19),
+          [[("same-pattern sample에도 repulsive gradient",
+             dict(size=6.2, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
+
+    # After: false negative is removed; semi-hard negatives define the boundary.
+    px2 = Emu(int(bx) + int(plot_w) + int(Inches(0.22)))
+    _rect(slide, px2, plot_y, plot_w, plot_h, WHITE, line=LINE)
+    _text(slide, px2 + Inches(0.08), plot_y + Inches(0.05), plot_w - Inches(0.16), Inches(0.16),
+          [[("Positive-aware filtering", dict(size=7.8, bold=True, color=BLUE))]],
+          align=PP_ALIGN.CENTER)
+    c2x, c2y = px2 + Emu(int(plot_w * 0.34)), plot_y + Emu(int(plot_h * 0.58))
+    for dx, dy in [(-0.07, -0.04), (0.00, 0.04), (0.07, -0.02), (0.02, -0.08)]:
+        dot(c2x + Inches(dx), c2y + Inches(dy), GREEN)
+    dot(px2 + Emu(int(plot_w * 0.70)), plot_y + Emu(int(plot_h * 0.42)), BLUE, MSO_SHAPE.ISOSCELES_TRIANGLE, sz=0.11)
+    dot(px2 + Emu(int(plot_w * 0.75)), plot_y + Emu(int(plot_h * 0.66)), BLUE, MSO_SHAPE.ISOSCELES_TRIANGLE, sz=0.11)
+    connector(px2 + Emu(int(plot_w * 0.58)), plot_y + Emu(int(plot_h * 0.33)),
+              px2 + Emu(int(plot_w * 0.58)), plot_y + Emu(int(plot_h * 0.82)), BLUE)
+    _text(slide, px2 + Inches(0.10), plot_y + plot_h - Inches(0.24), plot_w - Inches(0.20), Inches(0.19),
+          [[("compact cluster + sharper boundary",
+             dict(size=6.2, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
+
+    _rect(slide, bx, note_y, bw, note_h, SOFT, line=GRID)
+    _text(slide, bx + Inches(0.08), note_y, bw - Inches(0.16), note_h,
+          [[("too-close 후보는 버리고, margin 밖 semi-hard negative만 남겨 Unknown cluster를 안정화",
+             dict(size=7.0, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER,
+          anchor=MSO_ANCHOR.MIDDLE)
+
+
+def _draw_hardneg_half(slide, x, y, w, h):
+    """Clean half-slide figure: embedding geometry + InfoNCE role."""
+    BLACK = RGBColor(0x12, 0x12, 0x12)
+    GRAY = RGBColor(0x9A, 0xA3, 0xB1)
+    LIGHT = RGBColor(0xEA, 0xEE, 0xF4)
+    RED = RGBColor(0xC9, 0x2A, 0x2A)
+    BLUE = RGBColor(0x2B, 0x66, 0xD9)
+    GREEN = RGBColor(0x2B, 0xA6, 0x6B)
+
+    def PX(f): return Emu(int(x) + int(f * int(w)))
+    def PY(f): return Emu(int(y) + int(f * int(h)))
+    def WW(f): return Emu(int(f * int(w)))
+    def HH(f): return Emu(int(f * int(h)))
+
+    def dashed(sp):
+        ln = sp.line._get_or_add_ln()
+        ln.append(ln.makeelement(qn('a:prstDash'), {'val': 'dash'}))
+
+    def label(fx, fy, fw, fh, text, size=8.0, bold=False, color=BLACK,
+              align=PP_ALIGN.CENTER, name=FONT):
+        _text(slide, PX(fx), PY(fy), WW(fw), HH(fh),
+              [[(text, dict(size=size, bold=bold, color=color, name=name))]],
+              align=align, anchor=MSO_ANCHOR.MIDDLE)
+
+    def connector(fx1, fy1, fx2, fy2, color=GRAY, width=0.9, dash=False):
+        cn = slide.shapes.add_connector(1, PX(fx1), PY(fy1), PX(fx2), PY(fy2))
+        cn.line.color.rgb = color
+        cn.line.width = Pt(width)
+        cn.shadow.inherit = False
+        if dash:
+            dashed(cn)
+        return cn
+
+    def point(fx, fy, shape, fill, line=None, size=0.030, lw=1.0):
+        sz = WW(size)
+        sp = _rect(slide, Emu(int(PX(fx)) - int(sz) // 2), Emu(int(PY(fy)) - int(sz) // 2),
+                   sz, sz, fill, line=line, shape=shape, line_w=Pt(lw))
+        return sp
+
+    _rect(slide, x, y, w, h, WHITE, line=LIGHT, line_w=Pt(1.0))
+    label(0.02, 0.02, 0.47, 0.065, "Positive-aware hard negative mining",
+          size=9.4, bold=True, color=NAVY, align=PP_ALIGN.LEFT)
+    label(0.62, 0.02, 0.34, 0.055, "s(q,x)=cos(q,x)",
+          size=7.4, bold=True, color=MUTED, align=PP_ALIGN.RIGHT, name="Consolas")
+
+    qx, qy = 0.42, 0.37
+    inner = slide.shapes.add_shape(MSO_SHAPE.OVAL, PX(qx - 0.19), PY(qy - 0.22),
+                                   WW(0.38), HH(0.44))
+    inner.fill.background()
+    inner.line.color.rgb = RED
+    inner.line.width = Pt(1.0)
+    inner.shadow.inherit = False
+    dashed(inner)
+    outer = slide.shapes.add_shape(MSO_SHAPE.OVAL, PX(qx - 0.32), PY(qy - 0.34),
+                                   WW(0.64), HH(0.68))
+    outer.fill.background()
+    outer.line.color.rgb = GRAY
+    outer.line.width = Pt(1.0)
+    outer.shadow.inherit = False
+    dashed(outer)
+
+    p = (0.54, 0.25)
+    fn1, fn2 = (0.48, 0.36), (0.56, 0.42)
+    sh1, sh2, sh3 = (0.22, 0.24), (0.62, 0.54), (0.67, 0.27)
+
+    connector(p[0], p[1], qx, qy, GREEN, width=1.05)
+    connector(qx, qy, fn1[0], fn1[1], RED, width=1.0, dash=True)
+    connector(qx, qy, fn2[0], fn2[1], RED, width=1.0, dash=True)
+    connector(qx, qy, sh2[0], sh2[1], BLUE, width=1.0)
+    connector(qx, qy, sh3[0], sh3[1], BLUE, width=1.0)
+
+    point(qx, qy, MSO_SHAPE.OVAL, BLACK, size=0.036)
+    label(qx - 0.045, qy + 0.035, 0.06, 0.05, "q", size=12.5,
+          bold=True, color=BLACK, name="Cambria Math")
+    point(p[0], p[1], MSO_SHAPE.OVAL, WHITE, line=BLACK, size=0.040, lw=1.35)
+    label(p[0] + 0.035, p[1] - 0.045, 0.08, 0.05, "p⁺", size=12.2,
+          bold=True, color=BLACK, name="Cambria Math")
+    for fx, fy in [fn1, fn2]:
+        point(fx, fy, MSO_SHAPE.DIAMOND, RED, size=0.035)
+    for fx, fy in [sh1, sh2, sh3]:
+        point(fx, fy, MSO_SHAPE.ISOSCELES_TRIANGLE, BLUE, size=0.037)
+
+    label(0.18, 0.09, 0.34, 0.05, "false-negative exclusion margin",
+          size=7.1, bold=True, color=RED, align=PP_ALIGN.LEFT)
+    label(0.62, 0.58, 0.30, 0.05, "semi-hard negatives kept",
+          size=7.2, bold=True, color=BLUE, align=PP_ALIGN.LEFT)
+    label(0.62, 0.18, 0.28, 0.075, "denominator\nboundary gradient",
+          size=7.0, bold=True, color=BLUE)
+    label(0.36, 0.47, 0.30, 0.065, "removed:\nno repulsive gradient",
+          size=6.9, bold=True, color=RED)
+    label(0.47, 0.13, 0.28, 0.05, "numerator attraction",
+          size=7.1, bold=True, color=GREEN)
+
+    # Embedding effect, kept as a small paper-style inset.
+    _rect(slide, PX(0.07), PY(0.65), WW(0.22), HH(0.18), WHITE, line=LIGHT)
+    label(0.08, 0.665, 0.20, 0.035, "naive", size=7.0, bold=True, color=RED)
+    for fx, fy in [(0.13, 0.74), (0.15, 0.70), (0.18, 0.76)]:
+        point(fx, fy, MSO_SHAPE.OVAL, GREEN, size=0.022)
+    point(0.23, 0.68, MSO_SHAPE.DIAMOND, RED, size=0.025)
+    connector(0.18, 0.73, 0.24, 0.67, RED, width=0.9)
+
+    _rect(slide, PX(0.33), PY(0.65), WW(0.27), HH(0.18), WHITE, line=LIGHT)
+    label(0.345, 0.665, 0.24, 0.035, "filtered", size=7.0, bold=True, color=BLUE)
+    for fx, fy in [(0.41, 0.74), (0.425, 0.705), (0.445, 0.735), (0.435, 0.77)]:
+        point(fx, fy, MSO_SHAPE.OVAL, GREEN, size=0.022)
+    point(0.54, 0.69, MSO_SHAPE.ISOSCELES_TRIANGLE, BLUE, size=0.026)
+    point(0.55, 0.78, MSO_SHAPE.ISOSCELES_TRIANGLE, BLUE, size=0.026)
+    connector(0.50, 0.67, 0.50, 0.81, BLUE, width=0.9)
+
+    _rect(slide, PX(0.06), PY(0.87), WW(0.88), HH(0.10), WHITE, line=LIGHT)
+    label(0.075, 0.875, 0.85, 0.085,
+          "L = -log  exp(s(q,p⁺)/τ) / [ exp(s(q,p⁺)/τ) + Σₙ∈N_keep exp(s(q,n)/τ) ]",
+          size=8.4, bold=True, color=NAVY, name="Cambria Math")
+
+
 def s_unknown_simclr_hardneg(slide, d, idx):
     _bg(slide, WHITE)
     _title_block(slide, "P1 | Unknown 대조 학습 ①", "그림으로 설명: positive는 붙이고, false negative는 뺀다")
 
     _rect(slide, Inches(0.80), Inches(1.70), Inches(11.80), Inches(0.46),
-          RGBColor(0xE6,0xF7,0xF6), line=LINE)
+          RGBColor(0xF4,0xF6,0xF8), line=LINE)
     _rect(slide, Inches(0.80), Inches(1.70), Inches(0.10), Inches(0.46), ACCENT)
     _text(slide, Inches(1.00), Inches(1.70), Inches(11.35), Inches(0.46),
           [[("말할 순서: 같은 wafer 두 view를 positive로 묶고, 다른 wafer 중 유용한 hard negative만 남기며, 너무 가까운 후보는 false negative로 제외합니다.",
@@ -2761,26 +3651,12 @@ def s_unknown_simclr_hardneg(slide, d, idx):
     # Hard negative panel
     rx, ry, rw, rh = Inches(6.78), Inches(2.38), Inches(5.82), Inches(3.82)
     _rect(slide, rx, ry, rw, rh, WHITE, line=LINE)
-    _rect(slide, rx, ry, rw, Inches(0.42), NAVY)
-    _text(slide, rx, ry, rw, Inches(0.42),
-          [[("B. hard negative filtering", dict(size=13.5, bold=True, color=WHITE))]],
-          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    _img_fit(slide, "ref_hardneg_concept.png", rx+Inches(0.18), ry+Inches(0.62),
-             Inches(3.60), Inches(2.35), frame=False)
-    _number_chip(slide, rx+Inches(3.95), ry+Inches(0.70), 4, "keep",
-                 "닮았지만 다른 wafer: hard negative", w=Inches(1.62), h=Inches(0.64),
-                 fill=RGBColor(0xF4,0xF7,0xFB))
-    _number_chip(slide, rx+Inches(3.95), ry+Inches(1.55), 5, "exclude",
-                 "positive보다 너무 가까우면 같은 패턴 가능", w=Inches(1.62), h=Inches(0.72),
-                 fill=RGBColor(0xFF,0xF7,0xF0))
-    _number_chip(slide, rx+Inches(3.95), ry+Inches(2.55), 6, "result",
-                 "noise 줄인 embedding으로 HDBSCAN", w=Inches(1.62), h=Inches(0.64),
-                 fill=RGBColor(0xE6,0xF7,0xF6))
+    _draw_hardneg_half(slide, rx, ry, rw, rh)
 
     _rect(slide, Inches(0.95), Inches(6.52), Inches(11.45), Inches(0.36),
           RGBColor(0xFF,0xF7,0xE8), line=RGBColor(0xF2,0xC4,0x6D))
     _text(slide, Inches(1.05), Inches(6.52), Inches(11.25), Inches(0.36),
-          [[("발표 멘트: '비슷한 negative를 다 버리는 것이 아니라, 너무 가까워 같은 불량일 수 있는 것만 빼고 경계 학습에 좋은 hard negative는 사용했습니다.'",
+          [[("발표 멘트: 'false negative는 loss 분모에서 빼고, margin 밖 semi-hard negative만 남겨 같은 불량군은 모으고 다른 불량군 경계는 세웠습니다.'",
              dict(size=11.5, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER,
           anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
@@ -2863,7 +3739,7 @@ def s_unknown_neco_explain(slide, d, idx):
                   Inches(0.20), Inches(0.20), ACCENT, shape=MSO_SHAPE.RIGHT_ARROW)
 
     _rect(slide, Inches(1.05), Inches(6.55), Inches(11.20), Inches(0.34),
-          RGBColor(0xE6,0xF7,0xF6), line=LINE)
+          RGBColor(0xF4,0xF6,0xF8), line=LINE)
     _text(slide, Inches(1.15), Inches(6.55), Inches(11.0), Inches(0.34),
           [[("주의: 여기서 ROI는 detection label box가 아니라, 두 augmentation이 공통으로 보는 원본 wafer 좌표 영역입니다.",
              dict(size=11.2, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER,
@@ -2879,6 +3755,7 @@ DISPATCH = {"title": s_title, "section": s_section, "stats": s_stats, "bullets":
             "unknown_moco_explain": s_unknown_moco_explain,
             "unknown_neco_explain": s_unknown_neco_explain,
             "p2_intro": s_p2_intro, "p2_fcmpm": s_p2_fcmpm, "p2_validation": s_p2_validation,
+            "p2_selection": s_p2_selection,
             "p3_intro": s_p3_intro, "p3_generator": s_p3_generator, "p3_result": s_p3_result}
 
 
