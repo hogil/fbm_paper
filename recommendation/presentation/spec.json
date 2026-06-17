@@ -193,9 +193,9 @@
       "kicker": "P1 | viewer 처리 구조",
       "title": "Numba와 pyvips: 대량 Failbit Map viewer 처리",
       "bullets": [
-        "**왜 필요한가** — 생성된 대량 Failbit Map을 운영 viewer에서 매일 조회·비교·합성합니다. 여러 wafer 합성과 수천×수천 PNG 로드가 viewer 병목이라, 아래 두 기법으로 처리 속도와 메모리를 잡았습니다"
+        "**왜 필요한가** — 생성된 대량 Failbit Map을 운영 viewer에서 매일 조회·합성합니다. 여러 wafer 합성(Numba)과 초대용량 PNG 로드(pyvips)가 viewer 병목이라 두 기법으로 해결했습니다"
       ],
-      "body_h": 0.82,
+      "body_h": 0.72,
       "bullet_size": 13.4,
       "img_note": "모델 추론 속도 수치가 아니라, 운영 viewer가 대량 map을 다룰 수 있게 만든 데이터/이미지 처리 구조입니다",
       "cols": 2,
@@ -204,62 +204,55 @@
           "head": "Numba @njit composite map",
           "sections": [
             [
-              "Operation:",
+              "What:",
               [
-                "composite[y][x] = sum_w grade[w][y][x]   (per pixel)"
+                "composite[y][x] = sum_w grade[w][y][x]",
+                "@njit compiles the loop to native code"
               ]
             ],
             [
-              "What @njit does:",
+              "Why:",
               [
-                "JIT-compiles this loop to native machine code",
-                "(unboxed numbers, no interpreter; prange = multi-core)"
+                "pure Python: interpreter + boxed objects",
+                "numpy: C arrays, but a temp array per op"
               ]
             ],
             [
-              "pure Python -> numpy -> Numba:",
+              "How:",
               [
-                "pure Python : interpreter + boxed object per element",
-                "numpy       : contiguous C arrays, but a temp array per op",
-                "Numba       : one fused compiled pass, no temps, on cores"
-              ]
-            ],
-            [
-              "Result:",
-              [
-                "~50x vs numpy ;  10-map composite ~2.9 s"
+                "one fused unboxed pass + prange cores",
+                "no temp arrays -> ~50x vs numpy (~2.9 s)"
               ]
             ]
           ],
-          "caption": "JIT-compiled, unboxed, single fused pass, multi-core"
+          "caption": "JIT-compiled, unboxed, single pass, multi-core"
         },
         {
-          "head": "pyvips — stream-load & resize large maps",
+          "head": "pyvips large-image load & resize",
           "sections": [
             [
-              "Problem:",
+              "What:",
               [
-                "one map ~ 6912 x 6912 x 3 = ~140 MB raw RGB",
-                "decoding/holding whole maps overwhelms the viewer"
+                "load + resize very large maps for the UI",
+                "pyvips = Python binding of libvips"
               ]
             ],
             [
-              "Why pyvips (libvips) stays light:",
+              "Why:",
               [
-                "demand-driven: op graph runs only when output is pulled",
-                "streams scanline regions -> peak memory ~ a region",
-                "horizontally threaded: regions run the pipeline in parallel"
+                "one map = 6912x6912x3 ~ 140 MB raw",
+                "decoding whole maps overwhelms the viewer"
               ]
             ],
             [
-              "Result:",
+              "How:",
               [
-                "high-quality resize (cubic) without full-image decode",
-                "viewer touches small regions, not whole ~140 MB maps"
+                "demand-driven scanline streaming",
+                "peak memory ~ a region; threaded"
               ]
             ]
           ],
-          "caption": "low-memory streaming load & resize of huge maps"
+          "caption": "low-memory streaming load & resize"
         }
       ]
     },
