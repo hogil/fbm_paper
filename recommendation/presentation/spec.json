@@ -68,33 +68,26 @@
     },
     {
       "type": "image_grid",
-      "kicker": "P1 | 데이터 처리 구조 (생성 파이프라인)",
-      "title": "원천 log를 분석 가능한 Failbit Map으로 — 4가지 기법",
+      "kicker": "P1 | 데이터 생성 (fail-map)",
+      "title": "원천 EDS log → 좌표 보존 Failbit Map 생성",
       "bullets": [
-        "**왜** — 하루 약 2만 wafer를 압축 log에서 Failbit Map으로 변환·적재하고 운영 viewer로 대량 조회합니다 (변환 속도·저장·로드 최적화가 핵심)"
+        "**왜** — 하루 약 2만 wafer의 EDS log를 좌표 보존 Failbit Map PNG와 positions JSON으로 변환·적재합니다. 핵심 변환은 측정값(hex)→Grade 무손실 변환과 색을 번호로 저장하는 palette PNG이며, ProcessPool로 24개 병렬 처리합니다"
       ],
       "images": [
         {
           "diagram": "hex_to_grade",
-          "caption": "① Cython · 측정 log → Grade 격자"
+          "caption": "① Cython · hex → Grade 무손실 변환 (~100×)"
         },
         {
           "diagram": "bytes_compare",
-          "caption": "② 팔레트 PNG · 색을 번호로 저장"
-        },
-        {
-          "diagram": "numba_composite",
-          "caption": "③ Numba · 다수 wafer 합성"
-        },
-        {
-          "diagram": "pyvips_stream",
-          "caption": "④ pyvips · 대용량 이미지 로드"
+          "caption": "② 32색 palette PNG · 색을 번호로 저장 (~75%↓)"
         }
       ],
       "grid_cols": 2,
-      "body_h": 0.5,
+      "body_h": 0.62,
       "img_tile": "#FFFFFF",
-      "bullet_size": 13.5
+      "bullet_size": 13.5,
+      "img_note": "생성(fail-map) 단계 — 운영 뷰어(mapviewer)의 Numba 합성·pyvips 로드는 운영 슬라이드에서 별도로 다룹니다"
     },
     {
       "type": "bullets",
