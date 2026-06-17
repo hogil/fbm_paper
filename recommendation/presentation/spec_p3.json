@@ -12,12 +12,12 @@
     {
       "type": "image_grid",
       "kicker": "P3 | 순차 episode 생성",
-      "title": "현장 판정 기준을 순차 episode 생성 규칙으로 옮겼다",
+      "title": "순차 episode 기반 trend 생성 (Sequential Episode-Based)",
       "bullets": [
-        "한 chart는 같은 device/step/item을 여러 설비(fleet)가 함께 찍은 trend이고, 그중 한 설비를 판정 대상으로 봅니다",
-        "정상 baseline은 episode(자기완결 한 구간)를 하나씩 완결 생성하고 다음으로 넘어가며 이어 붙입니다. episode마다 측정 밀도(밀집/희소/결핍)와 산포가 다르고, 변동은 노이즈 3종으로 재현합니다",
+        "한 chart는 같은 device/step/item을 여러 설비(fleet)가 함께 찍은 trend이고, 그중 한 설비(target)를 판정 대상으로 봅니다 (fleet-conditioned)",
+        "정상 baseline은 episode(자기완결 한 구간)를 하나씩 완결 생성 후 이어 붙입니다. episode마다 길이/측정 밀도(밀집/희소/결핍)/결측 패턴이 다르고, 노이즈는 chart당 1종(Gaussian/AR/Laplacian)을 공유합니다",
         {
-          "t": "순차 episode 생성(sequential episode generation) — episode는 자기완결 한 구간(=segment), 이어 붙여 trend 한 장을 구성",
+          "t": "episode = 자기완결 trend segment. 강화학습 episode 개념(완결 단위 순차 생성) 차용 — 시계열 표준어는 segment",
           "lvl": 1
         }
       ],
@@ -29,7 +29,7 @@
         }
       ],
       "grid_cols": 1,
-      "img_note": "현업(BBD / Overlay / CD) trend 판정 경험을 영역, 노이즈, 이상 규칙으로 코드화 — episode를 순차로 생성"
+      "img_note": "현업(BBD / Overlay / CD) trend 판정 경험을 영역(밀도·결측), 노이즈, 이상 규칙으로 코드화"
     },
     {
       "type": "image_grid",
@@ -56,12 +56,12 @@
     {
       "type": "image_grid",
       "kicker": "P3 | 1차 binary gate (PoC)",
-      "title": "생성 데이터로 검증 — test 1,500 중 놓친 불량 1건",
+      "title": "1차 gate 검증 — test 1,500 중 놓친 불량 1건",
       "bullets": [
-        "trend 이미지를 **ConvNeXtV2-Tiny**로 정상/이상 1차 판정하고(Focal loss, normal threshold 0.9), 놓침(FN) 최소화를 목표로 했습니다",
-        "test 1,500(정상 750 / 불량 750)에서 **binary F1 0.9967, 이상 recall 0.9987** — 놓친 불량 1건(std), 정상 오경보 4건. 5-seed 평균 F1 0.9975",
+        "trend 이미지를 **ConvNeXtV2-Tiny**로 정상/이상 1차 판정(Focal loss, NT 0.9). test 1,500(정상 750/불량 750)에서 **F1 0.9967, 이상 recall 0.9987** — 놓친 불량 1건(std), 정상 오경보 4건",
+        "5종 이상 중 4종은 FN 0, 미세 산포(std)만 1건. NT를 올리면 FN↓ / FP↑ — 운영은 0.9 균형점. 5-seed 평균 F1 0.9975로 안정적",
         {
-          "t": "통과한 불량은 2차에서 유형 진단(type 정확도 0.73, 주 혼동 drift↔mean_shift). NT를 올리면 FN↓ / FP↑ — 운영은 0.9 균형점",
+          "t": "통과한 불량은 2차에서 유형 진단(type 정확도 0.73, 주 혼동 drift↔mean_shift)",
           "lvl": 1
         }
       ],
@@ -75,6 +75,23 @@
       "grid_cols": 1,
       "img_badge": "F1 0.9967 / recall 0.9987 (생성셋 PoC)",
       "img_note": "좌 confusion(test 1,500 대표 run) / 중 NT trade-off(319-run 평균) / 우 유형별 오류"
+    },
+    {
+      "type": "image_grid",
+      "kicker": "P3 | 모델 근거 (Grad-CAM)",
+      "title": "모델이 색이 아니라 이상 구간을 본다",
+      "bullets": [
+        "Grad-CAM으로 보면 mean shift/std/spike/drift는 trend 오른쪽 끝(이상 구간), context는 전체에 모델 주목이 집중됩니다 — 색이나 대비가 아니라 실제 패턴을 학습"
+      ],
+      "body_h": 0.62,
+      "images": [
+        {
+          "src": "p3_res_gradcam.png",
+          "caption": ""
+        }
+      ],
+      "grid_cols": 1,
+      "img_note": "클래스별(정상 + 이상 5종) Grad-CAM — 빨강일수록 모델이 강하게 주목한 영역 (실제 학습 결과)"
     }
   ]
 }

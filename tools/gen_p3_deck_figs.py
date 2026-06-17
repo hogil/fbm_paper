@@ -43,6 +43,7 @@ def draw_baseline_chart(ax, rng):
     edge = {"dense": NAVY, "sparse": "#C98A22", "missing": "#CC3328", "thin": MUT}
     nfleet = 5
     foff = rng.normal(0, 0.018, nfleet)
+    sig = 0.05   # 노이즈는 chart당 1종 → 산포 폭 동일. episode마다 변하는 건 밀도/결측/길이
     x0 = 0; shown = set()
     for label, length, dens, kind in episodes:
         x1 = x0 + length
@@ -50,7 +51,6 @@ def draw_baseline_chart(ax, rng):
         ax.axvline(x1, color="#DDE2EA", lw=0.7, zorder=1)
         if dens > 0:
             npts = max(2, int(length * dens))
-            sig = rng.uniform(0.035, 0.085)   # episode 마다 산포(노이즈 폭)도 달라짐
             for m in range(nfleet):
                 ax.scatter(rng.uniform(x0, x1, npts), foff[m] + rng.normal(0, sig, npts),
                            s=6, color=GRAYF, alpha=0.40, edgecolors="none", zorder=2)
@@ -64,7 +64,7 @@ def draw_baseline_chart(ax, rng):
     ax.axhline(0, color="#8A929E", lw=1.0, ls=(0, (5, 4)), zorder=1)
     ax.set_xlim(0, x0); ax.set_ylim(-0.36, 0.33)
     ax.set_ylabel("Measurement (정규화)", fontsize=8.5, color=MUT)
-    ax.set_xlabel("time index — episode(구간)마다 측정 밀도와 산포가 함께 달라짐", fontsize=8.5, color=MUT)
+    ax.set_xlabel("time index — episode(구간)마다 측정 밀도/결측/길이가 다름 (노이즈는 chart당 1종)", fontsize=8.5, color=MUT)
     _spines(ax)
 
 
@@ -105,7 +105,7 @@ def fig_baseline():
         p0 = aL.get_position(); p1 = aR.get_position()
         fig.text((p0.x0 + p1.x1) / 2, p0.y1 + 0.04, text, ha="center", va="bottom",
                  fontsize=12.5, color=NAVY, fontweight="bold")
-    sec(ax_b, ax_b, "(a) 정상 baseline — 회색 fleet + 파랑 highlighted, episode 구간마다 밀도/산포가 변함")
+    sec(ax_b, ax_b, "(a) 정상 baseline — 회색 fleet + 파랑 highlighted, episode 구간마다 밀도/결측이 변함")
     sec(ax_n[0], ax_n[2], "(b) 계측 노이즈 3종 (chart당 1종)")
     fig.savefig(FIG + "/p3_deck_baseline.png", facecolor="white"); print("wrote baseline"); plt.close(fig)
 
