@@ -94,31 +94,55 @@ def draw_noise(axs, rng):
 
 # ── (c) 이상 5종 ──
 def draw_anomaly(axs, rng):
+    """5종을 한눈에 구분되게: 각 유형에 고유한 가이드(계단/엔벨로프/스템/추세선/오프셋)를 얹는다."""
     n = 100; t = np.arange(n); cut = 64
+    tn = t[:cut]; ta = t[cut:]; na = n - cut
     titles = ["avg", "std", "spike", "drift", "context"]
-    subs = ["평균 이동", "산포 확대", "순간 급등", "선형 증가", "fleet 대비 이탈"]
+    subs = ["평균이 한 단계 위로", "산포가 넓게 퍼짐", "몇 점만 튀어오름", "기울기로 상승", "전체가 위로 이탈"]
 
-    def base():
-        return rng.normal(0, 0.22, n)
-
-    def split(ax, y, ab):
-        ax.scatter(t[:cut], y[:cut], s=8, color=BLUE, alpha=0.8, edgecolors="none")
-        ax.scatter(t[cut:], ab, s=9, color=RED, alpha=0.9, edgecolors="none")
-        ax.axvline(cut, color="#D5DBE3", lw=0.8, ls=(0, (3, 3)))
-        ax.set_ylim(-1.7, 2.7); ax.axhline(0, color="#E4E8EE", lw=0.7)
-
-    y = base(); split(axs[0], y, y[cut:] + 1.5)
-    y = base(); split(axs[1], y, rng.normal(0, 0.7, n - cut))
-    y = base(); ab = y[cut:].copy(); sp = rng.choice(np.arange(n - cut), 5, replace=False)
-    ab[sp] += rng.uniform(1.8, 2.4, 5); split(axs[2], y, ab)
-    y = base(); split(axs[3], y, y[cut:] + np.linspace(0, 2.0, n - cut))
-    axc = axs[4]
-    for _ in range(4):
-        axc.plot(t, rng.normal(0, 0.18, n) + rng.uniform(-0.15, 0.15), color=GRY, lw=0.8, alpha=0.7)
-    axc.plot(t, rng.normal(0, 0.18, n) + 1.3, color=RED, lw=1.6)
-    axc.set_ylim(-1.7, 2.7); axc.axhline(0, color="#E4E8EE", lw=0.7)
-    for ax, ti, su in zip(axs, titles, subs):
+    def setup(ax):
+        ax.set_ylim(-2.0, 3.0)
+        ax.axhspan(-0.65, 0.65, color="#EEF1F5", zorder=0)        # 정상 범위 참조 띠
+        ax.axvline(cut, color="#CBD2DC", lw=0.9, ls=(0, (3, 3)))
         _spines(ax); ax.set_xticks([]); ax.set_yticks([])
+
+    def normal(ax):
+        ax.scatter(tn, rng.normal(0, 0.2, cut), s=8, color=BLUE, alpha=0.8, edgecolors="none")
+
+    # avg — 계단처럼 평균이 위로
+    ax = axs[0]; setup(ax); normal(ax)
+    ax.scatter(ta, rng.normal(1.7, 0.18, na), s=9, color=RED, alpha=0.9, edgecolors="none")
+    ax.plot([0, cut], [0, 0], color=BLUE, lw=1.6)
+    ax.plot([cut, n - 1], [1.7, 1.7], color=RED, lw=2.0)
+    ax.annotate("", xy=(cut + 2, 1.6), xytext=(cut + 2, 0.1),
+                arrowprops=dict(arrowstyle="->", color=RED, lw=1.4))
+
+    # std — 평균 그대로, 위아래로 넓게 퍼짐 (엔벨로프)
+    ax = axs[1]; setup(ax); normal(ax)
+    ax.scatter(ta, rng.normal(0, 0.95, na), s=9, color=RED, alpha=0.85, edgecolors="none")
+    for s in (1, -1):
+        ax.plot([cut, n - 1], [0.25 * s, 2.0 * s], color=RED, lw=1.4, ls=(0, (4, 3)))
+
+    # spike — 평소 잠잠, 몇 점만 솟구침 (스템)
+    ax = axs[2]; setup(ax); normal(ax)
+    ax.scatter(ta, rng.normal(0, 0.18, na), s=8, color=RED, alpha=0.5, edgecolors="none")
+    for s in sorted(rng.choice(np.arange(4, na - 3), 3, replace=False)):
+        ax.plot([cut + s, cut + s], [0, 2.5], color=RED, lw=1.6, zorder=4)
+        ax.scatter([cut + s], [2.5], s=42, color=RED, zorder=5, edgecolors="white", lw=0.8)
+
+    # drift — 추세선 따라 서서히 상승
+    ax = axs[3]; setup(ax); normal(ax)
+    ramp = np.linspace(0, 2.3, na)
+    ax.scatter(ta, ramp + rng.normal(0, 0.12, na), s=9, color=RED, alpha=0.85, edgecolors="none")
+    ax.plot(ta, ramp, color=RED, lw=2.2)
+
+    # context — 오른쪽 끝이 아니라 전체가 fleet 위로
+    ax = axs[4]; setup(ax)
+    for _ in range(4):
+        ax.plot(t, rng.normal(0, 0.16, n) + rng.uniform(-0.12, 0.12), color=GRY, lw=0.9, alpha=0.7)
+    ax.plot(t, rng.normal(0, 0.14, n) + 1.7, color=RED, lw=2.0)
+
+    for ax, ti, su in zip(axs, titles, subs):
         ax.set_title(ti, fontsize=11, color=NAVY, fontweight="bold", pad=5)
         ax.set_xlabel(su, fontsize=8.5, color=MUT)
 
@@ -153,5 +177,57 @@ def fig_combined():
     plt.close(fig)
 
 
+def fig_regions():
+    rng = np.random.default_rng(7)
+    fig, ax = plt.subplots(figsize=(13.0, 4.0), dpi=200); fig.patch.set_facecolor("white")
+    draw_regions(ax, rng)
+    fig.tight_layout()
+    fig.savefig(FIG + "/p3_deck_regions.png", facecolor="white", bbox_inches="tight")
+    print("wrote regions"); plt.close(fig)
+
+
+def fig_noise():
+    rng = np.random.default_rng(3)
+    fig, axs = plt.subplots(1, 3, figsize=(13.4, 3.5), dpi=200); fig.patch.set_facecolor("white")
+    draw_noise(axs, rng)
+    fig.tight_layout()
+    fig.savefig(FIG + "/p3_deck_noise.png", facecolor="white", bbox_inches="tight")
+    print("wrote noise"); plt.close(fig)
+
+
+def fig_anomaly():
+    rng = np.random.default_rng(11)
+    fig, axs = plt.subplots(1, 5, figsize=(16.0, 3.3), dpi=200); fig.patch.set_facecolor("white")
+    draw_anomaly(axs, rng)
+    fig.tight_layout()
+    fig.savefig(FIG + "/p3_deck_anomaly.png", facecolor="white", bbox_inches="tight")
+    print("wrote anomaly"); plt.close(fig)
+
+
+def fig_baseline():
+    """정상 baseline 한 장: (a) 영역(위 전폭) + (b) 노이즈 3종(아래). slide 3 용."""
+    fig = plt.figure(figsize=(13.8, 5.3), dpi=200); fig.patch.set_facecolor("white")
+    gs = fig.add_gridspec(2, 1, height_ratios=[1.0, 0.8], hspace=0.6,
+                          left=0.055, right=0.985, top=0.89, bottom=0.10)
+    ax_reg = fig.add_subplot(gs[0])
+    ng = gs[1].subgridspec(1, 3, wspace=0.26)
+    ax_n = [fig.add_subplot(ng[i]) for i in range(3)]
+    draw_regions(ax_reg, np.random.default_rng(7))
+    draw_noise(ax_n, np.random.default_rng(3))
+
+    def sec(aL, aR, text):
+        p0 = aL.get_position(); p1 = aR.get_position()
+        fig.text((p0.x0 + p1.x1) / 2, p0.y1 + 0.045, text, ha="center", va="bottom",
+                 fontsize=13, color=NAVY, fontweight="bold")
+    sec(ax_reg, ax_reg, "(a) 정상 baseline — 밀집/희소/결핍 영역")
+    sec(ax_n[0], ax_n[2], "(b) 계측 노이즈 3종")
+    out = FIG + "/p3_deck_baseline.png"
+    fig.savefig(out, facecolor="white"); print("wrote baseline"); plt.close(fig)
+
+
 if __name__ == "__main__":
     fig_combined()
+    fig_regions()
+    fig_noise()
+    fig_anomaly()
+    fig_baseline()

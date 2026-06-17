@@ -5,80 +5,91 @@
       "anchor_metrics": "",
       "kicker": "AI Specialist 인증 — Project 3",
       "title": "계측 trend 이상탐지 데이터 생성",
-      "subtitle": "현장 계측 trend의 영역 구조와 노이즈, 이상 발생 방식을 domain knowledge로 코드화해 학습·평가 데이터를 만들고 1차 binary gate로 검증한 과제",
+      "subtitle": "이상 유형별 검증 데이터가 없던 문제를, 현장에서 trend를 보던 판정 기준을 생성 규칙으로 옮겨 풀었습니다. 정상 baseline 위에 이상을 합성해 평가셋을 만들고 1차 gate로 확인했습니다",
       "author": "최호길  |  메모리제조센터 QIE그룹 Data Science 파트",
       "affil": "제조품질 AI / Data Science"
     },
     {
-      "type": "two_col",
-      "kicker": "P3 | 개요",
-      "title": "이상 유형별 라벨 부족을 도메인 규칙 generator로 해결",
-      "cols": [
-        {
-          "head": "문제 — 이상 유형별 라벨이 희소",
-          "color": "#0F1E3D",
-          "bullets": [
-            "실 계측 trend는 정상은 많지만 이상은 드물어, **avg / std / spike / drift / context** 같은 이상 유형별 라벨이 부족합니다",
-            "유형별 평가셋이 없으면 모델 학습도, 성능 비교도 어렵습니다",
-            {
-              "t": "정답 라벨이 적어 정량 metric 자체가 성립하기 힘든 상황",
-              "lvl": 1
-            }
-          ],
-          "chips": [
-            {
-              "big": "이상 5종",
-              "label": "avg/std/spike/drift/context"
-            },
-            {
-              "big": "라벨 희소",
-              "label": "정량 평가 난항"
-            }
-          ]
-        },
-        {
-          "head": "해법 — domain knowledge generator",
-          "color": "#0F1E3D",
-          "bullets": [
-            "BBD담당/Overlay담당/CD담당으로 쌓은 trend 분석 경험으로 계측의 **영역 구조, 노이즈, 이상 발생 방식**을 규칙으로 코드화했습니다",
-            "정상 baseline을 만들고 그 위에 이상을 합성해 **검증 가능한 benchmark**를 확보했습니다",
-            {
-              "t": "영역(계측 밀도) + 노이즈(계측 변동) + 이상(불량 방식) 세 축을 규칙화",
-              "lvl": 1
-            }
-          ],
-          "chips": [
-            {
-              "big": "규칙 기반",
-              "label": "영역+노이즈+이상"
-            },
-            {
-              "big": "benchmark",
-              "label": "검증 가능"
-            }
-          ]
-        }
-      ]
-    },
-    {
       "type": "image_grid",
-      "kicker": "P3 | trend 생성",
-      "title": "정상 baseline(영역 + 노이즈) 위에 이상 5종을 합성",
+      "kicker": "P3 | 개요",
+      "title": "없던 검증 데이터를 현장 판정 기준으로 만들었다",
+      "bullets": [
+        "정상 trend는 쌓여 있지만 **avg / std / spike / drift / context** 같은 이상은 드물게 나와, 유형별로 모아 둔 검증 데이터가 거의 없습니다",
+        {
+          "t": "정답이 적어 모델 학습도, 유형별 성능 비교도 잘 서지 않는 상황입니다",
+          "lvl": 1
+        },
+        "본인이 BBD담당, Overlay담당, CD담당으로 trend를 보던 판정 기준을 **생성 규칙으로 옮겨**, 부족한 이상을 직접 만들어 검증 가능한 데이터를 확보했습니다",
+        {
+          "t": "성능 수치가 아니라, 없던 검증 데이터를 도메인 지식으로 메운 것이 핵심입니다",
+          "lvl": 1
+        }
+      ],
+      "body_h": 2.0,
       "images": [
         {
-          "src": "p3_deck_combined.png",
+          "src": "p3_deck_anomaly.png",
           "caption": ""
         }
       ],
       "grid_cols": 1,
-      "img_note": "(a) 측정 빈도에 따라 밀집/희소/결핍이 갈리는 정상 baseline, (b) 계측 변동을 Gaussian/설비(AR)/헌팅(Laplacian) 노이즈로 재현, (c) 그 위에 이상 5종(avg/std/spike/drift/context) 합성"
+      "img_badge": "이상 5종 생성 규칙 + 검증셋 확보",
+      "img_note": "현장에서 보던 이상 5종(평균 이동 / 산포 확대 / 순간 급등 / 선형 상승 / fleet 대비 이탈)을 생성 규칙으로 코드화"
+    },
+    {
+      "type": "image_grid",
+      "kicker": "P3 | 정상 baseline 생성",
+      "title": "측정 밀도(영역)와 계측 변동(노이즈)으로 정상 baseline을 만든다",
+      "bullets": [
+        "측정 빈도에 따라 **밀집 / 희소 / 결핍** 영역이 갈리는 실제 trend 구조를 episode 단위로 재현했습니다",
+        "계측 변동은 설비 거동에 맞춰 **3종 노이즈**로 나눴습니다 — 기본 산포(Gaussian), 설비 상태변동(Correlated AR), 계측 헌팅(Laplacian)"
+      ],
+      "body_h": 1.0,
+      "images": [
+        {
+          "src": "p3_deck_baseline.png",
+          "caption": ""
+        }
+      ],
+      "grid_cols": 1,
+      "img_note": "측정 빈도에 따라 영역 밀도를 다르게 주고, 신호 자체는 평탄하게 둔 채 변동은 노이즈로만 만들어 실제 계측과 비슷하게 했습니다"
+    },
+    {
+      "type": "image_grid",
+      "kicker": "P3 | 이상 합성",
+      "title": "정상 baseline 위에 이상 5종을 현장 발생 방식대로 합성",
+      "bullets": [
+        "**avg** 평균 이동, **std** 산포 확대, **spike** 순간 급등, **drift** 선형 상승, **context** fleet 대비 전체 이탈 — 5종을 trend 뒤쪽 구간에 주입합니다",
+        {
+          "t": "이상 강도는 정상 산포 기준 최소 강도로 보정해, 너무 약해 보이지 않게 둡니다",
+          "lvl": 1
+        }
+      ],
+      "body_h": 1.2,
+      "images": [
+        {
+          "src": "trend_mean_shift.png",
+          "caption": "avg — 평균이 한 단계 이동"
+        },
+        {
+          "src": "trend_spike.png",
+          "caption": "spike — 일부 점이 순간 급등"
+        },
+        {
+          "src": "trend_drift.png",
+          "caption": "drift — 서서히 선형 상승"
+        }
+      ],
+      "grid_cols": 3,
+      "img_badge": "정상 3,500 + 이상 3,500 = 7,000",
+      "img_note": "파랑은 정상 측정, 빨강은 주입된 이상입니다. std와 context를 포함한 5종 모두 같은 규칙 엔진으로 만듭니다"
     },
     {
       "type": "papertext",
-      "kicker": "P3 | 파이프라인/데이터",
-      "title": "생성 파이프라인과 데이터 구성",
+      "kicker": "P3 | 생성 파이프라인 / 데이터",
+      "title": "chart 정의부터 이미지 렌더까지 규칙 기반 생성",
       "bullets": [
-        "chart 정의부터 이미지 렌더까지 규칙 기반으로 생성하고, 이상 강도는 보이도록 floor 보정합니다"
+        "현장 판정 기준을 chart 정의, episode 조립, 노이즈, 이상 주입, 렌더의 5단계 생성 규칙으로 옮겼습니다"
       ],
       "body_h": 0.7,
       "cols": 2,
@@ -101,19 +112,19 @@
             [
               "③ 노이즈",
               [
-                "Gaussian / Correlated / Laplacian 중 1종"
+                "Gaussian, Correlated AR, Laplacian 중 1종"
               ]
             ],
             [
               "④ 이상 주입",
               [
-                "avg/std/spike/drift/context (오른쪽 끝)"
+                "avg/std/spike/drift/context, trend 뒤쪽 구간"
               ]
             ],
             [
               "⑤ 렌더",
               [
-                "강도 floor 보정 → 학습/평가 trend 이미지"
+                "이상 강도 보정 후 학습/평가 trend 이미지"
               ]
             ]
           ],
@@ -133,13 +144,13 @@
               "평가 난이도",
               [
                 "test/val은 이상 강도를 0.8배로 낮춰",
-                "더 어려운 평가셋 구성"
+                "더 어려운 평가셋으로 구성"
               ]
             ],
             [
               "정상 보호",
               [
-                "정상은 fleet 중심에서 벗어나지 않게 강제"
+                "정상은 fleet 중심에서 벗어나지 않게 둠"
               ]
             ]
           ],
@@ -148,55 +159,27 @@
       ]
     },
     {
-      "type": "two_col",
+      "type": "image_grid",
       "kicker": "P3 | 1차 binary gate (PoC)",
-      "title": "생성 데이터로 정상/이상 1차 판정 검증",
-      "cols": [
+      "title": "생성 데이터로 정상/이상 1차 판정이 학습됨을 확인",
+      "bullets": [
+        "trend 이미지를 **ConvNeXtV2-Tiny**로 정상/이상 2분류하고, **놓침(FN) 최소화**를 목표로 Focal loss와 normal threshold 0.9를 적용했습니다",
+        "test 1,500에서 **binary F1 0.9967**, **이상 recall 0.9987** — 정상 750 중 오탐 4건, 이상 750 중 놓침 1건 수준입니다",
         {
-          "head": "모델 — 1차 binary gate",
-          "color": "#0F1E3D",
-          "bullets": [
-            "trend 이미지를 **ConvNeXtV2-Tiny**로 정상/이상 2분류하며, **놓침(FN) 최소화**가 목표입니다",
-            "Focal loss + EMA로 학습하고, normal threshold를 올려 FN을 더 줄입니다",
-            {
-              "t": "이상이 잡히면 2차에서 유형(avg/std/spike/drift/context) 진단",
-              "lvl": 1
-            }
-          ],
-          "chips": [
-            {
-              "big": "2-stage",
-              "label": "binary gate → 유형 진단"
-            },
-            {
-              "big": "ConvNeXtV2",
-              "label": "Tiny backbone"
-            }
-          ]
-        },
-        {
-          "head": "성과 — 생성셋 검증(PoC)",
-          "color": "#0F1E3D",
-          "bullets": [
-            "test 1,500에서 **binary F1 0.9967**, **이상 recall 0.9987**(normal threshold 0.9)",
-            "정상 750 중 오탐 4건, 이상 750 중 놓침 1건 수준",
-            {
-              "t": "FN을 유형별로 분해해 데이터 난이도와 threshold로 피드백",
-              "lvl": 1
-            }
-          ],
-          "chips": [
-            {
-              "big": "F1 0.9967",
-              "label": "binary gate"
-            },
-            {
-              "big": "recall 0.9987",
-              "label": "abnormal"
-            }
-          ]
+          "t": "robustness 점검 — smoothing window(median 1/3/5)로 노이즈가 아닌 추세를 보게, 색과 투명도만 바꿔 렌더해 색이 아니라 패턴을 학습하는지 확인",
+          "lvl": 1
         }
-      ]
+      ],
+      "body_h": 2.1,
+      "images": [
+        {
+          "src": "trend_context.png",
+          "caption": ""
+        }
+      ],
+      "grid_cols": 1,
+      "img_badge": "F1 0.9967 / recall 0.9987 (PoC, 생성셋)",
+      "img_note": "context 이상 예시 — 정상(파랑)과 fleet 대비 이탈(빨강)을 1차 gate가 분리. 통과 시 2차에서 유형(avg/std/spike/drift/context) 진단"
     }
   ]
 }
