@@ -10,19 +10,44 @@
       "affil": "제조품질 AI / Data Science"
     },
     {
-      "type": "image_grid",
+      "type": "papertext",
       "kicker": "P3 | 개요",
-      "title": "이상 유형별 라벨 부족 → 도메인 규칙으로 데이터 생성",
+      "title": "정상 baseline 위에 영역/노이즈/이상을 규칙으로 합성",
       "bullets": [
-        "실 계측 trend는 정상은 많지만 이상은 드물고, 평균이동/산포/spike/drift 같은 **이상 유형별 라벨이 희소**해 모델 학습과 평가가 어렵습니다",
-        "본인이 BBD담당, Overlay담당, CD담당으로 쌓은 trend 분석 경험을 바탕으로 계측 trend의 **영역 구조, 노이즈, 이상 발생 방식**을 generator 규칙으로 옮겨 검증 가능한 benchmark를 만들었습니다"
+        "이상 유형별 라벨이 희소한 계측 trend를, 도메인 규칙으로 정상 baseline과 이상을 합성해 검증 가능한 benchmark로 만들었습니다"
       ],
-      "body_h": 1.25,
-      "images": [
-        {"src": "p3_generator_top_reference.png", "caption": "정상 baseline(밀집/희소/결핍 영역) 위에 이상 4종(평균이동 / 산포 / spike / drift)을 합성"}
-      ],
-      "grid_cols": 1,
-      "img_note": "정상 신호 생성 → 노이즈 → 이상 주입 → 학습/평가 trend 이미지"
+      "body_h": 0.62,
+      "cols": 1,
+      "figs": [
+        {
+          "src": "p3_generator_top_reference.png",
+          "caption": "정상 baseline(밀집/희소/결핍 영역) + 이상 합성 예시"
+        },
+        {
+          "head": "trend 생성 구성요소 — 무엇을, 왜 넣었나",
+          "sections": [
+            [
+              "영역(Region)",
+              [
+                "측정 빈도에 따라 밀집/희소/결핍이 실제로 교차하므로, 정상 baseline에 그대로 반영"
+              ]
+            ],
+            [
+              "노이즈(Noise)",
+              [
+                "계측 변동을 현장 현상으로 재현: Gaussian=산포 / Correlated=설비 변동 / Laplacian=계측 헌팅"
+              ]
+            ],
+            [
+              "이상(Anomaly 5종)",
+              [
+                "실제 불량 발생 방식을 라벨로 확보: avg / std / spike / drift / context"
+              ]
+            ]
+          ],
+          "caption": ""
+        }
+      ]
     },
     {
       "type": "image_grid",
@@ -34,7 +59,10 @@
       ],
       "body_h": 1.25,
       "images": [
-        {"src": "trend_normal.png", "caption": "정상 trend — episode별 영역 밀도 차이"}
+        {
+          "src": "trend_normal.png",
+          "caption": "정상 trend — episode별 영역 밀도 차이"
+        }
       ],
       "grid_cols": 1,
       "img_note": "밀집/희소/결핍 영역은 실제 계측 분포를 모사"
@@ -52,24 +80,57 @@
         {
           "head": "Gaussian — 기본 산포",
           "sections": [
-            ["분포", ["e_t ~ N(0, sigma^2)"]],
-            ["현장 의미", ["일반적인 무작위 계측 산포", "가장 흔한 기본 노이즈"]]
+            [
+              "분포",
+              [
+                "e_t ~ N(0, sigma^2)"
+              ]
+            ],
+            [
+              "현장 의미",
+              [
+                "일반적인 무작위 계측 산포",
+                "가장 흔한 기본 노이즈"
+              ]
+            ]
           ],
           "caption": "기본 계측 산포"
         },
         {
           "head": "Correlated AR(1) — 설비 변동",
           "sections": [
-            ["분포", ["e_t = rho * e_(t-1) + (1-rho) * w_t"]],
-            ["현장 의미", ["설비 이상이나 컨디션에 따라", "시간적으로 끌리는(자기상관) 변동"]]
+            [
+              "분포",
+              [
+                "e_t = rho * e_(t-1) + (1-rho) * w_t"
+              ]
+            ],
+            [
+              "현장 의미",
+              [
+                "설비 이상이나 컨디션에 따라",
+                "시간적으로 끌리는(자기상관) 변동"
+              ]
+            ]
           ],
           "caption": "설비 상태변동/컨디션"
         },
         {
           "head": "Laplacian — 계측 헌팅",
           "sections": [
-            ["분포", ["e_t ~ Laplace(0, b)"]],
-            ["현장 의미", ["계측 미스 등 헌팅으로", "가우시안보다 한 번씩 크게 튐(heavy-tail)"]]
+            [
+              "분포",
+              [
+                "e_t ~ Laplace(0, b)"
+              ]
+            ],
+            [
+              "현장 의미",
+              [
+                "계측 미스 등 헌팅으로",
+                "가우시안보다 한 번씩 크게 튐(heavy-tail)"
+              ]
+            ]
           ],
           "caption": "계측 미스/헌팅 spike"
         }
@@ -80,17 +141,33 @@
       "kicker": "P3 | 이상 합성",
       "title": "이상 합성 — 실제 불량 발생 방식 5종",
       "bullets": [
-        "정상 baseline 오른쪽 끝에 도메인 규칙으로 이상을 주입합니다. 강도는 각 series의 baseline 산포에 비례하고, 너무 약하면 보이도록 보정합니다(context는 fleet 대비 전체 이탈)"
+        "정상 baseline 오른쪽 끝에 도메인 규칙으로 이상을 주입합니다(강도는 baseline 산포에 비례). context만 오른쪽 끝이 아니라 fleet 대비 전체 시계열이 벗어나는 형태입니다"
       ],
       "body_h": 0.95,
       "images": [
-        {"src": "trend_mean_shift.png", "caption": "Mean Shift — 평균 이동"},
-        {"src": "trend_standard_deviation.png", "caption": "Std 변화 — 산포 확대"},
-        {"src": "trend_spike.png", "caption": "Spike — 순간 튐"},
-        {"src": "trend_drift.png", "caption": "Drift — 선형 추세"}
+        {
+          "src": "trend_mean_shift.png",
+          "caption": "avg — 평균 이동"
+        },
+        {
+          "src": "trend_standard_deviation.png",
+          "caption": "std — 산포 확대"
+        },
+        {
+          "src": "trend_spike.png",
+          "caption": "spike — 순간 튐"
+        },
+        {
+          "src": "trend_drift.png",
+          "caption": "drift — 선형 추세"
+        },
+        {
+          "src": "trend_context.png",
+          "caption": "context — fleet 대비 이탈"
+        }
       ],
-      "grid_cols": 4,
-      "img_note": "mean_shift y=x+delta / std 산포 확대 / spike 일부 점 급등 / drift y=x+k(t-t0) / context legend 대비 outlier"
+      "grid_cols": 5,
+      "img_note": "avg y=x+delta / std 산포 확대 / spike 일부 점 급등 / drift y=x+k(t-t0) / context legend(fleet) 대비 outlier"
     },
     {
       "type": "papertext",
@@ -105,20 +182,62 @@
         {
           "head": "생성 파이프라인",
           "sections": [
-            ["① chart 정의", ["device x step x item, fleet legend(eqp/chamber/recipe)"]],
-            ["② episode 조립", ["12~25개, 영역 밀도 샘플링(밀집/희소/결핍)"]],
-            ["③ 노이즈", ["Gaussian / Correlated / Laplacian 중 1종"]],
-            ["④ 이상 주입", ["평균이동/산포/spike/drift/context (오른쪽 끝)"]],
-            ["⑤ 렌더", ["강도 floor 보정 → 학습/평가 trend 이미지"]]
+            [
+              "① chart 정의",
+              [
+                "device x step x item, fleet legend(eqp/chamber/recipe)"
+              ]
+            ],
+            [
+              "② episode 조립",
+              [
+                "12~25개, 영역 밀도 샘플링(밀집/희소/결핍)"
+              ]
+            ],
+            [
+              "③ 노이즈",
+              [
+                "Gaussian / Correlated / Laplacian 중 1종"
+              ]
+            ],
+            [
+              "④ 이상 주입",
+              [
+                "평균이동/산포/spike/drift/context (오른쪽 끝)"
+              ]
+            ],
+            [
+              "⑤ 렌더",
+              [
+                "강도 floor 보정 → 학습/평가 trend 이미지"
+              ]
+            ]
           ],
           "caption": "규칙 기반 생성 흐름"
         },
         {
           "head": "데이터 구성",
           "sections": [
-            ["규모", ["정상 3,500 + 이상 3,500 = 7,000", "별도 test 1,500 (이상 5종 stratified)"]],
-            ["평가 난이도", ["test/val은 이상 강도를 0.8배로 낮춰", "더 어려운 평가셋 구성"]],
-            ["정상 보호", ["정상은 fleet 중심에서 벗어나지 않게 강제"]]
+            [
+              "규모",
+              [
+                "정상 3,500 + 이상 3,500 = 7,000",
+                "별도 test 1,500 (이상 5종 stratified)"
+              ]
+            ],
+            [
+              "평가 난이도",
+              [
+                "test/val은 이상 강도를 0.8배로 낮춰",
+                "더 어려운 평가셋 구성"
+              ]
+            ],
+            [
+              "정상 보호",
+              [
+                "정상은 fleet 중심에서 벗어나지 않게 강제"
+              ]
+            ]
           ],
           "caption": "정상 3,500 + 이상 3,500 + test 1,500"
         }
@@ -135,11 +254,20 @@
           "bullets": [
             "trend 이미지를 **ConvNeXtV2-Tiny**로 정상/이상 2분류하며, **놓침(FN) 최소화**가 목표입니다",
             "Focal loss + EMA로 학습하고, normal threshold를 올려 FN을 더 줄입니다",
-            {"t": "이상이 잡히면 2차에서 유형(평균이동/산포/spike/drift/context) 진단", "lvl": 1}
+            {
+              "t": "이상이 잡히면 2차에서 유형(평균이동/산포/spike/drift/context) 진단",
+              "lvl": 1
+            }
           ],
           "chips": [
-            {"big": "2-stage", "label": "binary gate → 유형 진단"},
-            {"big": "ConvNeXtV2", "label": "Tiny backbone"}
+            {
+              "big": "2-stage",
+              "label": "binary gate → 유형 진단"
+            },
+            {
+              "big": "ConvNeXtV2",
+              "label": "Tiny backbone"
+            }
           ]
         },
         {
@@ -148,11 +276,20 @@
           "bullets": [
             "test 1,500에서 **binary F1 0.9967**, **이상 recall 0.9987**(normal threshold 0.9)",
             "정상 750 중 오탐 4건, 이상 750 중 놓침 1건 수준",
-            {"t": "FN을 유형별로 분해해 데이터 난이도와 threshold로 피드백", "lvl": 1}
+            {
+              "t": "FN을 유형별로 분해해 데이터 난이도와 threshold로 피드백",
+              "lvl": 1
+            }
           ],
           "chips": [
-            {"big": "F1 0.9967", "label": "binary gate"},
-            {"big": "recall 0.9987", "label": "abnormal"}
+            {
+              "big": "F1 0.9967",
+              "label": "binary gate"
+            },
+            {
+              "big": "recall 0.9987",
+              "label": "abnormal"
+            }
           ]
         }
       ]
