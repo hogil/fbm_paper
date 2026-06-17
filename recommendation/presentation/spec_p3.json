@@ -55,43 +55,26 @@
     },
     {
       "type": "image_grid",
-      "kicker": "P3 | 1차 binary gate (PoC)",
-      "title": "1차 gate 검증 — test 1,500 중 놓친 불량 1건",
+      "kicker": "P3 | 조건별 실험",
+      "title": "조건별 실험으로 성능을 끌어올렸다 (F1 0.9944 → 0.9988)",
       "bullets": [
-        "trend 이미지를 **ConvNeXtV2-Tiny**로 정상/이상 1차 판정(Focal loss, NT 0.9). test 1,500(정상 750/불량 750)에서 **F1 0.9967, 이상 recall 0.9987** — 놓친 불량 1건(std), 정상 오경보 4건",
-        "5종 이상 중 4종은 FN 0, 미세 산포(std)만 1건. NT를 올리면 FN↓ / FP↑ — 운영은 0.9 균형점. 5-seed 평균 F1 0.9975로 안정적",
+        "여러 학습 조건을 단독(single-axis)으로 바꿔 5-seed로 검증했습니다 (baseline F1 0.9944, 놓친 불량 FN 4.6)",
+        "정상 비율↑, **stochastic depth 0.05**, **label smoothing 0.02**가 특히 효과적 — 놓친 불량을 **4.6 → 0.8**로, F1을 **0.9988**까지 올렸습니다",
         {
-          "t": "통과한 불량은 2차에서 유형 진단(type 정확도 0.73, 주 혼동 drift↔mean_shift)",
+          "t": "각 막대는 단독 조건 실험. normal threshold(NT)를 올리면 FN↓ / FP↑ — 운영은 0.9 균형점",
           "lvl": 1
         }
       ],
-      "body_h": 1.6,
+      "body_h": 1.5,
       "images": [
         {
-          "src": "p3_deck_result.png",
+          "src": "p3_deck_ablation.png",
           "caption": ""
         }
       ],
       "grid_cols": 1,
-      "img_badge": "F1 0.9967 / recall 0.9987 (생성셋 PoC)",
-      "img_note": "좌 confusion(test 1,500 대표 run) / 중 NT trade-off(319-run 평균) / 우 유형별 오류"
-    },
-    {
-      "type": "image_grid",
-      "kicker": "P3 | 모델 근거 (Grad-CAM)",
-      "title": "모델이 색이 아니라 이상 구간을 본다",
-      "bullets": [
-        "Grad-CAM으로 보면 mean shift/std/spike/drift는 trend 오른쪽 끝(이상 구간), context는 전체에 모델 주목이 집중됩니다 — 색이나 대비가 아니라 실제 패턴을 학습"
-      ],
-      "body_h": 0.62,
-      "images": [
-        {
-          "src": "p3_res_gradcam.png",
-          "caption": ""
-        }
-      ],
-      "grid_cols": 1,
-      "img_note": "클래스별(정상 + 이상 5종) Grad-CAM — 빨강일수록 모델이 강하게 주목한 영역 (실제 학습 결과)"
+      "img_badge": "F1 0.9944 → 0.9988 / FN 4.6 → 0.8",
+      "img_note": "binary F1(좌)과 놓친 불량 FN(우) — 점선 = baseline, 막대 = 각 조건 단독 적용 (5-seed 평균)"
     }
   ]
 }

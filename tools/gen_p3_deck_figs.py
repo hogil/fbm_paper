@@ -208,7 +208,39 @@ def fig_result():
     fig.savefig(FIG + "/p3_deck_result.png", facecolor="white"); print("wrote result"); plt.close(fig)
 
 
+def fig_ablation():
+    """조건별 단독(single-axis) 실험 — baseline 대비 F1↑ / 놓친 불량 FN↓ (5-seed 평균)."""
+    conds = [("baseline", 0.9944, 4.6, "ref"),
+             ("Focal γ\n2.0", 0.9964, 2.4, "imp"),
+             ("EMA\n0.95", 0.9964, 2.2, "imp"),
+             ("Label smooth\n0.02", 0.9981, 0.8, "imp"),
+             ("Stoch.Depth\n0.05", 0.9985, 0.8, "imp"),
+             ("정상비율↑\n(3300)", 0.9988, 0.8, "best")]
+    labels = [c[0] for c in conds]; f1 = [c[1] for c in conds]; fn = [c[2] for c in conds]
+    cmap = {"ref": GRAYF, "imp": TEAL, "best": NAVY}
+    cols = [cmap[c[3]] for c in conds]
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(13.8, 4.3), dpi=195); fig.patch.set_facecolor("white")
+    x = np.arange(len(conds))
+    a1.bar(x, f1, color=cols, width=0.62, zorder=3)
+    a1.axhline(0.9944, color=GRAYF, ls=(0, (4, 3)), lw=1, zorder=2)
+    a1.set_ylim(0.992, 0.9995)
+    for i, v in enumerate(f1):
+        a1.text(i, v + 0.00004, f"{v:.4f}", ha="center", fontsize=8.5, color=NAVY, fontweight="bold")
+    a1.set_title("binary F1  (↑ 좋음)", fontsize=12, color=NAVY, fontweight="bold", pad=8)
+    a2.bar(x, fn, color=cols, width=0.62, zorder=3)
+    a2.axhline(4.6, color=GRAYF, ls=(0, (4, 3)), lw=1, zorder=2)
+    a2.set_ylim(0, 5.4)
+    for i, v in enumerate(fn):
+        a2.text(i, v + 0.12, f"{v:.1f}", ha="center", fontsize=8.5, color=NAVY, fontweight="bold")
+    a2.set_title("놓친 불량 FN  (↓ 좋음)", fontsize=12, color=NAVY, fontweight="bold", pad=8)
+    for a in (a1, a2):
+        _spines(a); a.set_xticks(x); a.set_xticklabels(labels, fontsize=8.5, color=MUT)
+        a.tick_params(labelbottom=True, labelleft=True)
+    fig.tight_layout()
+    fig.savefig(FIG + "/p3_deck_ablation.png", facecolor="white"); print("wrote ablation"); plt.close(fig)
+
+
 if __name__ == "__main__":
     fig_baseline()
     fig_types()
-    fig_result()
+    fig_ablation()
