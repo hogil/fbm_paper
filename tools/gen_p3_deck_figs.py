@@ -331,6 +331,102 @@ def fig_bkm():
     fig.savefig(FIG + "/p3_bkm.png", facecolor="white"); print("wrote bkm"); plt.close(fig)
 
 
+def fig_bkm_table():
+    """단변수(single-axis) BKM 을 표로. 출처 one_factor_latest.json (각 5-seed, * smoothing 3-seed pilot)."""
+    cols = ["조건 (단변수 축)", "baseline → BKM", "F1", "FN", "FP"]
+    data = [
+        ["정상 비율 (normal ratio)", "700 → 3300", "0.9988", "0.8", "1.0"],
+        ["Stochastic Depth", "0 → 0.05", "0.9985", "0.8", "1.4"],
+        ["Label Smoothing", "0 → 0.02", "0.9981", "0.8", "2.0"],
+        ["EMA", "off → 0.95", "0.9964", "2.2", "3.2"],
+        ["Focal γ", "0 → 2.0", "0.9964", "2.4", "3.0"],
+        ["Allow-tie-save", "off → on", "0.9964", "2.4", "3.0"],
+        ["per-class 상한", "→ 700", "0.9960", "2.4", "3.6"],
+        ["Smoothing (median)*", "raw → win5", "0.9960", "2.0", "—"],
+        ["Abnormal weight", "1.0 → 1.5", "0.9956", "3.0", "3.6"],
+        ["Color rendering", "baseline → c01", "0.9952", "3.8", "3.4"],
+        ["baseline (기준)", "—", "0.9944", "4.6", "3.8"],
+    ]
+    fig, ax = plt.subplots(figsize=(11.6, 4.7), dpi=195); fig.patch.set_facecolor("white")
+    ax.axis("off")
+    tbl = ax.table(cellText=data, colLabels=cols, cellLoc="center", loc="center",
+                   colWidths=[0.36, 0.22, 0.15, 0.135, 0.135])
+    tbl.auto_set_font_size(False); tbl.set_fontsize(12); tbl.scale(1, 1.72)
+    nrow = len(data)
+    for (r, c), cell in tbl.get_celld().items():
+        cell.set_edgecolor("#D7DEEA"); cell.set_linewidth(0.8)
+        if r == 0:
+            cell.set_facecolor(NAVY); cell.set_text_props(color="white", fontweight="bold")
+        elif r == 1:
+            cell.set_facecolor("#DCEFEE")
+            if c >= 2: cell.set_text_props(fontweight="bold", color=NAVY)
+        elif r == nrow:
+            cell.set_facecolor("#EEF0F4"); cell.set_text_props(color=MUT)
+        elif data[r - 1][0].startswith(("Smoothing", "Color")):
+            cell.set_facecolor("#F3FBFA")
+        else:
+            cell.set_facecolor("white" if r % 2 else "#F7F9FC")
+        if c == 0 and r > 0:
+            cell.get_text().set_horizontalalignment("left"); cell.PAD = 0.04
+    fig.savefig(FIG + "/p3_bkm_table.png", facecolor="white", bbox_inches="tight"); print("wrote bkm_table"); plt.close(fig)
+
+
+def fig_backbone(names=None, f1=None, fn=None, fp=None):
+    """Backbone sweep (1 backbone / run) — F1/FN/FP. 디자인 = generate_cross_dataset_report.py.
+    수치는 placeholder(임시), 실측 입력 시 교체. 순서는 사용자 지정."""
+    names = names or ["convnext\ntiny.dinov3", "convnextv2\nbase", "convnextv2\ntiny",
+                      "swinv2\ntiny", "maxvit", "efficient\nnetv2"]
+    f1 = f1 or [0.9958, 0.9971, 0.9944, 0.9950, 0.9955, 0.9948]
+    fn = fn or [3.0, 1.2, 4.6, 3.4, 3.0, 3.8]
+    fp = fp or [3.4, 3.2, 3.8, 3.6, 3.4, 3.6]
+    metrics = [("F1 mean", "#4878CF", f1, True), ("FN mean", "#E43320", fn, False), ("FP mean", "#F5B041", fp, False)]
+    fig, axes = plt.subplots(1, 3, figsize=(13.4, 3.7), dpi=195); fig.patch.set_facecolor("white")
+    x = list(range(len(names)))
+    for ax, (t, c, vals, isf1) in zip(axes, metrics):
+        ax.bar(x, vals, width=0.62, color=c, zorder=3)
+        for xi, v in zip(x, vals):
+            ax.text(xi, v, (f"{v:.4f}" if isf1 else f"{v:.2f}"), ha="center", va="bottom",
+                    fontsize=7.5, rotation=90, color=NAVY, fontweight="bold")
+        ax.set_xticks(x); ax.set_xticklabels(names, fontsize=7.8, color=MUT)
+        ax.set_title(t, fontsize=12, color=NAVY, fontweight="bold", pad=8)
+        ax.grid(axis="y", linestyle="--", alpha=0.35, zorder=0); _spines(ax)
+        if isf1:
+            m = max(0.0005, (max(vals) - min(vals)) * 0.25); ax.set_ylim(max(0, min(vals) - m), min(1.0, max(vals) + m))
+        else:
+            ax.set_ylim(bottom=0, top=max(vals) * 1.35)
+    fig.suptitle("Backbone sweep — 임시 수치(실측 입력 대기)", fontsize=10.5, color=MUT, y=1.0)
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    fig.savefig(FIG + "/p3_backbone.png", facecolor="white"); print("wrote backbone"); plt.close(fig)
+
+
+def fig_progression(stages=None, f1=None, fn=None, fp=None):
+    """baseline → BKM combined → best backbone (F1/FN/FP mean). 디자인 = cross_dataset_overall.png.
+    baseline 은 실측(0.9944/4.6/3.8), BKM combined·best backbone 은 입력 대기(임시 증가값)."""
+    stages = stages or ["Baseline", "BKM combined", "Best backbone"]
+    f1 = f1 or [0.9944, 0.9988, 0.9992]
+    fn = fn or [4.6, 0.8, 0.5]
+    fp = fp or [3.8, 1.0, 0.7]
+    metrics = [("F1 mean", "#4878CF", f1, True), ("FN mean", "#E43320", fn, False), ("FP mean", "#F5B041", fp, False)]
+    fig, axes = plt.subplots(1, 3, figsize=(13.4, 3.7), dpi=195); fig.patch.set_facecolor("white")
+    sx = list(range(len(stages)))
+    for ax, (t, c, vals, isf1) in zip(axes, metrics):
+        ax.bar(sx, vals, width=0.5, color=c, zorder=3)
+        for xi, v in zip(sx, vals):
+            ax.text(xi, v, (f"{v:.4f}" if isf1 else f"{v:.2f}"), ha="center", va="bottom",
+                    fontsize=9, color=NAVY, fontweight="bold")
+        ax.set_xticks(sx); ax.set_xticklabels(stages, rotation=15, ha="right", fontsize=9.5, color=MUT)
+        ax.set_title(t, fontsize=12, color=NAVY, fontweight="bold", pad=8)
+        ax.grid(axis="y", linestyle="--", alpha=0.35, zorder=0); _spines(ax)
+        if isf1:
+            m = max(0.0005, (max(vals) - min(vals)) * 0.2); ax.set_ylim(max(0, min(vals) - m), min(1.0, max(vals) + m))
+        else:
+            ax.set_ylim(bottom=0, top=max(vals) * 1.3)
+    fig.suptitle("baseline → BKM combined → best backbone   (BKM combined·best backbone 은 입력 대기)",
+                 fontsize=10.5, color=MUT, y=1.0)
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    fig.savefig(FIG + "/p3_progression.png", facecolor="white"); print("wrote progression"); plt.close(fig)
+
+
 def fig_smoothing():
     """checkpoint 선택용 val_f1 평활화 window(median) — 흔들리는 epoch에 강건한 best 선택 (3-seed).
     주의: 계측 신호를 median filter 한 것이 아니라, 학습 중 val_f1 metric 을 최근 N epoch median 으로
@@ -362,6 +458,9 @@ def fig_smoothing():
 if __name__ == "__main__":
     fig_baseline()
     fig_types()
+    fig_bkm_table()
+    fig_backbone()
+    fig_progression()
     fig_bkm()
     fig_smoothing()
     fig_ablation()

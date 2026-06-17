@@ -54,21 +54,41 @@
     },
     {
       "type": "image_grid",
-      "kicker": "P3 | 결과",
-      "title": "단변수 반복 실험으로 조건별 BKM 확보 — 백본·데이터셋·운영 검증",
+      "kicker": "P3 | 결과 ①",
+      "title": "단변수 반복 실험 — 조건별 BKM 정리 (각 5-seed)",
       "bullets": [
-        "각 학습 조건을 한 번에 하나씩만 변경하는 단변수(single-axis) 방식으로 5-seed 반복 평가를 수행하고, 축별 최적값을 BKM(Best Known Method)으로 정리하였습니다. 정상 비율 축에서 F1 0.9944→**0.9988**, 놓친 불량 4.6→0.8로 가장 큰 개선을 확인하였으며, 백본·데이터셋·운영 임계값까지 동일 프로토콜로 비교하였습니다"
+        "각 학습 조건을 한 번에 하나씩만 변경하는 단변수(single-axis) 방식으로 5-seed 반복 평가하고, 축별 최적값을 BKM(Best Known Method)으로 정리하였습니다. 정상 비율 축에서 F1 0.9944→**0.9988**, 놓친 불량 4.6→0.8로 가장 큰 개선을 확인하였습니다"
       ],
-      "body_h": 0.98,
+      "body_h": 0.78,
       "images": [
         {
-          "src": "p3_bkm.png",
+          "src": "p3_bkm_table.png",
           "caption": ""
         }
       ],
       "grid_cols": 1,
-      "grid_gap": 0.3,
-      "img_note": "단변수 11축 각 5-seed 반복 · baseline F1 0.9975 (0.9940–0.9993) 반복 안정 · 축별 best 를 합친 통합 BKM 은 GPU 확보 후 진행 · 2-stage 유형분류 pilot 0.73"
+      "img_note": "총 11개 축 각 5-seed 반복 · * smoothing 은 3-seed pilot · 축별 best 를 합친 통합 BKM 은 다음 장"
+    },
+    {
+      "type": "image_grid",
+      "kicker": "P3 | 결과 ②",
+      "title": "백본 비교와 누적 개선 — baseline → BKM → best backbone",
+      "bullets": [
+        "동일 데이터와 프로토콜에서 백본을 교체하며 비교하고(backbone sweep), baseline 에 단변수 BKM 을 누적 적용한 뒤 최적 백본까지 반영했을 때의 단계별 성능을 정리하였습니다"
+      ],
+      "body_h": 0.62,
+      "images": [
+        {
+          "src": "p3_backbone.png",
+          "caption": "Backbone sweep — 백본별 F1 / FN / FP"
+        },
+        {
+          "src": "p3_progression.png",
+          "caption": "baseline → BKM combined → best backbone (F1 / FN / FP mean)"
+        }
+      ],
+      "grid_cols": 1,
+      "img_note": "백본 수치와 BKM combined / best backbone 수치는 실측 입력 후 확정 (현재 임시값)"
     }
   ]
 }
