@@ -193,7 +193,7 @@
       "kicker": "P1 | viewer 처리 구조",
       "title": "Numba와 pyvips: 대량 Failbit Map viewer 처리",
       "bullets": [
-        "**왜 필요한가** — 생성된 대량 Failbit Map을 운영 viewer에서 매일 조회하고 합성합니다. 여러 wafer 합성(Numba)과 초대용량 PNG 로드(pyvips)가 viewer 병목이라 두 기법으로 해결했습니다"
+        "**왜 필요한가** — 운영 viewer는 여러 wafer를 겹쳐 hotspot을 보는 composite와 큰 Failbit Map PNG를 빠르게 여는 동작이 핵심입니다. 이 두 구간이 느리면 하루 단위 대량 조회가 바로 막히므로, 픽셀 누적 연산은 Numba로, 대형 이미지 로드는 pyvips로 분리했습니다"
       ],
       "body_h": 0.72,
       "bullet_size": 13.4,
@@ -201,60 +201,59 @@
       "cols": 2,
       "figs": [
         {
-          "head": "Numba @njit composite map",
+          "head": "Numba @njit composite",
           "sections": [
             [
-              "What:",
+              "Numba가 하는 일:",
               [
-                "Numba = JIT compiler -> native machine code",
-                "fast: unboxed, compiled, one fused pass",
-                "no temp array/op (unlike numpy); multi-core"
+                "Python 함수를 native machine code로 컴파일(JIT)",
+                "최초 호출 때 입력 타입 기준, 매번 해석하지 않음"
               ]
             ],
             [
-              "Why:",
+              "왜 빠른가:",
               [
-                "composite = N wafer maps stacked per pixel",
-                "N x millions of px -> very slow in Python"
+                "① 매 반복 타입확인/객체처리 제거 → 기계어 loop",
+                "② parallel=True로 독립 영역을 여러 CPU 코어에 분배"
               ]
             ],
             [
-              "Used here:",
+              "적용 위치:",
               [
-                "composite[y][x] = sum_w grade[w][y][x]",
-                "via @njit(parallel) + prange -> ~50x faster"
+                "Composite Map — wafer 수백 장을 좌표로 겹쳐",
+                "위치별 grade 개수, mask 해당, sum/weighted 계산"
               ]
             ]
           ],
-          "caption": "JIT to machine code, unboxed, multi-core"
+          "caption": "Numba: Python loop 제거 + 멀티코어 병렬로 composite 누적 가속"
         },
         {
-          "head": "pyvips large-image load & resize",
+          "head": "pyvips image streaming",
           "sections": [
             [
-              "What:",
+              "처리 대상:",
               [
-                "pyvips = libvips binding (image library)",
-                "light: demand-driven, streams in regions",
-                "peak memory ~ a tile, not whole; threaded"
+                "좌표 보존 Failbit Map PNG(수천×수천 px)를",
+                "viewer에서 표시하고 zoom/축소 preview 생성"
               ]
             ],
             [
-              "Why:",
+              "병목:",
               [
-                "one map = 6912x6912x3 ~ 140 MB raw",
-                "loading whole maps -> viewer out of memory"
+                "전체를 메모리에 펼치면(원본 전체 + 결과 전체)",
+                "메모리와 로드 시간이 급증"
               ]
             ],
             [
-              "Used here:",
+              "적용 방식:",
               [
-                "load + resize the large maps in the viewer",
-                "stays low-memory even on ~140 MB maps"
+                "출력 row/tile 단위로 계산, 각 구간에 필요한",
+                "원본 구간만 읽어 흘려보냄 (결과는 전체 완성)",
+                "중간 메모리만 작게 유지 (thumbnail/확대 공통)"
               ]
             ]
           ],
-          "caption": "streaming load & resize, low memory"
+          "caption": "pyvips: row/tile streaming — 결과는 전체 완성, 중간 메모리만 작게"
         }
       ]
     },
@@ -370,8 +369,8 @@
     },
     {
       "type": "papertext",
-      "kicker": "P1 | Unknown 대조 학습 ① 기본·hard-neg",
-      "title": "대조학습 ① SimCLR 기본형 + NV-Retriever hard-negative",
+      "kicker": "P1 | Unknown 대조 학습: SimCLR와 hard-negative",
+      "title": "SimCLR 기본 구조와 NV-Retriever hard-negative",
       "bullets": [
         "SimCLR은 같은 wafer의 두 augmentation(positive)은 당기고 다른 wafer(negative)는 밀어 임베딩을 학습합니다. 그런데 라벨이 없어 사실 같은 class인 wafer도 negative로 밀려나는 false negative가 생기므로, NV-Retriever로 positive와 너무 가까운(같은 class일 가능성이 큰) negative를 걸러내고 진짜 hard negative만 씁니다"
       ],
@@ -381,18 +380,18 @@
       "figs": [
         {
           "src": "ref_simclr_with_loss.png",
-          "caption": "SimCLR — positive(같은 wafer)는 당기고 negative는 밀기, NT-Xent loss(positive=분자, 나머지=분모, τ)"
+          "caption": "SimCLR: positive(같은 wafer)는 당기고 negative는 밀기, NT-Xent loss(positive=분자, 나머지=분모, τ)"
         },
         {
           "diagram": "hardneg",
-          "caption": "NV-Retriever — 같은 class까지 밀어내는 false negative(빨강 ◆)를 threshold로 제거, ambiguous(파랑 ▲)만 hard negative로 사용"
+          "caption": "NV-Retriever: 같은 class까지 밀어내는 false negative(빨강 ◆)를 threshold로 제거, ambiguous(파랑 ▲)만 hard negative로 사용"
         }
       ]
     },
     {
       "type": "papertext",
-      "kicker": "P1 | Unknown 대조 학습 ② queue·patch",
-      "title": "대조학습 ② MoCo queue + NeCo patch 일관성",
+      "kicker": "P1 | Unknown 대조 학습: queue와 patch",
+      "title": "MoCo queue와 NeCo patch consistency",
       "bullets": [
         "작은 batch의 negative 부족은 MoCo queue로 batch 밖까지 늘리고, Normal/defect의 patch 단위 경계는 NeCo의 patch neighbor consistency로 안정화했습니다"
       ],
@@ -402,11 +401,11 @@
       "figs": [
         {
           "src": "ref_moco_fig1.png",
-          "caption": "MoCo — momentum encoder + queue로 negative를 batch 밖까지 확장"
+          "caption": "MoCo: momentum encoder + queue로 negative를 batch 밖까지 확장"
         },
         {
           "src": "ref_neco_method.png",
-          "caption": "NeCo — teacher/student patch neighbor를 differentiable sorting으로 정렬해 Normal/defect 경계 안정화"
+          "caption": "NeCo: teacher/student patch neighbor를 differentiable sorting으로 정렬해 Normal/defect 경계 안정화"
         }
       ]
     },
