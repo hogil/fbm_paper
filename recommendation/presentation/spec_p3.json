@@ -5,39 +5,39 @@
       "anchor_metrics": "",
       "kicker": "AI Specialist 인증 — Project 3",
       "title": "계측 trend 이상탐지 데이터 생성",
-      "subtitle": "이상 유형별 검증 데이터가 없던 문제를, 현장에서 trend를 보던 판정 기준을 생성 규칙으로 옮겨 풀었습니다. 정상 baseline 위에 이상을 합성해 평가셋을 만들고 1차 gate로 확인했습니다",
+      "subtitle": "현장 계측 trend의 영역 구조와 노이즈, 이상 발생 방식을 domain knowledge로 코드화해 학습·평가 데이터를 만들고 1차 binary gate로 검증한 과제",
       "author": "최호길  |  메모리제조센터 QIE그룹 Data Science 파트",
       "affil": "제조품질 AI / Data Science"
     },
     {
       "type": "two_col",
       "kicker": "P3 | 개요",
-      "title": "없던 검증 데이터를 현장 판정 기준으로 만들었다",
+      "title": "이상 유형별 라벨 부족을 도메인 규칙 generator로 해결",
       "cols": [
         {
-          "head": "문제 — 이상 데이터가 거의 없다",
+          "head": "문제 — 이상 유형별 라벨이 희소",
           "color": "#0F1E3D",
           "bullets": [
-            "정상 trend는 쌓여 있지만 avg / std / spike / drift / context 같은 이상은 드물게 나와, 유형별로 모아 둔 데이터가 거의 없습니다",
-            "데이터가 없으니 모델을 학습시키기도, 잘 되는지 비교하기도 어려웠습니다",
-            {"t": "정답이 적어 정량 지표 자체가 잘 서지 않는 상황", "lvl": 1}
+            "실 계측 trend는 정상은 많지만 이상은 드물어, **avg / std / spike / drift / context** 같은 이상 유형별 라벨이 부족합니다",
+            "유형별 평가셋이 없으면 모델 학습도, 성능 비교도 어렵습니다",
+            {"t": "정답 라벨이 적어 정량 metric 자체가 성립하기 힘든 상황", "lvl": 1}
           ],
           "chips": [
             {"big": "이상 5종", "label": "avg/std/spike/drift/context"},
-            {"big": "데이터 부재", "label": "학습·비교 난항"}
+            {"big": "라벨 희소", "label": "정량 평가 난항"}
           ]
         },
         {
-          "head": "해법 — 판정 기준을 생성 규칙으로",
+          "head": "해법 — domain knowledge generator",
           "color": "#0F1E3D",
           "bullets": [
-            "BBD / Overlay / CD를 담당하며 trend를 직접 보던 판정 기준을, 영역과 노이즈, 이상 발생 방식이라는 생성 규칙으로 옮겼습니다",
-            "정상 baseline을 만들고 그 위에 이상을 합성해, 부족하던 검증 데이터를 직접 확보했습니다",
-            {"t": "성능 수치가 아니라, 검증할 데이터를 만든 것이 이 과제의 핵심", "lvl": 1}
+            "BBD담당/Overlay담당/CD담당으로 쌓은 trend 분석 경험으로 계측의 **영역 구조, 노이즈, 이상 발생 방식**을 규칙으로 코드화했습니다",
+            "정상 baseline을 만들고 그 위에 이상을 합성해 **검증 가능한 benchmark**를 확보했습니다",
+            {"t": "영역(계측 밀도) + 노이즈(계측 변동) + 이상(불량 방식) 세 축을 규칙화", "lvl": 1}
           ],
           "chips": [
-            {"big": "판정 기준", "label": "현장 경험을 규칙화"},
-            {"big": "평가셋 확보", "label": "검증 가능"}
+            {"big": "규칙 기반", "label": "영역+노이즈+이상"},
+            {"big": "benchmark", "label": "검증 가능"}
           ]
         }
       ]
@@ -50,7 +50,7 @@
         {"src": "p3_deck_regions.png", "caption": ""}
       ],
       "grid_cols": 1,
-      "img_note": "한 chart를 여러 episode로 나눠 영역마다 측정 밀도를 다르게 주고, 신호 자체는 평탄하게 둔 채 변동은 노이즈로만 만들었습니다"
+      "img_note": "한 chart를 12~25개 episode로 나눠 영역 밀도를 확률로 샘플링 — 실제 계측 분포를 모사하고, 신호는 평탄하게 두어 변동은 노이즈로만 만듦"
     },
     {
       "type": "image_grid",
@@ -60,45 +60,45 @@
         {"src": "p3_deck_noise.png", "caption": ""}
       ],
       "grid_cols": 1,
-      "img_note": "chart 하나는 한 가지 노이즈만 씁니다. Gaussian은 기본 산포, Correlated는 설비 상태에 따라 천천히 흐르는 변동, Laplacian은 계측이 한 번씩 튀는 헌팅입니다"
+      "img_note": "chart 하나는 한 가지 노이즈만 사용 — Gaussian(산포) / Correlated AR(설비 변동) / Laplacian(계측 헌팅)"
     },
     {
       "type": "image_grid",
       "kicker": "P3 | 이상 합성",
-      "title": "이상 합성 5종 — 실제 불량이 나타나는 방식 (파랑 정상, 빨강 이상)",
+      "title": "이상 합성 5종 — 실제 불량 발생 방식 (파랑 정상, 빨강 이상)",
       "images": [
         {"src": "p3_deck_anomaly.png", "caption": ""}
       ],
       "grid_cols": 1,
-      "img_note": "정상 baseline 오른쪽 끝에 이상을 주입하고 강도는 그 series의 산포에 맞춰 정합니다. context만 끝이 아니라 fleet 대비 전체가 벗어나는 형태입니다"
+      "img_note": "정상 baseline 오른쪽 끝에 주입하고 강도는 baseline 산포에 비례 (context만 fleet 대비 전체 시계열이 이탈)"
     },
     {
       "type": "papertext",
       "kicker": "P3 | 파이프라인/데이터",
-      "title": "생성 흐름과 데이터 구성",
+      "title": "생성 파이프라인과 데이터 구성",
       "bullets": [
-        "chart를 정의하고 episode를 이어 붙여 정상 baseline을 만든 뒤, 노이즈와 이상을 얹어 학습/평가 이미지로 렌더합니다"
+        "chart 정의부터 이미지 렌더까지 규칙 기반으로 생성하고, 이상 강도는 보이도록 floor 보정합니다"
       ],
       "body_h": 0.7,
       "cols": 2,
       "figs": [
         {
-          "head": "생성 흐름",
+          "head": "생성 파이프라인",
           "sections": [
             ["① chart 정의", ["device x step x item, fleet legend(eqp/chamber/recipe)"]],
-            ["② episode 조립", ["12~25개를 이어 붙이며 영역 밀도를 샘플링"]],
-            ["③ 노이즈", ["Gaussian / Correlated / Laplacian 중 하나"]],
-            ["④ 이상 주입", ["avg/std/spike/drift/context, 강도 보정"]],
-            ["⑤ 렌더", ["정상/이상 trend 이미지로 출력"]]
+            ["② episode 조립", ["12~25개, 영역 밀도 샘플링(밀집/희소/결핍)"]],
+            ["③ 노이즈", ["Gaussian / Correlated / Laplacian 중 1종"]],
+            ["④ 이상 주입", ["avg/std/spike/drift/context (오른쪽 끝)"]],
+            ["⑤ 렌더", ["강도 floor 보정 → 학습/평가 trend 이미지"]]
           ],
-          "caption": "현장 판정 기준을 그대로 옮긴 흐름"
+          "caption": "규칙 기반 생성 흐름"
         },
         {
           "head": "데이터 구성",
           "sections": [
-            ["규모", ["정상 3,500 + 이상 3,500 = 7,000", "별도 test 1,500 (이상 5종 고르게)"]],
-            ["평가 난이도", ["test는 이상 강도를 0.8배로 낮춰", "일부러 더 어렵게 만들었습니다"]],
-            ["정상 보호", ["정상은 fleet 중심에서 벗어나지 않게 둡니다"]]
+            ["규모", ["정상 3,500 + 이상 3,500 = 7,000", "별도 test 1,500 (이상 5종 stratified)"]],
+            ["평가 난이도", ["test/val은 이상 강도를 0.8배로 낮춰", "더 어려운 평가셋 구성"]],
+            ["정상 보호", ["정상은 fleet 중심에서 벗어나지 않게 강제"]]
           ],
           "caption": "정상 3,500 + 이상 3,500 + test 1,500"
         }
@@ -106,64 +106,34 @@
     },
     {
       "type": "two_col",
-      "kicker": "P3 | 생성 데이터 검증",
-      "title": "만든 데이터로 1차 gate가 학습되는지 확인",
+      "kicker": "P3 | 1차 binary gate (PoC)",
+      "title": "생성 데이터로 정상/이상 1차 판정 검증",
       "cols": [
         {
-          "head": "무엇을 확인했나",
+          "head": "모델 — 1차 binary gate",
           "color": "#0F1E3D",
           "bullets": [
-            "생성한 데이터로 정상/이상을 1차로 거르는 gate를 학습시켜, 이 데이터가 실제로 쓸 만한지 봤습니다",
-            "ConvNeXtV2-Tiny에 Focal loss로 학습하고, 놓치는 쪽을 줄이려고 normal threshold를 높였습니다",
-            {"t": "이상이 걸리면 2차에서 유형(avg/std/spike/drift/context)을 나눠 봅니다", "lvl": 1}
+            "trend 이미지를 **ConvNeXtV2-Tiny**로 정상/이상 2분류하며, **놓침(FN) 최소화**가 목표입니다",
+            "Focal loss + EMA로 학습하고, normal threshold를 올려 FN을 더 줄입니다",
+            {"t": "이상이 잡히면 2차에서 유형(avg/std/spike/drift/context) 진단", "lvl": 1}
           ],
           "chips": [
-            {"big": "1차 gate", "label": "정상/이상 선별"},
-            {"big": "2-stage", "label": "이후 유형 진단"}
+            {"big": "2-stage", "label": "binary gate → 유형 진단"},
+            {"big": "ConvNeXtV2", "label": "Tiny backbone"}
           ]
         },
         {
-          "head": "결과 — 데이터가 학습된다",
+          "head": "성과 — 생성셋 검증(PoC)",
           "color": "#0F1E3D",
           "bullets": [
-            "test 1,500에서 정상과 이상이 깔끔하게 갈렸습니다 (F1 0.9967, 이상 recall 0.9987, NT 0.9)",
-            "정상 750 중 4건 오탐, 이상 750 중 1건 놓침 정도였습니다",
-            {"t": "이 수치 자체가 목적이 아니라, 생성 데이터가 학습 가능하다는 신호입니다", "lvl": 1}
+            "test 1,500에서 **binary F1 0.9967**, **이상 recall 0.9987**(normal threshold 0.9)",
+            "정상 750 중 오탐 4건, 이상 750 중 놓침 1건 수준",
+            {"t": "FN을 유형별로 분해해 데이터 난이도와 threshold로 피드백", "lvl": 1}
           ],
           "chips": [
-            {"big": "학습 가능", "label": "생성 데이터로"},
-            {"big": "F1 0.9967", "label": "1차 gate (PoC)"}
+            {"big": "F1 0.9967", "label": "binary gate"},
+            {"big": "recall 0.9987", "label": "abnormal"}
           ]
-        }
-      ]
-    },
-    {
-      "type": "papertext",
-      "kicker": "P3 | robustness 점검",
-      "title": "모델이 색이나 노이즈가 아니라 실제 패턴을 보게",
-      "bullets": [
-        "PoC 수치보다, 모델이 trend의 진짜 모양을 보고 판단하는지가 더 중요했습니다. 두 가지로 점검했습니다"
-      ],
-      "body_h": 0.75,
-      "cols": 2,
-      "figs": [
-        {
-          "head": "Smoothing window (median)",
-          "sections": [
-            ["무엇", ["trend를 window 크기(1=원본 / 3 / 5)로 median 평활"]],
-            ["왜", ["점마다 튀는 노이즈에 휘둘리지 않고 추세를 보게 하려고"]],
-            ["현재", ["baseline은 원본 그대로, 3/5-median과 비교 중"]]
-          ],
-          "caption": "노이즈에 덜 민감하게"
-        },
-        {
-          "head": "Color / alpha shortcut 점검",
-          "sections": [
-            ["무엇", ["같은 데이터를 색과 투명도만 바꿔 렌더 (파랑/빨강, alpha 0.4/0.15)"]],
-            ["왜", ["이상 패턴을 보는지, 색이나 대비 같은 쉬운 단서에 기대는지 확인"]],
-            ["판단", ["색을 바꿔도 판정이 유지되면 패턴을 학습한 것"]]
-          ],
-          "caption": "색이 아니라 패턴을 학습했는지"
         }
       ]
     }
