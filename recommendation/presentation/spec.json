@@ -183,12 +183,11 @@
       ],
       "images": [
         {
-          "src": "p1_unknown_method.png",
-          "caption": "원리(contrastive) + 성능 올린 기법 스택(InfoNCE → DenseCL → MoCo Queue → NV-Retriever → NeCo) + 운영 13→7"
+          "src": "_fig_cluster.png",
+          "caption": "self-supervised contrastive 임베딩 → HDBSCAN 군집 — 라벨 없이 같은 신규 결함 패턴끼리 자동 그룹화 (C형 · 십자 · 대각 scratch)"
         }
       ],
       "grid_cols": 1,
-      "body_h": 1.1,
       "img_tile": "#FFFFFF"
     },
     {
