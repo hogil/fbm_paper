@@ -370,13 +370,13 @@
     },
     {
       "type": "papertext",
-      "kicker": "P1 | Unknown 대조 학습 ① 기본·hard-neg",
-      "title": "대조학습 ① SimCLR 기본형 + NV-Retriever hard-negative",
+      "kicker": "P1 | Unknown 대조 학습 ① 기본·queue",
+      "title": "대조학습 ① SimCLR 기본형 + MoCo queue",
       "bullets": [
-        "라벨 없는 wafer를 자기지도 대조학습으로 임베딩합니다. 같은 wafer의 두 augmentation은 가깝게, 다른 wafer는 멀게 학습(SimCLR/InfoNCE)하고, 학습 신호를 키우려고 anchor와 닮았지만 다른 wafer인 hard negative를 NV-Retriever로 선별합니다(유사도가 너무 높은 false negative는 제외)"
+        "라벨 없는 wafer를 자기지도 대조학습으로 임베딩합니다. 같은 wafer의 두 augmentation은 가깝게, 다른 wafer는 멀게 학습(SimCLR/InfoNCE)하고, 작은 batch의 negative 부족은 MoCo queue로 batch 밖까지 늘렸습니다"
       ],
-      "body_h": 1.15,
-      "img_note": "외부 논문 figure를 본 과제 대조학습 구성요소(SimCLR, NV-Retriever) 설명에 인용",
+      "body_h": 0.95,
+      "img_note": "외부 논문 figure를 본 과제 대조학습 구성요소(SimCLR, MoCo) 설명에 인용",
       "cols": 2,
       "figs": [
         {
@@ -384,29 +384,46 @@
           "caption": "SimCLR — 두 augmentation을 가깝게(maximize agreement), NT-Xent loss로 positive는 분자, 나머지는 분모(τ=temperature)"
         },
         {
-          "diagram": "hardneg",
-          "caption": "Hard-negative 선택 — too-hard(빨강 ◆)=false negative라 제외, ambiguous(파랑 ▲)를 hard negative로 사용"
+          "src": "ref_moco_fig1.png",
+          "caption": "MoCo — momentum encoder + queue로 negative를 batch 밖까지 확장"
         }
       ]
     },
     {
       "type": "papertext",
-      "kicker": "P1 | Unknown 대조 학습 ② queue·patch",
-      "title": "대조학습 ② MoCo queue + NeCo patch 일관성",
+      "kicker": "P1 | Unknown 대조 학습 ② hard-negative",
+      "title": "대조학습 ② NV-Retriever — false negative 걸러내기",
       "bullets": [
-        "작은 batch의 negative 부족은 MoCo queue로 batch 밖까지 늘리고, Normal/defect의 patch 단위 경계는 NeCo의 patch neighbor consistency로 안정화했습니다"
+        "유사도 상위 negative만 뽑으면 사실 같은 class가 negative로 섞입니다(왼쪽: 같은 종 강아지가 서로 밀려남 = false negative → 학습 신호 오염). NV-Retriever는 positive 유사도를 기준으로 threshold를 잡아, 그보다 더 가까운 mined negative를 제거하고 진짜 hard negative만 학습에 씁니다(본 과제 cos>0.72)"
       ],
-      "body_h": 0.95,
-      "img_note": "외부 논문 figure를 본 과제 대조학습 구성요소(MoCo queue, NeCo) 설명에 인용",
+      "body_h": 1.3,
+      "img_note": "왼쪽 = 왜 문제인지(false negative) / 오른쪽 = 어떻게 거르는지(positive 기준 threshold)",
       "cols": 2,
       "figs": [
         {
-          "src": "ref_moco_fig1.png",
-          "caption": "MoCo — momentum encoder + queue로 negative를 batch 밖까지 확장"
+          "src": "ref_false_negative.png",
+          "caption": "왜 문제? — 같은 class 이미지가 서로 negative로 밀려남(false negative)"
         },
         {
+          "diagram": "hardneg",
+          "caption": "어떻게? — positive보다 너무 가까운 mined negative를 threshold로 제거"
+        }
+      ]
+    },
+    {
+      "type": "papertext",
+      "kicker": "P1 | Unknown 대조 학습 ③ patch",
+      "title": "대조학습 ③ NeCo — patch 단위 neighbor consistency",
+      "bullets": [
+        "Normal과 defect의 차이는 wafer 전체가 아니라 국소 patch에서 갈립니다. NeCo는 teacher/student의 patch 이웃 순서를 differentiable sorting으로 맞춰, 미세한 경계 표현을 안정화합니다"
+      ],
+      "body_h": 0.95,
+      "img_note": "외부 논문 figure를 본 과제 대조학습 구성요소(NeCo) 설명에 인용",
+      "cols": 1,
+      "figs": [
+        {
           "src": "ref_neco_method.png",
-          "caption": "NeCo — teacher/student patch neighbor를 differentiable sorting으로 정렬해 경계 안정화"
+          "caption": "NeCo — teacher/student patch neighbor를 differentiable sorting으로 정렬해 Normal/defect 경계 안정화"
         }
       ]
     },
