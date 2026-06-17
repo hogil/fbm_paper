@@ -877,7 +877,7 @@ def _hex_to_grade_diagram(slide, x, y, w, h):
     # 제목 (네이비, 부제 그레이 — 큰 틸 제목 금지)
     _text(slide, Emu(x), Emu(y + I(0.07)), Emu(w), Emu(I(0.24)),
           [[("Cython hex→Grade 파서", dict(size=11, bold=True, color=NAVY)),
-            ("    memoryview stride · 256-entry LUT", dict(size=9, color=LBL))]],
+            ("    memoryview stride with 256-entry LUT", dict(size=9, color=LBL))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
     # raw hex payload — monospace 셀(흰 칸 + 얇은 선)
     rl_y = y + I(0.42)
@@ -2106,12 +2106,14 @@ def s_papertext(slide, d, idx):
         r, c = divmod(i, cols)
         fx = x0 + c * (cw + gx)
         fy = top + r * (chh + gy)
-        _rect(slide, Emu(fx), Emu(fy), Emu(cw), Emu(box_h), WHITE,
-              line=RGBColor(0x33, 0x37, 0x40), line_w=Pt(1.25))
         if fg.get("src"):
-            _img_fit(slide, fg["src"], Emu(fx + int(Inches(0.14))), Emu(fy + int(Inches(0.12))),
-                     Emu(cw - int(Inches(0.28))), Emu(box_h - int(Inches(0.24))), frame=False)
+            # 이미지 figure 는 테두리 박스 없이 셀을 거의 가득 채워 최대 크기로 렌더한다
+            # (테두리+padding 이 이미지를 줄이던 문제 제거 — 사용자 요청). 텍스트 박스만 테두리 유지.
+            _img_fit(slide, fg["src"], Emu(fx + int(Inches(0.04))), Emu(fy + int(Inches(0.04))),
+                     Emu(cw - int(Inches(0.08))), Emu(box_h - int(Inches(0.08))), frame=False)
         else:
+            _rect(slide, Emu(fx), Emu(fy), Emu(cw), Emu(box_h), WHITE,
+                  line=RGBColor(0x33, 0x37, 0x40), line_w=Pt(1.25))
             lines = []
             if fg.get("head"):
                 lines.append([(fg["head"], dict(size=14.5, bold=True, color=NAVY))])
@@ -2208,10 +2210,330 @@ def s_archflow(slide, d, idx):
     _footer(slide, idx)
 
 
+def _metric_card_compact(slide, x, y, w, h, big, label, sub="", color=ACCENT):
+    _rect(slide, x, y, w, h, PANEL, line=LINE)
+    _rect(slide, x, y, w, Inches(0.08), color)
+    _text(slide, x+Inches(0.12), y+Inches(0.16), Emu(int(w)-int(Inches(0.24))), Inches(0.34),
+          [[(big, dict(size=20, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
+    _text(slide, x+Inches(0.12), y+Inches(0.52), Emu(int(w)-int(Inches(0.24))), Inches(0.28),
+          [[(label, dict(size=10.5, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
+    if sub:
+        _text(slide, x+Inches(0.12), y+Inches(0.80), Emu(int(w)-int(Inches(0.24))), Inches(0.28),
+              [[(sub, dict(size=9.2, color=MUTED))]], align=PP_ALIGN.CENTER)
+
+
+def _mini_title(slide, x, y, w, text, color=ACCENT):
+    _rect(slide, x, y, w, Inches(0.36), RGBColor(0xE6, 0xF7, 0xF6), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    _rect(slide, x, y, Inches(0.08), Inches(0.36), color)
+    _text(slide, x+Inches(0.16), y, Emu(int(w)-int(Inches(0.24))), Inches(0.36),
+          [[(text, dict(size=12.5, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+
+
+def _image_pair(slide, x, y, w, h, img1, img2, lab1, lab2):
+    gap = Inches(0.10)
+    iw = Emu((int(w) - int(gap)) // 2)
+    _img_fit(slide, img1, x, y, iw, h-Inches(0.32), frame=True)
+    _img_fit(slide, img2, Emu(int(x)+int(iw)+int(gap)), y, iw, h-Inches(0.32), frame=True)
+    _text(slide, x, Emu(int(y)+int(h)-int(Inches(0.28))), iw, Inches(0.26),
+          [[(lab1, dict(size=10.5, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
+    _text(slide, Emu(int(x)+int(iw)+int(gap)), Emu(int(y)+int(h)-int(Inches(0.28))), iw, Inches(0.26),
+          [[(lab2, dict(size=10.5, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
+
+
+def s_p2_intro(slide, d, idx):
+    _bg(slide, WHITE)
+    _title_block(slide, "P2 | Chip multi-label", "single-defect 원천으로 2-combo 학습 신호를 만든 구조")
+
+    # Left narrative
+    x = Inches(0.75); y = Inches(1.92); w = Inches(4.35); h = Inches(4.15)
+    _rect(slide, x, y, w, h, PANEL, line=LINE)
+    _rect(slide, x, y, Inches(0.10), h, ACCENT)
+    lines = [
+        [("Problem", dict(size=15, bold=True, color=ACCENT))],
+        [("real 2-combo ground truth가 부족해 multi-label 학습과 검증이 막힘", dict(size=15, bold=True, color=NAVY))],
+        [(" ", dict(size=4, color=WHITE))],
+        [("Source", dict(size=15, bold=True, color=ACCENT))],
+        [("현업 single-defect chip 원천을 먼저 split하고, train 원천에서만 조합 생성", dict(size=14.3, color=INK))],
+        [(" ", dict(size=4, color=WHITE))],
+        [("Method", dict(size=15, bold=True, color=ACCENT))],
+        [("FCM-PM = Full-Cover Mixup + Pair Mask로 defect coverage와 background loss를 분리", dict(size=14.3, color=INK))],
+    ]
+    _text(slide, x+Inches(0.28), y+Inches(0.28), w-Inches(0.55), h-Inches(0.45), lines)
+
+    # Right visual process
+    rx = Inches(5.45); ry = Inches(2.0); rw = Inches(7.10); rh = Inches(3.28)
+    _mini_title(slide, rx, ry-Inches(0.48), rw, "single-defect source chips  →  full-cover 2-combo training sample")
+    card_w = Inches(2.05); gap = Inches(0.28)
+    _rect(slide, rx, ry, card_w, rh, WHITE, line=LINE)
+    _image_pair(slide, rx+Inches(0.12), ry+Inches(0.25), card_w-Inches(0.24), rh-Inches(0.55),
+                "fcm_pm_step_a.png", "fcm_pm_step_b.png", "A", "B")
+    _text(slide, rx, ry+Inches(0.05), card_w, Inches(0.24),
+          [[("source", dict(size=11, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
+    arrx = Emu(int(rx)+int(card_w)+int(Inches(0.05)))
+    _rect(slide, arrx, ry+Inches(1.38), Inches(0.28), Inches(0.24), ACCENT, shape=MSO_SHAPE.RIGHT_ARROW)
+
+    mx = Emu(int(rx)+int(card_w)+int(gap))
+    _rect(slide, mx, ry, card_w, rh, WHITE, line=LINE)
+    _image_pair(slide, mx+Inches(0.12), ry+Inches(0.25), card_w-Inches(0.24), rh-Inches(0.55),
+                "fcm_pm_step_mixed_a.png", "fcm_pm_step_mixed_b.png", "A label", "B label")
+    _text(slide, mx, ry+Inches(0.05), card_w, Inches(0.24),
+          [[("full-cover mix", dict(size=11, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
+    arrx2 = Emu(int(mx)+int(card_w)+int(Inches(0.05)))
+    _rect(slide, arrx2, ry+Inches(1.38), Inches(0.28), Inches(0.24), ACCENT, shape=MSO_SHAPE.RIGHT_ARROW)
+
+    px = Emu(int(mx)+int(card_w)+int(gap))
+    _rect(slide, px, ry, card_w, rh, WHITE, line=LINE)
+    _image_pair(slide, px+Inches(0.12), ry+Inches(0.25), card_w-Inches(0.24), rh-Inches(0.55),
+                "fcm_pm_step_masked_a.png", "fcm_pm_step_masked_b.png", "A-only", "B-only")
+    _text(slide, px, ry+Inches(0.05), card_w, Inches(0.24),
+          [[("pair mask", dict(size=11, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
+
+    # Metrics
+    my = Inches(5.72); mw = Inches(2.25); mh = Inches(0.95)
+    _metric_card_compact(slide, Inches(5.45), my, mw, mh, "0.9927", "bit-F1", "single model")
+    _metric_card_compact(slide, Inches(7.90), my, mw, mh, "0.00%", "Total FAR", "Normal/Invalid/OOD")
+    _metric_card_compact(slide, Inches(10.35), my, mw, mh, "controlled", "validation", "synthetic benchmark", color=RGBColor(0xF2,0xB7,0x05))
+    _footer(slide, idx)
+
+
+def s_p2_fcmpm(slide, d, idx):
+    _bg(slide, WHITE)
+    _title_block(slide, "P2 | FCM-PM 원리", "결함은 보존하고, 합성 background loss는 버린다")
+    _text(slide, Inches(0.85), Inches(1.78), Inches(11.75), Inches(0.45),
+          [[("Random CutMix는 defect를 자르거나 가짜 background를 label과 함께 학습시킬 수 있습니다. FCM-PM은 coverage와 loss 영역을 따로 설계합니다.",
+             dict(size=16, color=INK))]])
+
+    y = Inches(2.45); h = Inches(3.75); gap = Inches(0.22); x0 = Inches(0.70)
+    cw = Inches(2.88)
+    panels = [
+        ("1. Source split", "원천 chip 단위 split", ("fcm_pm_step_a.png", "fcm_pm_step_b.png"), ("scratch", "scratch_rot")),
+        ("2. Full-Cover Mixup", "chip 전체 grid cover", ("fcm_pm_step_mixed_a.png", "fcm_pm_step_mixed_b.png"), ("A label", "B label")),
+        ("3. Pair Mask", "가짜 background loss 제외", ("fcm_pm_step_masked_a.png", "fcm_pm_step_masked_b.png"), ("A-only", "B-only")),
+    ]
+    for i, (head, sub, imgs, labs) in enumerate(panels):
+        x = Emu(int(x0) + i * (int(cw) + int(gap)))
+        _rect(slide, x, y, cw, h, WHITE, line=LINE)
+        _rect(slide, x, y, cw, Inches(0.42), PANEL)
+        _text(slide, x+Inches(0.12), y+Inches(0.04), cw-Inches(0.24), Inches(0.24),
+              [[(head, dict(size=12.5, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, x+Inches(0.12), y+Inches(0.25), cw-Inches(0.24), Inches(0.18),
+              [[(sub, dict(size=9.3, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
+        _image_pair(slide, x+Inches(0.18), y+Inches(0.70), cw-Inches(0.36), h-Inches(0.88),
+                    imgs[0], imgs[1], labs[0], labs[1])
+
+    # Training signal panel
+    x = Emu(int(x0) + 3 * (int(cw) + int(gap)))
+    _rect(slide, x, y, cw, h, WHITE, line=LINE)
+    _rect(slide, x, y, cw, Inches(0.42), PANEL)
+    _text(slide, x+Inches(0.12), y+Inches(0.04), cw-Inches(0.24), Inches(0.24),
+          [[("4. Loss signal", dict(size=12.5, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, x+Inches(0.12), y+Inches(0.25), cw-Inches(0.24), Inches(0.18),
+          [[("defect bit만 학습", dict(size=9.3, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
+    # simple mask diagram
+    gx = int(x) + int(Inches(0.58)); gy = int(y) + int(Inches(1.03)); cell = int(Inches(0.28))
+    for r in range(5):
+        for c in range(5):
+            col = RGBColor(0xE8,0xEE,0xF6)
+            if (r, c) in [(1,1),(1,2),(2,2),(3,3)]:
+                col = RGBColor(0x2B,0xA6,0x6B)
+            elif (r+c) % 3 == 0:
+                col = RGBColor(0xD8,0x9B,0x72)
+            _rect(slide, Emu(gx+c*cell), Emu(gy+r*cell), Emu(cell-int(Pt(1))), Emu(cell-int(Pt(1))), col, line=WHITE, line_w=Pt(0.4))
+    _text(slide, x+Inches(0.38), y+Inches(2.70), cw-Inches(0.76), Inches(0.32),
+          [[("green = defect signal", dict(size=10.2, bold=True, color=RGBColor(0x2B,0xA6,0x6B)))]], align=PP_ALIGN.CENTER)
+    _text(slide, x+Inches(0.38), y+Inches(3.05), cw-Inches(0.76), Inches(0.42),
+          [[("brown/background cells are masked out from false-positive loss", dict(size=9.4, color=INK))]], align=PP_ALIGN.CENTER)
+
+    _rect(slide, Inches(0.82), Inches(6.46), Inches(11.7), Inches(0.36), RGBColor(0xFF,0xF7,0xE8), line=RGBColor(0xF2,0xC4,0x6D))
+    _text(slide, Inches(0.94), Inches(6.46), Inches(11.45), Inches(0.36),
+          [[("Ablation: Pair Mask 제거 시 Total FAR 100%까지 상승 → background loss 분리가 핵심 근거", dict(size=12.4, bold=True, color=NAVY))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _footer(slide, idx)
+
+
+def s_p2_validation(slide, d, idx):
+    _bg(slide, WHITE)
+    _title_block(slide, "P2 | 검증 결과", "데이터 구성과 val-margin이 FAR collapse를 막았다")
+
+    # ladder table
+    x = Inches(0.75); y = Inches(1.85); w = Inches(7.35); h = Inches(4.95)
+    _rect(slide, x, y, w, h, WHITE, line=LINE)
+    _rect(slide, x, y, w, Inches(0.45), NAVY)
+    _text(slide, x+Inches(0.18), y, w-Inches(0.36), Inches(0.45),
+          [[("Recipe ladder (single model 기준)", dict(size=13.2, bold=True, color=WHITE))]], anchor=MSO_ANCHOR.MIDDLE)
+    rows = [
+        ("BCE + Label Smoothing", "0.1093", "99.47%"),
+        ("Focal / ASL", "0.7980 / 0.6435", "45.72% / 100%"),
+        ("Random CutMix", "0.9359", "42.05%"),
+        ("CutMix + Pair Mask", "0.9491", "24.62%"),
+        ("FCM-PM + val-F1", "0.9652", "0.15%"),
+        ("FCM-PM + val-margin", "0.9927", "0.00%"),
+    ]
+    yy = int(y) + int(Inches(0.62)); row_h = int(Inches(0.62))
+    for i, (name, f1, far) in enumerate(rows):
+        fill = RGBColor(0xE6,0xF7,0xF6) if i == len(rows)-1 else (PANEL if i % 2 == 0 else WHITE)
+        _rect(slide, x+Inches(0.14), Emu(yy+i*row_h), w-Inches(0.28), Emu(row_h-int(Pt(1))), fill, line=RGBColor(0xE0,0xE6,0xEF))
+        _text(slide, x+Inches(0.32), Emu(yy+i*row_h), Inches(3.25), Emu(row_h),
+              [[(name, dict(size=11.3, bold=(i==len(rows)-1), color=NAVY if i==len(rows)-1 else INK))]], anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, x+Inches(3.85), Emu(yy+i*row_h), Inches(1.35), Emu(row_h),
+              [[(f1, dict(size=11.3, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, x+Inches(5.55), Emu(yy+i*row_h), Inches(1.25), Emu(row_h),
+              [[(far, dict(size=11.3, bold=True, color=RGBColor(0xCC,0x33,0x28) if far!="0.00%" else RGBColor(0x2B,0xA6,0x6B))) ]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, x+Inches(3.80), y+Inches(0.47), Inches(1.45), Inches(0.20),
+          [[("bit-F1", dict(size=9.5, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
+    _text(slide, x+Inches(5.55), y+Inches(0.47), Inches(1.25), Inches(0.20),
+          [[("Total FAR", dict(size=9.5, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
+
+    # right explanation
+    rx = Inches(8.35); rw = Inches(4.20)
+    _rect(slide, rx, Inches(1.85), rw, Inches(2.0), PANEL, line=LINE)
+    _rect(slide, rx, Inches(1.85), Inches(0.09), Inches(2.0), ACCENT)
+    _text(slide, rx+Inches(0.25), Inches(2.08), rw-Inches(0.45), Inches(0.38),
+          [[("val-margin selection", dict(size=15, bold=True, color=NAVY))]])
+    _text(slide, rx+Inches(0.25), Inches(2.55), rw-Inches(0.45), Inches(0.58),
+          [[("margin = mean(p_pos) - mean(p_neg)", dict(size=13.3, bold=True, color=INK, name="Consolas"))]])
+    _text(slide, rx+Inches(0.25), Inches(3.16), rw-Inches(0.45), Inches(0.42),
+          [[("test 상관: val-margin ρ +0.56 / val-F1 ρ -0.10", dict(size=11.2, color=MUTED))]])
+
+    _rect(slide, rx, Inches(4.10), rw, Inches(2.70), PANEL, line=LINE)
+    _rect(slide, rx, Inches(4.10), Inches(0.09), Inches(2.70), ACCENT)
+    _text(slide, rx+Inches(0.25), Inches(4.30), rw-Inches(0.45), Inches(0.38),
+          [[("Inference safety layer", dict(size=15, bold=True, color=NAVY))]])
+    _text(slide, rx+Inches(0.25), Inches(4.85), rw-Inches(0.45), Inches(0.80),
+          [[("max-prob gate와 GaussianNB reject는 ambiguous/OOD 확률 벡터를 Normal로 돌려 false alarm을 억제합니다.",
+             dict(size=12.0, color=INK))]])
+    _text(slide, rx+Inches(0.25), Inches(5.82), rw-Inches(0.45), Inches(0.58),
+          [[("Status: 현업 single-defect 원천 + controlled synthetic benchmark. 실 양산 배포 성능으로 표현하지 않음.",
+             dict(size=10.8, color=MUTED))]])
+    _footer(slide, idx)
+
+
+def s_p3_intro(slide, d, idx):
+    _bg(slide, WHITE)
+    _title_block(slide, "P3 | Trend anomaly generator", "real abnormal label 부족을 generator benchmark로 전환")
+    _text(slide, Inches(0.85), Inches(1.86), Inches(6.2), Inches(0.52),
+          [[("핵심은 모델 성능 자랑이 아니라, 검증 데이터가 없던 문제를 현장 판정 기준 기반 생성 규칙으로 푼 것입니다.",
+             dict(size=16, bold=True, color=NAVY))]])
+    # left flow
+    steps = [
+        ("현장 기준", "BBD / Overlay / CD 10년 trend 판정 경험"),
+        ("Generator rule", "Region 5종 + Noise 3종 + Anomaly 5종"),
+        ("Synthetic benchmark", "normal 3,500 + abnormal 3,500 = 7,000개"),
+        ("Gate validation", "Binary F1 0.9967 / abnormal recall 0.9987"),
+    ]
+    x = Inches(0.90); y = Inches(2.75); w = Inches(5.45); bh = Inches(0.68); gap = Inches(0.18)
+    for i, (head, body) in enumerate(steps):
+        yy = Emu(int(y) + i*(int(bh)+int(gap)))
+        _rect(slide, x, yy, w, bh, RGBColor(0xE6,0xF7,0xF6) if i==len(steps)-1 else PANEL, line=LINE)
+        _rect(slide, x, yy, Inches(0.09), bh, ACCENT)
+        _text(slide, x+Inches(0.24), yy+Inches(0.08), Inches(1.45), Inches(0.25),
+              [[(head, dict(size=11.2, bold=True, color=ACCENT))]])
+        _text(slide, x+Inches(1.72), yy, w-Inches(1.92), bh,
+              [[(body, dict(size=12.4, bold=(i==len(steps)-1), color=NAVY if i==len(steps)-1 else INK))]],
+              anchor=MSO_ANCHOR.MIDDLE)
+        if i < len(steps)-1:
+            _rect(slide, x+Inches(2.58), Emu(int(yy)+int(bh)-int(Inches(0.02))), Inches(0.24), Inches(0.22),
+                  ACCENT, shape=MSO_SHAPE.DOWN_ARROW)
+
+    # right metrics + image
+    rx = Inches(6.85); ry = Inches(2.05)
+    _metric_card_compact(slide, rx, ry, Inches(1.75), Inches(1.05), "7,000", "trend samples", "3,500+3,500")
+    _metric_card_compact(slide, rx+Inches(1.95), ry, Inches(1.75), Inches(1.05), "5×3×5", "rule space", "region/noise/anomaly")
+    _metric_card_compact(slide, rx+Inches(3.90), ry, Inches(1.75), Inches(1.05), "0.9967", "Binary F1", "PoC")
+    _rect(slide, rx, Inches(3.55), Inches(5.65), Inches(2.55), WHITE, line=LINE)
+    _img_fit(slide, "trend_context_view.png", rx+Inches(0.18), Inches(3.78), Inches(5.29), Inches(1.95), frame=False)
+    _text(slide, rx, Inches(5.82), Inches(5.65), Inches(0.28),
+          [[("예시: context anomaly - 실제 현업 log 성능이 아니라 synthetic PoC 검증용 chart", dict(size=10.5, color=MUTED))]],
+          align=PP_ALIGN.CENTER)
+    _footer(slide, idx)
+
+
+def s_p3_generator(slide, d, idx):
+    _bg(slide, WHITE)
+    _title_block(slide, "P3 | generator rule", "현장 판정 기준을 수식과 sampling rule로 옮김")
+    _text(slide, Inches(0.85), Inches(1.78), Inches(11.6), Inches(0.38),
+          [[("Region, Noise, Anomaly, Calibration을 분리해 조합하면 새로운 abnormal label 없이도 검증 가능한 benchmark를 만들 수 있습니다.",
+             dict(size=15.2, color=INK))]])
+    x0 = Inches(0.75); y = Inches(2.35); cw = Inches(2.85); h = Inches(3.95); gap = Inches(0.20)
+    cards = [
+        ("Region density", ["dense / sparse", "very_sparse / thin", "missing"], "N_obs = N_total × density_ratio"),
+        ("Noise model", ["Gaussian", "Laplacian", "Correlated"], "e_t = ρ e_{t-1} + w_t"),
+        ("Anomaly injection", ["mean shift", "std change", "spike / drift / context"], "y_t = μ + δ;  y_t += A*I[t=t*]"),
+        ("Normal calibration", ["lower bound", "fleet upper bound", "threshold sweep"], "std_target ≤ 1.2 × fleet_within_std"),
+    ]
+    for i, (head, bullets, formula) in enumerate(cards):
+        x = Emu(int(x0)+i*(int(cw)+int(gap)))
+        _rect(slide, x, y, cw, h, WHITE, line=LINE)
+        _rect(slide, x, y, cw, Inches(0.48), NAVY if i < 3 else ACCENT)
+        _text(slide, x+Inches(0.12), y, cw-Inches(0.24), Inches(0.48),
+              [[(head, dict(size=12.2, bold=True, color=WHITE))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        by = int(y) + int(Inches(0.78))
+        for j, b in enumerate(bullets):
+            _rect(slide, x+Inches(0.20), Emu(by+j*int(Inches(0.42))), Inches(0.10), Inches(0.10),
+                  ACCENT, shape=MSO_SHAPE.OVAL)
+            _text(slide, x+Inches(0.42), Emu(by+j*int(Inches(0.42))-int(Inches(0.06))), cw-Inches(0.62), Inches(0.24),
+                  [[(b, dict(size=10.7, color=INK))]])
+        _rect(slide, x+Inches(0.20), y+Inches(2.85), cw-Inches(0.40), Inches(0.70), PANEL, line=LINE)
+        _text(slide, x+Inches(0.28), y+Inches(2.88), cw-Inches(0.56), Inches(0.62),
+              [[(formula, dict(size=9.5, color=NAVY, name="Consolas", bold=True))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _rect(slide, Inches(1.10), Inches(6.55), Inches(11.15), Inches(0.34), RGBColor(0xFF,0xF7,0xE8), line=RGBColor(0xF2,0xC4,0x6D))
+    _text(slide, Inches(1.18), Inches(6.55), Inches(10.98), Inches(0.34),
+          [[("Dataset: normal 3,500 + abnormal 3,500 = 7,000. Contribution = validation benchmark, not real-log accuracy.",
+             dict(size=11.2, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _footer(slide, idx)
+
+
+def s_p3_result(slide, d, idx):
+    _bg(slide, WHITE)
+    _title_block(slide, "P3 | PoC validation", "대표 trend 3종과 synthetic gate 검증")
+    _text(slide, Inches(0.85), Inches(1.75), Inches(8.3), Inches(0.42),
+          [[("Normal과 anomaly를 구분하는 1차 gate를 synthetic benchmark에서 검증했습니다.",
+             dict(size=15.2, color=INK))]])
+    # images
+    y = Inches(2.35); h = Inches(3.55); x0 = Inches(0.78); cw = Inches(2.75); gap = Inches(0.28)
+    imgs = [
+        ("trend_normal_view.png", "Normal", "baseline 주변"),
+        ("trend_mean_shift_view.png", "Mean shift", "평균 이동"),
+        ("trend_context_view.png", "Context anomaly", "legend-relative outlier"),
+    ]
+    for i, (src, head, sub) in enumerate(imgs):
+        x = Emu(int(x0)+i*(int(cw)+int(gap)))
+        _rect(slide, x, y, cw, h, WHITE, line=LINE)
+        _img_fit(slide, src, x+Inches(0.14), y+Inches(0.20), cw-Inches(0.28), h-Inches(0.82), frame=False)
+        _text(slide, x, y+Inches(2.92), cw, Inches(0.28),
+              [[(head, dict(size=14, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
+        _text(slide, x, y+Inches(3.20), cw, Inches(0.22),
+              [[(sub, dict(size=10.5, color=MUTED))]], align=PP_ALIGN.CENTER)
+
+    # result card
+    rx = Inches(10.05); rw = Inches(2.45)
+    _rect(slide, rx, Inches(2.35), rw, Inches(3.55), PANEL, line=LINE)
+    _rect(slide, rx, Inches(2.35), rw, Inches(0.46), NAVY)
+    _text(slide, rx, Inches(2.35), rw, Inches(0.46),
+          [[("Synthetic PoC", dict(size=13, bold=True, color=WHITE))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, rx+Inches(0.16), Inches(3.00), rw-Inches(0.32), Inches(0.48),
+          [[("Test 1,500", dict(size=17, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
+    _text(slide, rx+Inches(0.16), Inches(3.58), rw-Inches(0.32), Inches(0.42),
+          [[("F1 0.9967", dict(size=18, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
+    _text(slide, rx+Inches(0.16), Inches(4.12), rw-Inches(0.32), Inches(0.36),
+          [[("Abnormal recall 0.9987", dict(size=11.2, bold=True, color=RGBColor(0x2B,0xA6,0x6B)))]], align=PP_ALIGN.CENTER)
+    _text(slide, rx+Inches(0.16), Inches(4.72), rw-Inches(0.32), Inches(0.72),
+          [[("TN/FN/FP/TP\n746 / 1 / 4 / 749", dict(size=11.0, color=INK))]], align=PP_ALIGN.CENTER)
+
+    _rect(slide, Inches(0.90), Inches(6.35), Inches(11.5), Inches(0.42), RGBColor(0xE6,0xF7,0xF6), line=LINE)
+    _text(slide, Inches(1.02), Inches(6.35), Inches(11.25), Inches(0.42),
+          [[("Status: 현업 데이터 적용 전 PoC. 성과 표현의 중심은 real anomaly label 부족을 검증 가능한 benchmark로 바꾼 점입니다.",
+             dict(size=12.2, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _footer(slide, idx)
+
+
 DISPATCH = {"title": s_title, "section": s_section, "stats": s_stats, "bullets": s_bullets,
             "two_col": s_two_col, "image_grid": s_image_grid, "table": s_table, "closing": s_closing,
             "flow": s_flow, "timeline": s_timeline, "cards": s_cards, "pipeline": s_pipeline,
-            "papertext": s_papertext, "archflow": s_archflow}
+            "papertext": s_papertext, "archflow": s_archflow,
+            "p2_intro": s_p2_intro, "p2_fcmpm": s_p2_fcmpm, "p2_validation": s_p2_validation,
+            "p3_intro": s_p3_intro, "p3_generator": s_p3_generator, "p3_result": s_p3_result}
 
 
 def build(spec_path, out_path):
