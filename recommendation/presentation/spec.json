@@ -206,22 +206,23 @@
             [
               "What:",
               [
-                "Numba = JIT compiler: runs numeric Python",
-                "code at C/machine level (unboxed, parallel)"
+                "Numba = JIT compiler -> native machine code",
+                "fast: unboxed, compiled, one fused pass",
+                "no temp array/op (unlike numpy); multi-core"
               ]
             ],
             [
               "Why:",
               [
-                "pure Python: too slow (interpreter + boxing)",
-                "numpy: faster, but a temp array per op"
+                "composite = N wafer maps stacked per pixel",
+                "N x millions of px -> very slow in Python"
               ]
             ],
             [
               "Used here:",
               [
                 "composite[y][x] = sum_w grade[w][y][x]",
-                "ran as @njit(parallel) + prange  ->  ~50x"
+                "via @njit(parallel) + prange -> ~5x faster"
               ]
             ]
           ],
