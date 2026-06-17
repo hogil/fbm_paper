@@ -240,7 +240,38 @@ def fig_ablation():
     fig.savefig(FIG + "/p3_deck_ablation.png", facecolor="white"); print("wrote ablation"); plt.close(fig)
 
 
+def fig_robust():
+    """백본 × 데이터셋 × 운영임계값(NT) — 동일 baseline·5-seed 고정 비교."""
+    fig, axs = plt.subplots(1, 3, figsize=(14.6, 3.9), dpi=195,
+                            gridspec_kw=dict(width_ratios=[1.0, 1.0, 1.12]))
+    fig.patch.set_facecolor("white")
+
+    def two_bar(a, names, f1, fn, c2, title):
+        a.bar([0, 1], f1, color=[GRAYF, c2], width=0.55, zorder=3)
+        a.set_ylim(0.992, 0.9985)
+        for i, (v, n) in enumerate(zip(f1, fn)):
+            a.text(i, v + 0.00003, f"{v:.4f}", ha="center", fontsize=9, color=NAVY, fontweight="bold")
+            a.text(i, 0.99222, f"FN {n}", ha="center", fontsize=8.5, color=MUT)
+        a.set_xticks([0, 1]); a.set_xticklabels(names, fontsize=9, color=MUT)
+        a.set_title(title, fontsize=11.5, color=NAVY, fontweight="bold", pad=8)
+        _spines(a); a.tick_params(labelbottom=True, labelleft=True)
+
+    two_bar(axs[0], ["Tiny (28M)", "Base"], [0.9944, 0.9971], [4.6, 1.2], NAVY, "백본 — ConvNeXtV2 (5-seed)")
+    two_bar(axs[1], ["base", "noise +15%"], [0.9944, 0.9960], [4.6, 1.8], TEAL, "데이터셋 강건성 (5-seed)")
+    a = axs[2]
+    nts = ["0.9", "0.99", "0.999"]; fn = [3.80, 2.74, 1.75]; fp = [2.91, 3.65, 5.12]
+    a.plot(nts, fn, marker="o", color=RD, lw=2.0, label="FN (놓친 불량)")
+    a.plot(nts, fp, marker="o", color=BL, lw=2.0, label="FP (정상 오경보)")
+    a.set_ylim(0, 6); a.legend(fontsize=8, frameon=False, loc="upper center")
+    a.set_xlabel("normal threshold (NT)", fontsize=8.5, color=MUT)
+    a.set_title("운영 임계값 — FN/FP trade-off", fontsize=11.5, color=NAVY, fontweight="bold", pad=8)
+    _spines(a); a.tick_params(labelbottom=True, labelleft=True)
+    fig.tight_layout()
+    fig.savefig(FIG + "/p3_deck_robust.png", facecolor="white"); print("wrote robust"); plt.close(fig)
+
+
 if __name__ == "__main__":
     fig_baseline()
     fig_types()
     fig_ablation()
+    fig_robust()
