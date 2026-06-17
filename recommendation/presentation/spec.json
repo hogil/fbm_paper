@@ -371,24 +371,8 @@
       "cols": 3,
       "figs": [
         {
-          "head": "InfoNCE (base)",
-          "sections": [
-            [
-              "positive / negative",
-              [
-                "같은 wafer 두 view = positive (당김)",
-                "다른 wafer = negative (밀어냄)"
-              ]
-            ],
-            [
-              "loss",
-              [
-                "sim(z_i, z_j) / tau 를 최대화",
-                "tau = 0.07,  128-D 임베딩"
-              ]
-            ]
-          ],
-          "caption": "라벨 없이 결함 표현 학습 (자기지도)"
+          "src": "ref_contrastive_base.png",
+          "caption": "InfoNCE — anchor·positive는 가깝게, negative는 멀게 (자기지도 대조)"
         },
         {
           "src": "ref_moco_fig1.png",
