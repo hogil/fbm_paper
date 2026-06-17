@@ -144,28 +144,57 @@
       ]
     },
     {
-      "type": "image_grid",
+      "type": "papertext",
       "kicker": "P1 | viewer 처리 구조",
       "title": "Numba와 pyvips: 대량 Failbit Map viewer 처리",
       "bullets": [
-        "**왜 필요한가** — 생성된 대량 Failbit Map을 운영 viewer에서 매일 조회·비교·합성합니다. 여러 wafer 합성과 수천×수천 PNG 로드가 viewer 병목이라, 아래 두 기법으로 처리 속도와 메모리를 잡았습니다",
-        "**Numba** — 여러 wafer Grade map 합성 시 픽셀 단위 Python loop를 기계어로 병렬화해 composite map 생성을 가속합니다",
-        "**pyvips** — 초고해상도 PNG 전체를 메모리에 올리지 않고 화면에 필요한 tile만 읽어 viewer 메모리와 지연을 줄입니다"
+        "**왜 필요한가** — 생성된 대량 Failbit Map을 운영 viewer에서 매일 조회·비교·합성합니다. 여러 wafer 합성과 수천×수천 PNG 로드가 viewer 병목이라, 아래 두 기법으로 처리 속도와 메모리를 잡았습니다"
       ],
-      "images": [
+      "body_h": 0.92,
+      "bullet_size": 13.4,
+      "img_note": "모델 추론 속도 수치가 아니라, 운영 viewer가 대량 map을 다룰 수 있게 만든 데이터/이미지 처리 구조입니다",
+      "cols": 2,
+      "figs": [
         {
-          "src": "numba_composite_formula.png",
-          "caption": "Numba @njit composite — 여러 wafer를 픽셀 위치별로 병렬 누적"
+          "head": "Numba @njit composite map",
+          "sections": [
+            [
+              "픽셀 위치별 병렬 누적",
+              [
+                "여러 wafer Grade map을 같은 좌표로 합산하고,",
+                "@njit + prange 로 Python loop을 기계어로 병렬화"
+              ]
+            ],
+            [
+              "성능",
+              [
+                "numpy 대비 약 50배,  10장 합성 약 2.9초"
+              ]
+            ]
+          ],
+          "caption": "Numba 병렬 합성 — composite map 생성 가속"
         },
         {
-          "src": "pyvips_stream_formula.png",
-          "caption": "pyvips demand-driven tile streaming — 필요한 tile만 로드"
+          "head": "pyvips demand-driven tile streaming",
+          "sections": [
+            [
+              "필요한 tile만 로드",
+              [
+                "큰 PNG 전체를 메모리에 올리지 않고,",
+                "화면에 보이는 부분의 tile만 골라 디코드"
+              ]
+            ],
+            [
+              "pyramid + cache",
+              [
+                "축소 레벨 [0.25, 0.5, 0.75, 1.0] 을 미리 캐시 →",
+                "대용량 map 즉시 조회, viewer 메모리 절감"
+              ]
+            ]
+          ],
+          "caption": "pyvips tile streaming — viewer 메모리·지연 절감"
         }
-      ],
-      "grid_cols": 1,
-      "body_h": 1.02,
-      "bullet_size": 13.4,
-      "img_note": "모델 추론 속도 수치가 아니라, 운영 viewer가 대량 map을 다룰 수 있게 만든 데이터/이미지 처리 구조입니다"
+      ]
     },
     {
       "type": "bullets",
@@ -401,26 +430,48 @@
       "img_note": "P2는 현업 single failure chip 원천과 도메인 확률분포 기반 생성/검증입니다. bit-F1 0.9943 / FAR 0.00%는 synthetic/controlled benchmark 기준입니다"
     },
     {
-      "type": "image_grid",
+      "type": "papertext",
       "kicker": "P2 | model selection + reject",
       "title": "val-margin으로 checkpoint를 고르고, GaussianNB reject로 OOD를 거른다",
       "bullets": [
-        "**val-margin best model select** — val-F1 하나만 보지 않고 positive/negative margin이 벌어진 checkpoint를 고릅니다. 이 선택에서 bit-F1 0.9943과 FAR 0.00%가 같이 나왔습니다",
-        "**NB reject** — max probability 하나가 아니라 4-bit probability vector 전체가 known single/2-combo 분포처럼 생겼는지 GaussianNB likelihood로 판단합니다"
+        "**모델 선택과 reject** — 검증 margin으로 운영에 맞는 checkpoint를 고르고, GaussianNB로 모호하거나 OOD인 확률 벡터를 Normal로 reject해 false alarm을 막습니다"
       ],
-      "images": [
+      "body_h": 0.92,
+      "img_note": "NB reject는 raw model 성능을 대체하는 모델이 아니라, ambiguous/OOD probability vector를 reject하는 운영 safety layer입니다",
+      "cols": 2,
+      "figs": [
         {
-          "src": "val_margin_formula.png",
-          "caption": "val-margin으로 checkpoint 선택"
+          "head": "Validation-margin checkpoint selection",
+          "sections": [
+            [
+              "margin 정의",
+              [
+                "margin = mean(p_pos) - mean(p_neg)",
+                "정답 bit와 오답 bit 확률의 분리 폭"
+              ]
+            ],
+            [
+              "왜 val-F1 대신",
+              [
+                "val-F1 <-> test 상관 낮음 (rho = -0.10)",
+                "val-margin <-> test 상관 높음 (rho = +0.56)"
+              ]
+            ],
+            [
+              "선택 결과",
+              [
+                "val-margin 최대 checkpoint 채택",
+                "-> bit-F1 0.9943,  FAR 0.00%"
+              ]
+            ]
+          ],
+          "caption": "검증 margin으로 운영에 맞는 checkpoint 선택"
         },
         {
-          "src": "nb_reject_formula.png",
-          "caption": "GaussianNB reject gate (Normal/OOD 차단)"
+          "src": "nb_reject_4class_dist.png",
+          "caption": "GaussianNB reject — 4-bit 확률 분포로 Normal/OOD 차단"
         }
-      ],
-      "grid_cols": 2,
-      "body_h": 0.84,
-      "img_note": "NB reject는 raw model 성능을 대체하는 모델이 아니라, ambiguous/OOD probability vector를 reject하는 운영 safety layer입니다"
+      ]
     },
     {
       "type": "section",

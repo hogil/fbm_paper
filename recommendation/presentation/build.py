@@ -2101,24 +2101,31 @@ def s_papertext(slide, d, idx):
     chh = (area_h - gy * (rows - 1)) // rows
     box_h = chh - cap_h
     MONO = "Consolas"
+    def _kr(t): return any('가' <= ch <= '힣' for ch in t)
     for i, fg in enumerate(figs):
         r, c = divmod(i, cols)
         fx = x0 + c * (cw + gx)
         fy = top + r * (chh + gy)
         _rect(slide, Emu(fx), Emu(fy), Emu(cw), Emu(box_h), WHITE,
               line=RGBColor(0xB9, 0xC6, 0xDB), line_w=Pt(1.25))
-        lines = []
-        if fg.get("head"):
-            lines.append([(fg["head"], dict(size=14.5, bold=True, color=NAVY))])
-            lines.append([(" ", dict(size=5, color=WHITE))])
-        for sec in fg["sections"]:
-            lab, content = sec[0], sec[1]
-            lines.append([(lab, dict(size=13.5, bold=True, italic=True, color=NAVY, name=MONO))])
-            for cc in content:
-                lines.append([("    " + cc, dict(size=13, color=INK, name=MONO))])
-        _text(slide, Emu(fx + int(Inches(0.30))), Emu(fy + int(Inches(0.14))),
-              Emu(cw - int(Inches(0.54))), Emu(box_h - int(Inches(0.28))),
-              lines, anchor=MSO_ANCHOR.MIDDLE)
+        if fg.get("src"):
+            _img_fit(slide, fg["src"], Emu(fx + int(Inches(0.14))), Emu(fy + int(Inches(0.12))),
+                     Emu(cw - int(Inches(0.28))), Emu(box_h - int(Inches(0.24))), frame=False)
+        else:
+            lines = []
+            if fg.get("head"):
+                lines.append([(fg["head"], dict(size=14.5, bold=True, color=NAVY))])
+                lines.append([(" ", dict(size=5, color=WHITE))])
+            for sec in fg["sections"]:
+                lab, content = sec[0], sec[1]
+                lines.append([(lab, dict(size=13.5, bold=True, italic=(not _kr(lab)),
+                                         color=NAVY, name=(FONT if _kr(lab) else MONO)))])
+                for cc in content:
+                    lines.append([("    " + cc, dict(size=13, color=INK,
+                                                     name=(FONT if _kr(cc) else MONO)))])
+            _text(slide, Emu(fx + int(Inches(0.30))), Emu(fy + int(Inches(0.14))),
+                  Emu(cw - int(Inches(0.54))), Emu(box_h - int(Inches(0.28))),
+                  lines, anchor=MSO_ANCHOR.MIDDLE)
         _text(slide, Emu(fx), Emu(fy + box_h + int(Inches(0.03))), Emu(cw), Emu(cap_h),
               [[(fg["caption"], dict(size=12.5, bold=True, color=NAVY))]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
