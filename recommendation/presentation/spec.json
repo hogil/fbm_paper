@@ -206,55 +206,60 @@
             [
               "Operation:",
               [
-                "composite[y][x] = sum_w  grade[w][y][x]",
-                "accumulate N aligned wafer maps, per pixel"
+                "composite[y][x] = sum_w grade[w][y][x]   (per pixel)"
               ]
             ],
             [
-              "Why it is fast:",
+              "What @njit does:",
               [
-                "Python: bytecode dispatch + boxed PyObject / element",
-                "@njit: LLVM native code, type-specialized, unboxed",
-                "prange + parallel: loop over CPU cores, GIL released"
+                "JIT-compiles this loop to native machine code",
+                "(unboxed numbers, no interpreter; prange = multi-core)"
               ]
             ],
             [
-              "vs numpy:",
+              "pure Python -> numpy -> Numba:",
               [
-                "one fused pass, no temporary arrays (cache-friendly)",
+                "pure Python : interpreter + boxed object per element",
+                "numpy       : contiguous C arrays, but a temp array per op",
+                "Numba       : one fused compiled pass, no temps, on cores"
+              ]
+            ],
+            [
+              "Result:",
+              [
                 "~50x vs numpy ;  10-map composite ~2.9 s"
               ]
             ]
           ],
-          "caption": "JIT-compiled, unboxed, multi-core composite"
+          "caption": "JIT-compiled, unboxed, single fused pass, multi-core"
         },
         {
-          "head": "pyvips demand-driven tile streaming",
+          "head": "pyvips — stream-load & resize large maps",
           "sections": [
             [
-              "Data scale:",
+              "Problem:",
               [
-                "one map = 6912 x 6912 x 3 B  ~  hundreds of MB",
-                "loading it whole makes the viewer heavy and slow"
+                "one map ~ 6912 x 6912 x 3 = ~140 MB raw RGB",
+                "decoding/holding whole maps overwhelms the viewer"
               ]
             ],
             [
-              "Why it is efficient:",
+              "Why pyvips (libvips) stays light:",
               [
-                "lazy pipeline: runs only when the sink pulls output",
-                "region streaming: peak memory ~ a tile, not full image",
-                "threaded: regions traverse the pipeline in parallel"
+                "demand-driven: op graph runs only when output is pulled",
+                "streams scanline regions -> peak memory ~ a region",
+                "horizontally threaded: regions run the pipeline in parallel"
               ]
             ],
             [
-              "Pyramid + cache:",
+              "Result:",
               [
-                "pre-rendered LoD [0.25,0.5,0.75,1.0], zoom-matched",
-                "viewer memory:  hundreds of MB  ->  a few MB"
+                "high-quality resize (cubic) without full-image decode",
+                "viewer touches small regions, not whole ~140 MB maps"
               ]
             ]
           ],
-          "caption": "lazy, streamed, threaded large-image loading"
+          "caption": "low-memory streaming load & resize of huge maps"
         }
       ]
     },
