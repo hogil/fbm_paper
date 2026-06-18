@@ -18,9 +18,9 @@
           "no": "P1",
           "task": "Failbit Map failure analysis",
           "thumb": "wafer_center_scratch.png",
-          "problem": "48매 단위 조회 한계, 수작업 검토 병목",
-          "approach": "coordinate-preserving Failbit Map + Known/Unknown model",
-          "result": "일 2만 wafer viewer, 올해 26억"
+          "problem": "48매 단위 조회 한계, human review 부담",
+          "approach": "좌표 보존 Failbit Map + 대량 viewer + Known/Unknown model",
+          "result": "[양산 운영] 일 2만 wafer/day, 올해 26억"
         },
         {
           "no": "P2",
@@ -28,7 +28,7 @@
           "thumb": "chip_eval_scratch_selected.png",
           "problem": "2-combo failure GT 부족",
           "approach": "single source → FCM-PM + val-margin",
-          "result": "3,850-chip PoC, bit-F1 0.9927"
+          "result": "[controlled synthetic] bit-F1 0.9927 / FAR 0.00%"
         },
         {
           "no": "P3",
@@ -36,7 +36,7 @@
           "thumb": "trend_spike.png",
           "problem": "real anomaly label scarcity, validation bottleneck",
           "approach": "episode generation + binary validation",
-          "result": "7,000 trend benchmark, F1 0.9967"
+          "result": "[synthetic trend PoC] benchmark 7,000, binary-F1 0.9967"
         }
       ]
     },
@@ -133,9 +133,9 @@
     {
       "type": "papertext",
       "kicker": "P1 | 데이터 생성 (fail-map)",
-      "title": "Hex-to-grade + palette PNG",
+      "title": "8단계 grade → palette PNG 무손실 저장",
       "bullets": [
-        "**Motivation** — 병목은 변환 속도와 저장 공간입니다. wafer 한 장은 약 1,000만 test result를 포함하고 하루 약 2만 장이 누적되므로, raw log 그대로는 대량 조회와 분석이 어렵습니다. Cython hex-to-grade로 변환 속도를 높이고, 32-color palette PNG로 저장 용량을 줄였습니다"
+        "**Motivation** — 병목은 변환 속도와 저장 공간입니다. wafer 한 장은 약 1,000만 test result를 포함하고 하루 약 2만 장이 누적되므로, raw log 그대로는 대량 조회와 분석이 어렵습니다. EDS 값이 8단계 이산 grade라 palette PNG로 무손실 저장이 가능했고, Cython hex-to-grade와 32-color palette PNG로 저장 용량을 약 75% 줄여 일 2만 wafer 운영 기반을 만들었습니다"
       ],
       "body_h": 0.72,
       "img_frame": false,
@@ -235,9 +235,9 @@
     {
       "type": "image_grid",
       "kicker": "P1 | Known 2단계 상세",
-      "title": "Backbone 0.87 → tuning 0.92 → 2-stage 0.95",
+      "title": "Known validation: CNN tuning → selective ROI-YOLO",
       "bullets": [
-        "**1-stage CNN** — ConvNeXtV2는 MaxViT와 F1 0.87 동급, params −26% / FLOPs −39%로 채택했습니다",
+        "**1-stage CNN** — 특정 위치 반복 failure는 CNN local receptive field가 유리하고, Transformer는 전역 배경까지 보며 불리할 수 있다는 자문을 반영했습니다(전해곤 교수). ConvNeXtV2는 MaxViT와 F1 0.87 동급, params −26% / FLOPs −39%였습니다",
         "**Tuning** — Optuna로 warmup→cosine, focal loss, class-imbalance, augmentation strength를 조정해 F1 0.92까지 올렸습니다",
         "**2-stage ROI-YOLO** — low-confidence wafer만 ROI chip failure pattern으로 2차 분류해 최종 F1 0.95를 달성했습니다"
       ],
@@ -269,15 +269,15 @@
     {
       "type": "image_grid",
       "kicker": "P1 | 칩 식별 지도 (후속 개발)",
-      "title": "Object-id map for chip-level layout prior",
+      "title": "차세대 Stage-2: ROI detection → chip identity map",
       "bullets": [
-        "**ROI-YOLO limitation** — 전체 wafer image에서 sliding-window 후보 box를 대량 평가해 chip failure를 찾기 때문에 cost와 sensitivity 한계가 있습니다",
-        "**Object-id map** — chip coordinate로 crop만 분류한 뒤, class id를 실제 chip 배열 위치에 배치해 32×32 map을 구성합니다",
-        "**Metric** — val_f1 0.9946 / test_f1 0.9872 / 5-seed 0.9838 ± 0.0092. ROI-YOLO 대체 후보입니다"
+        "**Current Stage-2** — ROI-YOLO는 field-validated 구조지만, 전체 wafer image에서 다수 후보 box를 평가하므로 cost와 small-chip sensitivity 한계가 남습니다",
+        "**Object-id map** — 제품별 chip coordinate를 재사용해 fixed crop classification으로 바꾸고, chip별 class id를 32×32 wafer grid에 되돌려 배치합니다",
+        "**Metric** — val_f1 0.9946 / test_f1 0.9872 / 5-seed 0.9838 ± 0.0092. 생성 chip 데이터 기반 차세대 Stage-2 개발 중입니다"
       ],
       "body_h": 1.36,
       "bullet_size": 13.5,
-      "img_tile": "#E4EAF4",
+      "img_frame": false,
       "grid_gap": 0.34,
       "images": [
         {
@@ -302,7 +302,7 @@
         }
       ],
       "grid_cols": 4,
-      "img_note": "Object-id ablation: intensity only 0.4385 → intensity + object-id 0.9879. Portfolio metric: val_f1 0.9946 / test_f1 0.9872."
+      "img_note": "Field-validated 대표 성과는 ROI-YOLO 2-stage F1 0.95이고, object-id map은 detector cost와 class 확장 부담을 줄이기 위한 차세대 Stage-2 구조입니다."
     },
     {
       "type": "image_grid",
@@ -328,7 +328,7 @@
       ],
       "grid_cols": 3,
       "body_h": 0.72,
-      "img_note": "2,000장 review set에서 13개 후보 group을 찾았고, 엔지니어 검토 결과 7개가 신규 failure pattern으로 확인되었습니다."
+      "img_note": "실제 현업 데이터 2,000장 review: 13개 후보 중 7개 신규 failure 확인. 화면 이미지는 후속 튜닝용 생성/개발 예시입니다."
     },
     {
       "type": "papertext",
@@ -358,7 +358,8 @@
       "kicker": "P1 | Unknown 대조 학습: queue와 patch",
       "title": "MoCo queue와 NeCo patch consistency",
       "bullets": [
-        "MoCo queue는 large negative dictionary로 batch 의존성을 줄이고, NeCo는 patch-level consistency로 같은 failure pattern의 local structure를 안정화합니다"
+        "**MoCo** — queue로 minibatch 밖 negative dictionary를 확장해 contrastive reference set을 넓힙니다",
+        "**NeCo** — patch-neighbor consistency로 같은 failure pattern의 local structure가 view마다 흔들리지 않게 정규화합니다"
       ],
       "body_h": 0.62,
       "bullet_size": 13.8,
@@ -391,7 +392,7 @@
           "color": "#0F1E3D",
           "bullets": [
             "DRAM D1a/b/c/d 전제품 분석 파트에서 **매일 사용 중**, 일 2만 wafer 처리",
-            "분석 공수 약 **90% 절감 → 올해 약 26억**, 수율 **+0.02% 회복 시 불량 1건 약 97억**",
+            "분석 공수 약 **90% 절감 기준 올해 약 26억**, 수율 **+0.02% 회복 시 불량 1건 약 97억**",
             "조회 48매 한계를 **대량 조회 viewer**로 확장하고, 수작업 검토를 **Failbit Map 변환과 검색** 중심으로 재구성해 누락 risk와 검토 시간을 감소시킴",
             {
               "t": "운영=처리 구조+viewer, 26억=올해 산정, 97억=불량 1건(합산 아님)",
@@ -418,7 +419,7 @@
           "color": "#0F1E3D",
           "bullets": [
             "Known **validation F1 0.95**(실전 16종/1,500장), Unknown은 **13→7 후보 확인**(현업 검토)까지만 반영",
-            "classification model은 **2026.9 GPU 서버 배포 예정**이며, 서버 성능은 배포 환경에서 별도 검증",
+            "classification model은 **2026년 9월 GPU 서버 배포 검증 예정**이며, 서버 성능은 배포 환경에서 별도 검증",
             "사내 인정: **'25 AI 센터 DS BP Good Challenger 수상**, **'26 MTC 제안 1등급 확정**, **'26 삼성 논문상 초록 통과**",
             {
               "t": "Unknown 13→7은 분류 성능 지표가 아니라 현업 후보 검토 결과입니다",
@@ -435,8 +436,8 @@
               "label": "Unknown candidate review"
             },
             {
-              "big": "2026.9",
-              "label": "GPU 서버 배포"
+              "big": "2026.09",
+              "label": "GPU 배포 검증 예정"
             }
           ]
         }
@@ -466,7 +467,7 @@
       ],
       "ba": {
         "before": "2-combo GT 부족, FAR tail 발생",
-        "after": "FCM-PM + NB reject로 tail 억제"
+        "after": "FCM-PM + val-margin으로 tail 억제"
       }
     },
     {
@@ -481,8 +482,8 @@
     },
     {
       "type": "p2_selection",
-      "kicker": "P2 | selection & reject",
-      "title": "val-margin selection and GaussianNB rejection protocol"
+      "kicker": "P2 | NB reject",
+      "title": "val-margin selection and negative-tail control"
     },
     {
       "type": "p2_validation",
@@ -533,10 +534,10 @@
     },
     {
       "type": "image_grid",
-      "kicker": "P3 | option & backbone ablation",
-      "title": "Cumulative options and backbone, with smoothing/color (5-seed)",
+      "kicker": "P3 | robustness check",
+      "title": "Robustness and input sensitivity checks",
       "bullets": [
-        "백본 비교와 누적 개선(F1 0.9967→0.9987), checkpoint 평활화(smoothing window)와 color 변경 효과를 한 화면에 정리했습니다 (threshold 0.9)"
+        "성능 과장이 아니라 입력 표현과 checkpoint 선택 민감도를 확인한 검증 장입니다. main claim은 synthetic binary-F1 0.9967로 유지합니다"
       ],
       "body_h": 0.46,
       "images": [
@@ -579,18 +580,18 @@
         },
         {
           "date": "2026.09",
-          "label": "P1/P2 모델 완료",
-          "sub": "GPU 할당 후 양산 적용",
+          "label": "P1/P2 모델 배포 검증",
+          "sub": "GPU 할당 후 양산 적용 검증",
           "done": false
         },
         {
           "date": "2026.12",
-          "label": "P3 Trend anomaly 완료",
-          "sub": "real trend 현업 검증",
+          "label": "P3 Trend anomaly 현업 검증",
+          "sub": "real trend 기준 검증 완료",
           "done": false
         }
       ],
-      "caption": "P1/P2=2026.9 완료(GPU) / P3=2026.12 현업 검증 완료 / 향후=현업 확대 적용, chip classifier 대체, image+measure-value multimodal"
+      "caption": "P1/P2=2026.09 GPU 배포 검증 / P3=2026.12 현업 검증 완료 / 향후=현업 확대 적용, chip classifier 대체, image+measure-value multimodal"
     }
   ]
 }
