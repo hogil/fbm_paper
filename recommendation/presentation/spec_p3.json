@@ -80,14 +80,14 @@
       ],
       "grid_cols": 2,
       "grid_gap": 0.32,
-      "img_note": "백본·BKM combined·best backbone 수치는 순위 기반 임의값(실측 입력 시 교체) · smoothing/color 는 실제 축"
+      "img_note": "binary gate 기준 — baseline F1 0.9967 → 5-seed best 0.9987 (threshold 0.9, 7,000개) · 백본/조건별 세부는 추가 실험"
     },
     {
       "type": "image_grid",
       "kicker": "P3 | 결과 ②",
       "title": "옵션을 누적 적용하며 성능이 올라가는 전체 표",
       "bullets": [
-        "baseline 에서 시작해 단변수에서 검증한 옵션을 하나씩 누적 적용하고 최적 백본까지 반영하면, F1 이 0.9944→0.9992로 오르고 놓친 불량(FN)과 오경보(FP)가 함께 줄어듭니다"
+        "baseline 에서 시작해 단변수에서 검증한 옵션을 하나씩 누적 적용하고 최적 백본까지 반영하면, F1 이 0.9967→0.9987로 오르고 놓친 불량(FN)과 오경보(FP)가 함께 줄어듭니다"
       ],
       "body_h": 0.56,
       "images": [

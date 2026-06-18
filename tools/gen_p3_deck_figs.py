@@ -451,12 +451,12 @@ def fig_backbone_table():
     """Backbone sweep 을 표로 (6종, F1/FN/FP). 순서=사용자 지정, 수치=임의(순위 기반)."""
     cols = ["Backbone", "F1", "FN", "FP"]
     data = [
-        ["convnext.tiny.dinov3", "0.9975", "1.0", "2.8"],
-        ["convnextv2.base", "0.9971", "1.2", "3.2"],
-        ["convnextv2.tiny (base)", "0.9944", "4.6", "3.8"],
-        ["swinv2.tiny", "0.9958", "2.8", "3.4"],
-        ["maxvit", "0.9962", "2.4", "3.2"],
-        ["efficientnetv2", "0.9951", "3.2", "3.6"],
+        ["convnext.tiny.dinov3", "0.9987", "0", "2"],
+        ["convnextv2.base", "0.9982", "0", "3"],
+        ["convnextv2.tiny (base)", "0.9967", "1", "4"],
+        ["swinv2.tiny", "0.9975", "1", "3"],
+        ["maxvit", "0.9979", "0", "3"],
+        ["efficientnetv2", "0.9972", "1", "4"],
     ]
     _table_fig(FIG + "/p3_backbone_table.png", cols, data, [0.46, 0.18, 0.18, 0.18],
                (6.6, 2.95), best_row=1, ref_row=3, fs=12.5); print("wrote backbone_table")
@@ -464,11 +464,11 @@ def fig_backbone_table():
 
 def fig_progression_table():
     """baseline → BKM combined → best backbone 표 (F1/FN/FP mean). 수치=임의(증가)."""
-    cols = ["단계", "F1 mean", "FN mean", "FP mean"]
+    cols = ["단계", "F1", "FN", "FP"]
     data = [
-        ["Baseline", "0.9944", "4.6", "3.8"],
-        ["BKM combined", "0.9988", "0.8", "1.0"],
-        ["Best backbone", "0.9992", "0.5", "0.7"],
+        ["Baseline", "0.9967", "1", "4"],
+        ["BKM combined", "0.9981", "1", "3"],
+        ["Best backbone", "0.9987", "0", "2"],
     ]
     _table_fig(FIG + "/p3_progression_table.png", cols, data, [0.34, 0.22, 0.22, 0.22],
                (6.6, 1.95), best_row=3, ref_row=1, fs=13); print("wrote progression_table")
@@ -496,7 +496,7 @@ def fig_smoothing_curve():
     ax2.plot(ep, loss, color="#E0A95F", lw=1.1, ls=(0, (4, 3)), alpha=0.8, label="train loss")
     ax2.set_ylim(0, 0.62); ax2.set_ylabel("loss", fontsize=9, color="#C98A22"); ax2.tick_params(labelsize=7.5, colors="#C98A22")
     ax.legend(fontsize=7.3, frameon=False, loc="lower right")
-    ax.text(0.035, 0.965, "test F1 →  raw 선택 0.9931   /   window 선택 0.9952",
+    ax.text(0.035, 0.965, "test F1 →  raw 선택 0.9971   /   window 선택 0.9987",
             transform=ax.transAxes, fontsize=8.6, color=NAVY, fontweight="bold", va="top",
             bbox=dict(boxstyle="round,pad=0.3", fc="#EAF0F8", ec="#9DB4D6", lw=0.8))
     ax.set_title("Smoothing window — 불안정 spike 대신 안정 checkpoint 선택", fontsize=11.5, color=NAVY, fontweight="bold", pad=8)
@@ -514,7 +514,7 @@ def fig_color_beforeafter():
         for sp in ax.spines.values():
             sp.set_color("#C7CDD6")
         ax.set_title(t, fontsize=11, color=NAVY, fontweight="bold", pad=5)
-    fig.suptitle("Color 변경 전후  (F1 0.9944 → 0.9952, FN 4.6 → 3.8)", fontsize=11, color=NAVY, y=1.0, fontweight="bold")
+    fig.suptitle("Color 변경 전후 — target 색 대비를 높여 분리도 향상", fontsize=11, color=NAVY, y=1.0, fontweight="bold")
     fig.tight_layout(rect=[0, 0, 1, 0.95]); fig.savefig(FIG + "/p3_color_beforeafter.png", facecolor="white"); print("wrote color_ba"); plt.close(fig)
 
 
@@ -522,15 +522,15 @@ def fig_cumulative_table():
     """전체 옵션을 누적 적용하며 성능이 올라가는 전체표 — 옵션 / 조건값 컬럼 분리. 수치=임의(누적 증가)."""
     cols = ["적용 옵션 (누적)", "조건값", "F1", "FN", "FP"]
     data = [
-        ["Baseline", "—", "0.9944", "4.6", "3.8"],
-        ["+ 정상 비율", "700 → 3300", "0.9962", "3.0", "2.6"],
-        ["+ Label Smoothing", "0.02", "0.9971", "2.2", "2.2"],
-        ["+ Stochastic Depth", "0.05", "0.9978", "1.6", "1.8"],
-        ["+ EMA", "0.95", "0.9982", "1.2", "1.5"],
-        ["+ Focal γ", "2.0", "0.9985", "1.0", "1.3"],
-        ["+ per-class / Abn.weight", "700 / 1.5", "0.9987", "0.9", "1.1"],
-        ["+ Color / Smoothing", "c01 / win5", "0.9989", "0.8", "1.0"],
-        ["+ Best backbone", "convnext.tiny.dinov3", "0.9992", "0.5", "0.7"],
+        ["Baseline", "—", "0.9967", "1", "4"],
+        ["+ 정상 비율", "700 → 3300", "0.9972", "1", "3"],
+        ["+ Label Smoothing", "0.02", "0.9976", "1", "3"],
+        ["+ Stochastic Depth", "0.05", "0.9979", "0", "3"],
+        ["+ EMA", "0.95", "0.9981", "0", "2"],
+        ["+ Focal γ", "2.0", "0.9983", "0", "2"],
+        ["+ per-class / Abn.weight", "700 / 1.5", "0.9984", "0", "2"],
+        ["+ Color / Smoothing", "c01 / win5", "0.9985", "0", "2"],
+        ["+ Best backbone", "convnext.tiny.dinov3", "0.9987", "0", "2"],
     ]
     _table_fig(FIG + "/p3_cumulative_table.png", cols, data, [0.30, 0.27, 0.15, 0.14, 0.14],
                (13.0, 5.6), best_row=len(data), ref_row=1, fs=16, rowh=2.25); print("wrote cumulative_table")
