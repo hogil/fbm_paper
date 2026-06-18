@@ -1248,18 +1248,19 @@ def _p3_quad_diagram(slide, x, y, w, h):
     def barchart(qx, qy, title, names, f1, fn, fp, roles):
         txt(qx + I(0.1), qy + I(0.06), qw - I(0.2), I(0.30), [[(title, dict(size=13, bold=True, color=NV))]])
         pa_l = qx + I(0.16); pa_r = qx + qw - I(0.16)
-        pa_top = qy + I(0.46); pa_bot = qy + qh - I(0.50)
-        lo, hi = 0.9960, 0.99905
+        pa_top = qy + I(0.42); pa_bot = qy + qh - I(0.66)
+        lo, hi = 0.9963, 0.9991
         n = len(names); slot = (pa_r - pa_l) / n
-        bw = min(slot * 0.6, I(0.85))
+        bw = min(slot * 0.56, I(0.78))
         cmap = {"best": NV, "imp": BL, "base": GR}
         for i, (nm, v, fnv, fpv, rl) in enumerate(zip(names, f1, fn, fp, roles)):
             cx = pa_l + slot * (i + 0.5)
-            bh = int((v - lo) / (hi - lo) * (pa_bot - pa_top))
+            bh = int((max(lo, v) - lo) / (hi - lo) * (pa_bot - pa_top))
             rect(cx - bw / 2, pa_bot - bh, bw, bh, cmap[rl])
-            txt(cx - slot / 2, pa_bot - bh - I(0.27), slot, I(0.25), [[(("%.4f" % v), dict(size=12, bold=True, color=NV))]])
-            txt(cx - slot / 2, pa_bot + I(0.03), slot, I(0.23), [[(nm, dict(size=12, bold=True, color=NV))]])
-            txt(cx - slot / 2, pa_bot + I(0.25), slot, I(0.21), [[(("FN %d / FP %d" % (fnv, fpv)), dict(size=12, color=MU))]])
+            txt(cx - slot / 2, pa_bot - bh - I(0.26), slot, I(0.24), [[(("%.4f" % v), dict(size=12, bold=True, color=NV))]])
+            txt(cx - slot / 2, pa_bot + I(0.03), slot, I(0.22), [[(nm, dict(size=12, bold=True, color=NV))]])
+            txt(cx - slot / 2, pa_bot + I(0.25), slot, I(0.19), [[("FN %d" % fnv, dict(size=12, color=MU))]])
+            txt(cx - slot / 2, pa_bot + I(0.44), slot, I(0.19), [[("FP %d" % fpv, dict(size=12, color=MU))]])
         line(pa_l, pa_bot, pa_r, pa_bot, RGBColor(0xC7, 0xCD, 0xD6), 1.1)
 
     # Q1 backbone
@@ -1272,7 +1273,7 @@ def _p3_quad_diagram(slide, x, y, w, h):
     # Q2 progression
     qx, qy = quads[1]
     barchart(qx, qy, "baseline → BKM combined → best backbone",
-             ["Baseline", "BKM\ncombined", "Best\nbackbone"],
+             ["Baseline", "BKM combined", "Best backbone"],
              [0.9967, 0.9981, 0.9987], [1, 1, 0], [4, 3, 2],
              ["base", "imp", "best"])
 
@@ -1507,9 +1508,10 @@ def s_image_grid(slide, d, idx):
         y = Emu(int(top) + r*(int(chh)+int(gy)))
         img_h = Emu(img_box_h)
         if im.get("diagram"):
-            # 코드 스크린샷 대신 네이티브 도식을 셀 안에 직접 그린다(흰 카드 + 또렷한 테두리).
-            _rect(slide, x, y, cw, img_h, WHITE,
-                  line=RGBColor(0xB9, 0xC6, 0xDB), line_w=Pt(1.25))
+            # 네이티브 도식을 셀 안에 직접 그린다. p3_quad 는 내부 4박스가 있어 외곽 네모 생략.
+            if im["diagram"] != "p3_quad":
+                _rect(slide, x, y, cw, img_h, WHITE,
+                      line=RGBColor(0xB9, 0xC6, 0xDB), line_w=Pt(1.25))
             if im["diagram"] == "bytes_compare":
                 _bytes_compare_diagram(slide, x, y, cw, img_h)
             if im["diagram"] == "hex_to_grade":
