@@ -1094,6 +1094,7 @@ def _episode_trend_diagram(slide, x, y, w, h):
     def I(v): return int(Inches(v))
     BLUE = RGBColor(0x2D, 0x63, 0xB8); GRAY = RGBColor(0xA7, 0xAD, 0xB6)
     RED = RGBColor(0xCC, 0x33, 0x28); NV = RGBColor(0x0F, 0x1E, 0x3D)
+    ORANGE = RGBColor(0xD9, 0x77, 0x06)
     TL = RGBColor(0x12, 0xB5, 0xB0); MU = RGBColor(0x6B, 0x72, 0x80)
 
     def dot(cx, cy, d, color):
@@ -1105,7 +1106,7 @@ def _episode_trend_diagram(slide, x, y, w, h):
         _rect(slide, Emu(ax), Emu(ay), Emu(I(0.015)), Emu(ah), RGBColor(0xD4, 0xDA, 0xE3))
 
     gap = I(0.24)
-    left_w = int((w - gap) * 0.72)
+    left_w = int((w - gap) * 0.76)
     right_w = w - gap - left_w
     left_x = x
     right_x = x + left_w + gap
@@ -1170,7 +1171,7 @@ def _episode_trend_diagram(slide, x, y, w, h):
           [[("gray = fleet     color = sampled εₜ", dict(size=9.1, bold=True, color=MU))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
 
-    titles = ["Gaussian iid", "Correlated AR(1)", "Laplacian"]
+    titles = ["Gaussian iid", "Correlated / hunting", "Laplacian"]
     formulas = ["εₜ ~ N(0, σ²)", "εₜ = ρεₜ₋₁ + ηₜ", "εₜ ~ Laplace(0, b)"]
     pcol = [BLUE, TL, NV]
     panel_gap = I(0.10)
@@ -1179,14 +1180,14 @@ def _episode_trend_diagram(slide, x, y, w, h):
         py = body_y + pi * (panel_h + panel_gap)
         _rect(slide, Emu(right_x), Emu(py), Emu(right_w), Emu(panel_h), RGBColor(0xFC, 0xFD, 0xFE),
               line=RGBColor(0xD7, 0xDE, 0xEA), line_w=Pt(1))
-        _text(slide, Emu(right_x + I(0.12)), Emu(py + I(0.03)), Emu(right_w - I(0.24)), Emu(I(0.18)),
+        _text(slide, Emu(right_x + I(0.10)), Emu(py + I(0.03)), Emu(int(right_w * 0.48)), Emu(I(0.20)),
               [[(title, dict(size=10.5, bold=True, color=NV))]], anchor=MSO_ANCHOR.MIDDLE, wrap=False)
-        _text(slide, Emu(right_x + I(0.12)), Emu(py + I(0.22)), Emu(right_w - I(0.24)), Emu(I(0.18)),
+        _text(slide, Emu(right_x + int(right_w * 0.46)), Emu(py + I(0.03)), Emu(right_w - int(right_w * 0.50) - I(0.08)), Emu(I(0.20)),
               [[(formulas[pi], dict(size=9.0, bold=True, color=MU, name="Cambria Math"))]],
-              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+              align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
         px0 = right_x + I(0.22); px1 = right_x + right_w - I(0.22)
-        cy = py + int(panel_h * 0.66); half = int(panel_h * 0.22)
-        axes(px0, py + I(0.45), px1 - px0, panel_h - I(0.58))
+        cy = py + int(panel_h * 0.64); half = int(panel_h * 0.24)
+        axes(px0, py + I(0.34), px1 - px0, panel_h - I(0.47))
         for _ in range(32):
             tx = px0 + rnd.random() * max(1, px1 - px0)
             ty = cy + int(rnd.uniform(-0.80, 0.80) * half)
@@ -1195,16 +1196,25 @@ def _episode_trend_diagram(slide, x, y, w, h):
             vals = [rnd.gauss(0, 0.38) for _ in range(18)]
         elif pi == 1:
             vals = []
-            v = 0.0
-            for _ in range(18):
-                v = 0.82 * v + rnd.gauss(0, 0.18)
-                vals.append(max(-0.85, min(0.85, v)))
+            # Correlated noise should read as ordered hunting, not independent scatter.
+            for k in range(20):
+                if k < 8:
+                    v = -0.62 + 0.15 * k
+                elif k < 14:
+                    v = 0.45 - 0.16 * (k - 8)
+                else:
+                    v = -0.35 + 0.14 * (k - 14)
+                vals.append(max(-0.90, min(0.90, v + rnd.gauss(0, 0.035))))
         else:
             vals = [rnd.gauss(0, 0.16) for _ in range(14)] + [0.92, -0.88, 0.74, -0.68]
         for k, v in enumerate(vals):
             tx = px0 + int((px1 - px0) * (k + 0.5) / len(vals))
             ty = cy - int(max(-0.95, min(0.95, v)) * half)
-            dot(tx, ty, I(0.058), RED if (pi == 2 and abs(v) > 0.60) else pcol[pi])
+            if pi == 1:
+                color = ORANGE if (2 <= k <= 8 or 14 <= k <= 18) else TL
+            else:
+                color = RED if (pi == 2 and abs(v) > 0.60) else pcol[pi]
+            dot(tx, ty, I(0.058), color)
 
 def _p3_quad_diagram(slide, x, y, w, h):
     """P3 결과 4분할 네이티브 — 백본 bar / progression bar / smoothing 곡선 / color 전후.
@@ -1288,13 +1298,11 @@ def _p3_quad_diagram(slide, x, y, w, h):
         align=PP_ALIGN.LEFT, anchor=MSO_ANCHOR.TOP, wrap=True)
     sl = qx + I(0.20); sr = qx + qw - I(0.14)
     st = qy + I(0.84); sb = qy + qh - I(0.22)
-    lo2, hi2 = 0.9930, 0.9983
-    N = 22
+    lo2, hi2 = 0.9942, 0.9984
+    raw = [0.9950, 0.9956, 0.9960, 0.9963, 0.9981, 0.9957, 0.9964,
+           0.9967, 0.9969, 0.9971, 0.99715, 0.9972, 0.99725, 0.9972]
+    N = len(raw)
     xs = [sl + (sr - sl) * k / (N - 1) for k in range(N)]
-    raw = [0.9940 + 0.0030 * min(1.0, k / 13.0) + rnd.uniform(-0.0004, 0.0004) for k in range(N)]
-    raw[6] = 0.99795; raw[5] = 0.9946; raw[7] = 0.9944
-    for k in range(14, N):
-        raw[k] = 0.99720 + rnd.uniform(-0.0003, 0.0003)
     def med3(a):
         b = sorted(a); m = len(b)
         return b[m // 2] if m % 2 else (b[m // 2 - 1] + b[m // 2]) / 2.0
@@ -1311,19 +1319,23 @@ def _p3_quad_diagram(slide, x, y, w, h):
         [[("● 단일 최고(hunting)    ", dict(size=12, color=RD)), ("◆ median best → test 0.9987", dict(size=12, bold=True, color=NV))]],
         align=PP_ALIGN.CENTER)
 
-    # Q4 color before/after (native pictures + native labels)
+    # Q4 color before/after (native pictures + native labels) + 성능 개선치
     qx, qy = quads[3]
-    txt(qx + I(0.1), qy + I(0.06), qw - I(0.2), I(0.28), [[("Color 변경 전후 — target 색 대비↑ 분리도 향상", dict(size=13, bold=True, color=NV))]])
+    txt(qx + I(0.1), qy + I(0.05), qw - I(0.2), I(0.26),
+        [[("Color 변경 전후 — 배경 대비 색차↑(빨강) → 분리도 향상", dict(size=13, bold=True, color=NV))]])
+    txt(qx + I(0.1), qy + I(0.31), qw - I(0.2), I(0.24),
+        [[("색 단변수 5-seed:  ", dict(size=12, color=MU)),
+          ("F1 +0.0008", dict(size=12, bold=True, color=NV)),
+          ("  ·  놓친 불량 −0.8  ·  오경보 −0.4", dict(size=12, color=MU))]])
     imgs = [("p3r_color_baseline.png", "Before (파랑)"), ("p3r_color_c01.png", "After (빨강)")]
-    isz = min(I(1.5), qh - I(0.95)); igap = I(0.5)
-    total = isz * 2 + igap; ix0 = qx + (qw - total) // 2; iy = qy + I(0.42)
+    isz = min(I(1.3), qh - I(0.86)); igap = I(0.46)
+    total = isz * 2 + igap; ix0 = qx + (qw - total) // 2; iy = qy + I(0.58)
     for j, (fn_img, lab) in enumerate(imgs):
         ipath = _os.path.join(FIG_DIR, fn_img)
         ix = ix0 + j * (isz + igap)
         if _os.path.exists(ipath):
             slide.shapes.add_picture(ipath, Emu(int(ix)), Emu(int(iy)), Emu(int(isz)), Emu(int(isz)))
-            rect(ix, iy, isz, isz, None, line=RGBColor(0xC7, 0xCD, 0xD6), lw=Pt(1.0)) if False else None
-        txt(ix - I(0.15), iy + isz + I(0.04), isz + I(0.3), I(0.24), [[(lab, dict(size=12, bold=True, color=NV))]])
+        txt(ix - I(0.15), iy + isz + I(0.03), isz + I(0.3), I(0.22), [[(lab, dict(size=12, bold=True, color=NV))]])
 
 
 
@@ -4030,21 +4042,21 @@ def s_unknown_moco_neco(slide, d, idx):
              right_w-Inches(0.28), Inches(3.08), frame=False)
 
     chips = [
-        ("ROI-aligned patches", "same original region"),
-        ("neighbor ordering", "patch-level similarity"),
-        ("consistency loss", "compact local structure"),
+        ("ROI-aligned patches", "align shared\nsource-region patches"),
+        ("neighbor ordering", "rank reference patches\nby similarity"),
+        ("consistency loss", "match teacher/student\nneighbor ranks"),
     ]
-    chip_y = y + Inches(3.74)
+    chip_y = y + Inches(3.66)
     chip_gap = Inches(0.12)
     chip_w = Emu((int(right_w) - int(chip_gap) * 2 - int(Inches(0.36))) // 3)
     for i, (head, sub) in enumerate(chips):
         cx = Emu(int(right_x) + int(Inches(0.18)) + i*(int(chip_w)+int(chip_gap)))
-        _rect(slide, cx, chip_y, chip_w, Inches(0.52), PANEL, line=LINE)
-        _text(slide, cx+Inches(0.08), chip_y+Inches(0.06), chip_w-Inches(0.16), Inches(0.18),
-              [[(head, dict(size=9.9, bold=True, color=NAVY))]],
+        _rect(slide, cx, chip_y, chip_w, Inches(0.68), PANEL, line=LINE)
+        _text(slide, cx+Inches(0.08), chip_y+Inches(0.07), chip_w-Inches(0.16), Inches(0.18),
+              [[(head, dict(size=9.8, bold=True, color=NAVY))]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, cx+Inches(0.08), chip_y+Inches(0.27), chip_w-Inches(0.16), Inches(0.18),
-              [[(sub, dict(size=8.9, color=MUTED))]],
+        _text(slide, cx+Inches(0.08), chip_y+Inches(0.30), chip_w-Inches(0.16), Inches(0.30),
+              [[(sub, dict(size=9.6, color=INK))]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
