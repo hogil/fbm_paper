@@ -287,7 +287,7 @@ def s_title(slide, d, idx):
     # 표지 상단의 빈 띠를 핵심 성과 한 줄(시각적 앵커)로 채워 임팩트 보강 — 장식 과하지 않게
     # 가는 teal 룰 + 핵심 수치를 우상단 가로 라인에 절제 있게 배치.
     anchor_metrics = d.get("anchor_metrics",
-                           "연 26억 효과   |   Known F1 0.95   |   DS AI Best Practice 수상")
+                           "일 2만 wafer   |   Known F1 0.95   |   DS AI Best Practice 수상")
     if anchor_metrics:
         _rect(slide, Inches(0.97), Inches(0.62), Inches(0.5), Pt(2.2), ACCENT)
         _text(slide, Inches(1.6), Inches(0.48), Inches(10.7), Inches(0.34),
@@ -1280,12 +1280,33 @@ def _p3_quad_diagram(slide, x, y, w, h):
              [0.9967, 0.9971, 0.9987],
              [1, 1, 0], [4, 3, 2],
              ["base", "imp", "best"])
-    # Q2 progression
+    # Q2 seed robustness summary.  Only mean/best are source-backed here; avoid
+    # inventing seed-wise min/std values in the figure.
     qx, qy = quads[1]
-    barchart(qx, qy, "5-seed robustness — boundary",
-             ["Mean claim", "Base run", "Best seed"],
-             [0.9967, 0.9971, 0.9987], [1, 1, 0], [4, 3, 2],
-             ["base", "imp", "best"])
+    txt(qx + I(0.1), qy + I(0.06), qw - I(0.2), I(0.30),
+        [[("5-seed robustness — summary", dict(size=13, bold=True, color=NV))]])
+    summary_cards = [
+        ("Mean F1", "0.9967", "main claim boundary"),
+        ("Best F1", "0.9987", "best seed"),
+        ("Test split", "1,500", "750 normal / 750 abnormal"),
+    ]
+    card_w = (qw - I(0.56)) // 3
+    card_y = qy + I(0.62)
+    for i, (head, value, sub) in enumerate(summary_cards):
+        cx = qx + I(0.16) + i * (card_w + I(0.12))
+        rect(cx, card_y, card_w, I(1.22), RGBColor(0xF4, 0xF7, 0xFB),
+             line=RGBColor(0xD7, 0xDE, 0xEA), lw=Pt(1.0))
+        txt(cx + I(0.08), card_y + I(0.14), card_w - I(0.16), I(0.22),
+            [[(head, dict(size=11.5, bold=True, color=MU))]])
+        txt(cx + I(0.08), card_y + I(0.42), card_w - I(0.16), I(0.38),
+            [[(value, dict(size=19, bold=True, color=NV))]])
+        sub_size = 9.0 if i == 2 else 10.4
+        txt(cx + I(0.08), card_y + I(0.83), card_w - I(0.16), I(0.28),
+            [[(sub, dict(size=sub_size, color=MU))]])
+    rect(qx + I(0.28), qy + I(1.98), qw - I(0.56), I(0.24),
+         RGBColor(0xF4, 0xF7, 0xFB), line=RGBColor(0xD7, 0xDE, 0xEA), lw=Pt(1.0))
+    txt(qx + I(0.38), qy + I(2.00), qw - I(0.76), I(0.18),
+        [[("main claim uses mean boundary, not best seed", dict(size=9.4, bold=True, color=NV))]])
 
     # Q3 smoothing window (native) — 단일 epoch 최고는 hunting spike(학습 덜 됨),
     # 후속 3-epoch median 이 더 높은 후속 plateau 를 best 로 선택
@@ -1329,7 +1350,7 @@ def _p3_quad_diagram(slide, x, y, w, h):
     txt(qx + I(0.1), qy + I(0.05), qw - I(0.2), I(0.26),
         [[("Rendering sensitivity check", dict(size=13, bold=True, color=NV))]])
     txt(qx + I(0.1), qy + I(0.31), qw - I(0.2), I(0.24),
-        [[("rendering color sensitivity check; not used as main claim", dict(size=11.5, bold=True, color=NV))]])
+        [[("color sensitivity check; not used as main claim", dict(size=10.8, bold=True, color=NV))]])
     imgs = [("p3r_color_baseline.png", "Before (파랑)"), ("p3r_color_c01.png", "After (빨강)")]
     isz = min(I(1.3), qh - I(0.86)); igap = I(0.46)
     total = isz * 2 + igap; ix0 = qx + (qw - total) // 2; iy = qy + I(0.58)
@@ -3017,7 +3038,7 @@ def s_unknown_ablation(slide, d, idx):
         ("1", "Global InfoNCE only (baseline)", "0.9337", "15.78%", "0.9468", "0.582"),
         ("2", "+ Local DenseCL (LW=0.5)", "0.9361", "13.87%", "0.9502", "0.514"),
         ("3", "+ MoCo Queue 4096", "0.9356", "9.45%", "0.9474", "0.573"),
-        ("4", "+ NV-Retriever NEG 0.72", "0.9250", "8.23%", "0.9485", "0.611"),
+        ("4", "+ Neg-sim filter 0.72", "0.9250", "8.23%", "0.9485", "0.611"),
         ("5", "+ NeCo 0.2 (5-tool full)", "0.9559", "6.66%", "0.9660", "0.6104"),
         ("6", "Final recipe (Local DenseCL 제외 4-tool)", "0.9559", "6.66%", "0.9660", "0.781"),
         ("7", "Final recipe + noise threshold τ=0.5", "0.9619", "0.00%", "0.9679", "0.781"),
@@ -3149,7 +3170,7 @@ def s_p2_fcmpm(slide, d, idx):
     cards = [
         ("Normal baseline", "2-combo pos. prob 낮음\nFAR 낮지만 recall 약함"),
         ("FCM", "pos. prob 상승\nFAR tail 동반 상승 가능"),
-        ("FCM-PM", "pos. prob 유지\ncontrolled eval FAR 0.00%"),
+        ("FCM-PM + val-margin", "pos. prob 유지\ncontrolled eval FAR 0.00%"),
     ]
     for i, (head, body) in enumerate(cards):
         x = Emu(int(x0) + i*(int(card_w)+int(gap)))
@@ -3187,7 +3208,7 @@ def s_p2_fcmpm(slide, d, idx):
 
 def s_p2_validation(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P2 | 검증 결과", "Multi-label recipe performance on controlled benchmark")
+    _title_block_compact(slide, "P2 | 검증 결과", "Multi-label recipe performance")
     _text(slide, Inches(0.72), Inches(1.40), Inches(12.0), Inches(0.32),
           [[("[controlled synthetic validation] 현업 single-failure 원천에서 생성한 평가셋입니다. 단일 대표 모델은 FCM-PM + val_margin selection입니다.",
              dict(size=12.4, bold=True, color=NAVY))]])
@@ -3292,7 +3313,7 @@ def s_p2_selection(slide, d, idx):
     _text(slide, Emu(margin_max_cx-int(Inches(0.48))), ly+Inches(1.26), Inches(0.96), Inches(0.22),
           [[("margin max", dict(size=10.2, bold=True, color=SEL_MARGIN))]], align=PP_ALIGN.CENTER)
     _text(slide, Emu(eval_gain_cx-int(Inches(0.95))), ly+Inches(1.52), Inches(1.90), Inches(0.22),
-          [[("eval-F1 0.57 → 0.84", dict(size=10.2, bold=True, color=NAVY))]],
+          [[("example: eval-F1 0.57 → 0.84", dict(size=10.2, bold=True, color=NAVY))]],
           align=PP_ALIGN.CENTER)
     _text(slide, lx+Inches(0.34), ly+Inches(3.72), lw-Inches(0.68), Inches(0.20),
           [[("post-hoc check: correlation with held-out eval bit_F1", dict(size=9.6, bold=True, color=MUTED))]],
@@ -3392,6 +3413,9 @@ def s_p2_selection(slide, d, idx):
     _text(slide, rx+Inches(0.44), ry+Inches(4.14), rw-Inches(0.88), Inches(0.14),
           [[("tail/OOD is not learned as a class; reject by known-profile mismatch",
              dict(size=9.4, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
+    _text(slide, rx+Inches(0.44), ry+Inches(4.29), rw-Inches(0.88), Inches(0.14),
+          [[("separate safeguard; recipe table reports FCM-PM + val-margin only",
+             dict(size=8.2, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
     card_y = ry+Inches(4.52); card_h = Inches(0.42); card_w = Inches(2.42)
     impacts = [
         ("NB profile", "10 known classes", "4 single + 6 combo"),
@@ -4153,6 +4177,9 @@ def s_unknown_moco_neco(slide, d, idx):
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _img_fit(slide, "ref_neco_method.png", right_x+Inches(0.14), y+Inches(0.50),
              right_w-Inches(0.28), Inches(3.08), frame=False)
+    _text(slide, right_x+Inches(0.22), y+Inches(3.43), right_w-Inches(0.44), Inches(0.15),
+          [[("NeCo mechanism adapted from original paper figure", dict(size=7.6, color=MUTED))]],
+          align=PP_ALIGN.RIGHT)
 
     chips = [
         ("ROI-aligned patches", "align shared\nsource-region patches"),

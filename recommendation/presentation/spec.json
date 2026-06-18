@@ -19,8 +19,8 @@
           "task": "Failbit Map failure analysis",
           "thumb": "wafer_center_scratch.png",
           "problem": "48매 단위 조회 한계, human review 부담",
-          "approach": "좌표 보존 Failbit Map + 대량 viewer + Known/Unknown model",
-          "result": "[양산 운영] 일 2만 wafer/day, 올해 26억"
+          "approach": "좌표 보존 Failbit Map + 대량 viewer + Known 및 Unknown model",
+          "result": "[양산 운영] 일 2만 wafer/day, 공수 90%↓ + 수율 개선 사례"
         },
         {
           "no": "P2",
@@ -43,7 +43,7 @@
     {
       "type": "section",
       "no": "P1",
-      "title": "Failbit Map\nKnown/Unknown 분석",
+      "title": "Failbit Map\nKnown & Unknown 분석",
       "subtitle": "대량 Failbit Map을 검색, 검토, 모델 학습이 가능한 운영 구조로 확장",
       "prog": [
         1,
@@ -78,7 +78,7 @@
         {
           "text": "Failbit Map (32색 palette PNG) + chip annotation (FTN / QTN / BIN)",
           "sub": "좌표 보존: 이미지, 좌표, 계측값을 같은 wafer 좌표계에 맞춰 저장",
-          "arrow": "같은 자산을 Known/Unknown 두 경로가 공유"
+          "arrow": "같은 자산을 Known 및 Unknown 두 경로가 공유"
         },
         {
           "split": [
@@ -135,7 +135,7 @@
       "kicker": "P1 | 데이터 생성 (fail-map)",
       "title": "8단계 grade → palette PNG 무손실 저장",
       "bullets": [
-        "**Motivation** — 병목은 변환 속도와 저장 공간입니다. wafer 한 장은 약 1,000만 test result를 포함하고 하루 약 2만 장이 누적되므로, raw log 그대로는 대량 조회와 분석이 어렵습니다. EDS 값이 8단계 이산 grade라 palette PNG로 무손실 저장이 가능했고, Cython hex-to-grade와 32-color palette PNG로 저장 용량을 약 75% 줄여 일 2만 wafer 운영 기반을 만들었습니다"
+        "**Motivation** — 병목은 변환 속도와 저장 공간입니다. wafer 한 장은 약 1,000만 test result를 포함하고 하루 약 2만 장이 누적되므로, raw log 그대로는 대량 조회와 분석이 어렵습니다. Cython으로 hex-to-grade 변환을 가속하고, EDS 값이 8단계 이산 grade라는 특성을 이용해 32-color palette PNG로 저장 용량을 약 75% 줄였습니다"
       ],
       "body_h": 0.72,
       "img_frame": false,
@@ -273,7 +273,7 @@
       "bullets": [
         "**Current Stage-2** — ROI-YOLO는 field-validated 구조지만, 선택된 ROI 안에서 box regression, classification, NMS를 수행하므로 class 확장과 detector annotation cost가 남습니다",
         "**Object-id map** — 제품별 chip coordinate를 재사용해 fixed crop classification으로 바꾸고, chip별 class id를 32×32 wafer grid에 되돌려 배치합니다",
-        "**Metric** — selected object-id setting: val_f1 0.9946 / test_f1 0.9872. 5-seed stability check: 0.9838 ± 0.0092. 생성 chip 데이터 기반 개발 중입니다"
+        "**Metric** — selected obj-only: val F1 0.9946 / hold-out F1 0.9872. 별도 raw+obj-id 5-seed val F1 0.9838 ± 0.0092"
       ],
       "body_h": 1.36,
       "bullet_size": 13.5,
@@ -392,17 +392,17 @@
           "color": "#0F1E3D",
           "bullets": [
             "DRAM D1a/b/c/d 전제품 분석 파트에서 **매일 사용 중**, 일 2만 wafer 처리",
-            "분석 공수 약 **90% 절감 기준 올해 약 26억**, 수율 **+0.02%p 회복 시 불량 1건 약 97억**",
-            "조회 48매 한계를 **대량 조회 viewer**로 확장하고, 수작업 검토를 **Failbit Map 변환과 검색** 중심으로 재구성해 누락 risk와 검토 시간을 감소시킴",
+            "분석 공수 **90% 이상 절감(연 26억 효과)**, 수율 **+0.02%p 개선(P3WN 1건 97억 효과)**",
+            "조회 48매 한계를 **대량 조회 viewer**로 확장하고, 검토 방식을 **Failbit Map 변환과 검색** 중심으로 재구성",
             {
-              "t": "운영=처리 구조+viewer, 26억=올해 산정, 97억=불량 1건(합산 아님)",
+              "t": "운영 기준은 처리 구조와 viewer이며, 공수 절감 효과와 수율 개선 사례는 합산 산정하지 않음",
               "lvl": 1
             }
           ],
           "chips": [
             {
-              "big": "올해 26억",
-              "label": "공수 90%↓"
+              "big": "공수 90%↓",
+              "label": "공수 절감"
             },
             {
               "big": "97억/건",
@@ -598,7 +598,7 @@
       "kicker": "결론 | AI Specialist",
       "title": "제조품질 데이터를 운영형 AI 자산으로 전환",
       "bullets": [
-        "**P1** — 좌표 보존 Failbit Map과 viewer를 운영 자산으로 만들고, Known/Unknown 검토 flow까지 연결했습니다",
+        "**P1** — 좌표 보존 Failbit Map과 viewer를 운영 자산으로 만들고, Known 및 Unknown 검토 flow까지 연결했습니다",
         "**P2/P3** — 2-combo GT와 real abnormal label 부족을 synthetic validation 구조로 보완했습니다",
         "**핵심** — 데이터 생성 → 모델 → viewer → human review → label/retrain으로 이어지는 제조품질 AI 개발 체계를 구축했습니다"
       ],
