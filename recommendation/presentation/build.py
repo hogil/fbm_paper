@@ -1294,12 +1294,15 @@ def _p3_quad_diagram(slide, x, y, w, h):
         [[("Smoothing — 후속 3-epoch median best 선택", dict(size=13, bold=True, color=NV))]])
     txt(qx + I(0.10), qy + I(0.32), I(1.2), I(0.18), [[("val F1", dict(size=11, color=MU))]], align=PP_ALIGN.LEFT)
     sl = qx + I(0.45); sr = qx + qw - I(0.40)
-    st = qy + I(0.52); sb = qy + qh - I(0.48)
+    st = qy + I(0.50); sb = qy + qh - I(0.50)
     lo2, hi2 = 0.9942, 0.9984
     raw = [0.9950, 0.9956, 0.9960, 0.9963, 0.9981, 0.9957, 0.9964,
            0.9967, 0.9969, 0.9971, 0.99715, 0.9972, 0.99725, 0.9972]
     N = len(raw)
     xs = [sl + (sr - sl) * k / (N - 1) for k in range(N)]
+    ticks = list(range(0, N, 2))
+    for _ti in ticks:
+        line(xs[_ti], st, xs[_ti], sb, RGBColor(0xEC, 0xEF, 0xF4), 0.8)
     def med3(a):
         b = sorted(a); m = len(b)
         return b[m // 2] if m % 2 else (b[m // 2 - 1] + b[m // 2]) / 2.0
@@ -1313,8 +1316,11 @@ def _p3_quad_diagram(slide, x, y, w, h):
     dot(xs[sp], ymap(sm[sp]), I(0.15), NV, shape=MSO_SHAPE.DIAMOND)
     line(sl, sb, sr, sb, RGBColor(0xC7, 0xCD, 0xD6), 1.0)
     line(sl, st - I(0.04), sl, sb, RGBColor(0xC7, 0xCD, 0xD6), 1.0)
-    txt(sl - I(0.25), sb + I(0.02), (sr - sl) + I(0.5), I(0.17), [[("epoch", dict(size=11, color=MU))]], align=PP_ALIGN.CENTER)
-    txt(qx + I(0.1), qy + qh - I(0.205), qw - I(0.2), I(0.19),
+    for _ti in ticks:
+        line(xs[_ti], sb, xs[_ti], sb + I(0.04), RGBColor(0xC7, 0xCD, 0xD6), 1.0)
+        txt(xs[_ti] - I(0.22), sb + I(0.04), I(0.44), I(0.15), [[(str(_ti + 1), dict(size=11, color=MU))]], align=PP_ALIGN.CENTER)
+    txt(sl - I(0.25), sb + I(0.19), (sr - sl) + I(0.5), I(0.14), [[("epoch", dict(size=10.5, color=MU))]], align=PP_ALIGN.CENTER)
+    txt(qx + I(0.1), qy + qh - I(0.165), qw - I(0.2), I(0.17),
         [[("● 단일 최고(hunting)    ", dict(size=12, color=RD)), ("◆ median best → test 0.9987", dict(size=12, bold=True, color=NV))]],
         align=PP_ALIGN.CENTER)
 
@@ -3188,8 +3194,8 @@ def s_p2_selection(slide, d, idx):
     vals_margin = [0.18, 0.27, 0.39, 0.54, 0.82]
     vals_eval = [0.20, 0.30, 0.44, 0.57, 0.84]
     colors = [RGBColor(0xB8,0xC2,0xD0), RGBColor(0x2F,0x3A,0x4F), RGBColor(0x78,0xB8,0x8D)]
-    SEL_F1 = RGBColor(0xD9,0x8C,0x1F)
-    SEL_MARGIN = RGBColor(0x2B,0xA6,0x6B)
+    SEL_F1 = RGBColor(0x7A,0x85,0x96)
+    SEL_MARGIN = colors[1]
     labels = ["val-F1", "val-margin", "eval-F1"]
     for li, (lab, col) in enumerate(zip(labels, colors)):
         xx = int(lx) + int(Inches(0.60)) + li * int(Inches(1.36))
@@ -3207,11 +3213,14 @@ def s_p2_selection(slide, d, idx):
         _text(slide, Emu(bx-int(Inches(0.02))), Emu(base_y+int(Inches(0.07))), Inches(0.58), Inches(0.16),
               [[(f"epoch {i+1}", dict(size=8.8, color=MUTED))]], align=PP_ALIGN.CENTER)
     _rect(slide, Emu(chart_x-int(Inches(0.08))), Emu(base_y), Inches(4.08), Pt(1), LINE)
-    _text(slide, lx+Inches(3.28), ly+Inches(1.22), Inches(0.98), Inches(0.22),
+    f1_max_cx = chart_x + 3*step + bar_w//2
+    margin_max_cx = chart_x + 4*step + bar_w + int(Inches(0.06)) + bar_w//2
+    eval_gain_cx = chart_x + 3*step + 2*bar_w + int(Inches(0.12)) + bar_w//2 + step//2
+    _text(slide, Emu(f1_max_cx-int(Inches(0.43))), ly+Inches(1.22), Inches(0.86), Inches(0.22),
           [[("val-F1 max", dict(size=10.2, bold=True, color=SEL_F1))]], align=PP_ALIGN.CENTER)
-    _text(slide, lx+Inches(4.10), ly+Inches(1.26), Inches(1.06), Inches(0.22),
+    _text(slide, Emu(margin_max_cx-int(Inches(0.48))), ly+Inches(1.26), Inches(0.96), Inches(0.22),
           [[("margin max", dict(size=10.2, bold=True, color=SEL_MARGIN))]], align=PP_ALIGN.CENTER)
-    _text(slide, lx+Inches(3.42), ly+Inches(1.52), Inches(1.90), Inches(0.22),
+    _text(slide, Emu(eval_gain_cx-int(Inches(0.95))), ly+Inches(1.52), Inches(1.90), Inches(0.22),
           [[("eval-F1 0.57 → 0.84", dict(size=10.2, bold=True, color=NAVY))]],
           align=PP_ALIGN.CENTER)
     _text(slide, lx+Inches(0.34), ly+Inches(3.72), lw-Inches(0.68), Inches(0.20),
