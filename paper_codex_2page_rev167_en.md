@@ -79,9 +79,9 @@ The data pipeline was designed to ingest equipment raw logs in real time and gen
 Known-defect analysis targeted 16 registered classes. We designed a two-stage structure combining a ConvNeXtV2[1]-based wafer-level first-stage classifier and a second-stage ROI (Region of Interest)-based YOLO for low-confidence samples, and trained it on 1,500 labeled Failbit Maps.
 While the ConvNeXtV2-based wafer-level classifier showed high overall accuracy and throughput, its performance degraded on classes with similar wafer-level distributions of defective chips. To compensate for this, in the second stage ROI-based YOLO re-examines low-confidence samples and identifies chip-level defect morphologies and appearance patterns within the ROI (Fig. 3).
 
-![Fig. 3. Two-stage known-defect classification with ROI-YOLO.](_fig_yolo_roi.png)
+![Fig. 3. ROI-YOLO second-stage correction on a low-confidence wafer.](_fig_yolo_roi.png)
 
-**Fig. 3.** Representative patterns of Class A(a) and Class B(b), and a true Class A sample(c) misclassified as Class B by the first-stage CNN but corrected to Class A by the second-stage ROI-YOLO. The blue circle indicates the ROI, and the red boxes denote YOLO detections of chip-level defect patterns within the ROI.
+**Fig. 3.** ROI-YOLO based second-stage correction on a low-confidence wafer. The left panel shows the original wafer map, the middle panel shows the ROI and chip-level detections, and the right panel shows the detected chip failure pattern used for correction.
 
 
 **Table 1.** Backbone comparison and staged improvements for known-fail classification (16-class, test weighted F1)
@@ -102,9 +102,9 @@ MaxViT[2] and ConvNeXtV2 (Ref) achieved the same weighted F1 of 0.87, but ConvNe
 
 Using 10,000 production maps from five days, a SimCLR[3]-family model was trained with contrastive learning using grid-structured local sampling to reflect the zone-based nature of wafer defect interpretation. HDBSCAN[4] was then applied to a separate set of 2,000 maps from one additional day to group similar patterns.
 
-![Fig. 4. Unknown-defect grouping on production images.](_fig_cluster.png)
+![Fig. 4. Representative Unknown-fail candidate groups.](_fig_cluster.png)
 
-**Fig. 4.** Unknown-fail grouping on production images.
+**Fig. 4.** Representative Unknown-fail candidate groups reviewed after contrastive embedding and HDBSCAN grouping.
 
 
 For Unknown defects, grouping on 2,000 production images yielded 13 candidate groups, and validation by domain engineers confirmed that 7 of them were real defect groups. The remaining 6 were lot-specific warnings or non-defect patterns.

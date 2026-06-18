@@ -81,9 +81,9 @@ Failbit Map은 EDS Test에서 Memory Cell Block 단위의 불량 정도를 Grade
 Known 불량 분석은 16개 등록 클래스를 대상으로 하였으며, 1,500개의 Failbit Map을 사용하여 ConvNeXtV2[1] 기반 1단계 wafer-level 분류기와 저신뢰 샘플 대상 2단계 ROI(Region of Interest) 기반 YOLO를 결합한 2-stage 구조를 설계하였다.
 ConvNeXtV2 기반 wafer-level 분류는 전반적으로 높은 정확도와 처리 속도를 보였으나, wafer 내 불량 chip의 분포가 유사한 클래스에서는 분류 성능이 저하되었다. 이를 보완하기 위해 2단계에서는 1차 분류의 저신뢰 샘플에 ROI 기반 YOLO를 적용하여 ROI 영역 내 불량 chip의 형태와 출현 패턴을 추가로 판별하도록 구성하였다(Fig. 3).
 
-![Fig. 3. Two-stage known-defect classification with ROI-YOLO.](_fig_yolo_roi.png)
+![Fig. 3. ROI-YOLO second-stage correction on a low-confidence wafer.](_fig_yolo_roi.png)
 
-**Fig. 3.** Representative patterns of Class A(a) and Class B(b), and a true Class A sample(c) misclassified as Class B by the first-stage CNN but corrected to Class A by the second-stage ROI-YOLO. The blue circle indicates the ROI, and the red boxes denote YOLO detections of chip-level defect patterns within the ROI.
+**Fig. 3.** ROI-YOLO based second-stage correction on a low-confidence wafer. The left panel shows the original wafer map, the middle panel shows the ROI and chip-level detections, and the right panel shows the detected chip failure pattern used for correction.
 
 
 **Table 1.** Backbone comparison and staged improvements for known-fail classification (16-class, test weighted F1)
@@ -104,9 +104,9 @@ MaxViT[2]와 ConvNeXtV2 (Ref)는 동일한 weighted F1 0.87을 보였으나, Con
 
 5일치 운영 데이터 10,000장을 사용하여 SimCLR[3] 계열 모델을 대조학습하였으며, wafer의 zone 기반 불량 해석 특성을 반영하기 위해 grid-structured local sampling을 함께 적용하였다. 이후 별도 1일치 2,000장에 HDBSCAN[4]을 적용하여 유사 패턴을 그룹화하였다.
 
-![Fig. 4. Unknown-defect grouping on production images.](_fig_cluster.png)
+![Fig. 4. Representative Unknown-fail candidate groups.](_fig_cluster.png)
 
-**Fig. 4.** Unknown-fail grouping on production images.
+**Fig. 4.** Representative Unknown-fail candidate groups reviewed after contrastive embedding and HDBSCAN grouping.
 
 
 Unknown 불량 검출에서는 운영 이미지 2,000장에 대한 grouping 결과 13개 후보 그룹이 검출되었으며, 현업 분석 엔지니어 검증 결과 이 중 7개가 실제 불량 그룹으로 판정되었다. 나머지 6개는 일부 lot에 국한된 warning이거나 실제 불량으로 이어지지 않는 패턴이었다.
