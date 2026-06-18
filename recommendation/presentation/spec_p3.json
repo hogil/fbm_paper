@@ -55,36 +55,50 @@
     {
       "type": "image_grid",
       "kicker": "P3 | 결과 ①",
-      "title": "백본·누적 개선 표와 smoothing·color 효과",
+      "title": "백본 비교와 누적 개선 (F1 / FN / FP)",
       "bullets": [
-        "백본 비교와 누적 개선을 표로 정리하고, checkpoint 평활화(smoothing window)와 rendering color 변경의 효과를 학습 곡선과 전후 이미지로 함께 제시하였습니다"
+        "동일 데이터·프로토콜에서 백본을 교체한 backbone sweep 과, baseline 에 옵션을 누적 적용한 뒤 최적 백본까지 반영한 단계별 개선을 비교했습니다 (binary gate, 5-seed)"
       ],
-      "body_h": 0.62,
+      "body_h": 0.56,
       "images": [
         {
-          "src": "p3_backbone_table.png",
-          "caption": "Backbone sweep — 백본별 F1 / FN / FP"
+          "src": "p3_backbone.png",
+          "caption": ""
         },
         {
-          "src": "p3_progression_table.png",
-          "caption": "baseline → BKM combined → best backbone"
-        },
-        {
-          "src": "p3_smoothing_curve.png",
-          "caption": "Smoothing window — 안정적 checkpoint로 test↑"
-        },
-        {
-          "src": "p3_color_beforeafter.png",
-          "caption": "Color 변경 전후 — target 색 분리도 향상"
+          "src": "p3_progression.png",
+          "caption": ""
         }
       ],
-      "grid_cols": 2,
-      "grid_gap": 0.32,
-      "img_note": "binary gate 기준 — baseline F1 0.9967 → 5-seed best 0.9987 (threshold 0.9, 7,000개) · 백본/조건별 세부는 추가 실험"
+      "grid_cols": 1,
+      "grid_row_gap": 0.35,
+      "img_note": "binary gate 기준 — baseline F1 0.9967(FN1/FP4) → 5-seed best 0.9987(FN0/FP2), threshold 0.9 · 백본/조건별 세부는 추가 실험"
     },
     {
       "type": "image_grid",
       "kicker": "P3 | 결과 ②",
+      "title": "checkpoint 평활화(smoothing window)와 color 변경 효과",
+      "bullets": [
+        "val F1 을 median window 로 평활화해 불안정한 spike epoch 대신 안정적인 checkpoint 를 선택하고(test↑), rendering color 변경으로 target 분리도를 높였습니다"
+      ],
+      "body_h": 0.62,
+      "images": [
+        {
+          "src": "p3_smoothing_curve.png",
+          "caption": ""
+        },
+        {
+          "src": "p3_color_beforeafter.png",
+          "caption": ""
+        }
+      ],
+      "grid_cols": 2,
+      "grid_gap": 0.34,
+      "img_note": ""
+    },
+    {
+      "type": "image_grid",
+      "kicker": "P3 | 결과 ③",
       "title": "옵션을 누적 적용하며 성능이 올라가는 전체 표",
       "bullets": [
         "baseline 에서 시작해 단변수에서 검증한 옵션을 하나씩 누적 적용하고 최적 백본까지 반영하면, F1 이 0.9967→0.9987로 오르고 놓친 불량(FN)과 오경보(FP)가 함께 줄어듭니다"

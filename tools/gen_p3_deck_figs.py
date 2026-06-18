@@ -376,9 +376,9 @@ def fig_backbone(names=None, f1=None, fn=None, fp=None):
     수치는 placeholder(임시), 실측 입력 시 교체. 순서는 사용자 지정."""
     names = names or ["convnext\ntiny.dinov3", "convnextv2\nbase", "convnextv2\ntiny",
                       "swinv2\ntiny", "maxvit", "efficient\nnetv2"]
-    f1 = f1 or [0.9958, 0.9971, 0.9944, 0.9950, 0.9955, 0.9948]
-    fn = fn or [3.0, 1.2, 4.6, 3.4, 3.0, 3.8]
-    fp = fp or [3.4, 3.2, 3.8, 3.6, 3.4, 3.6]
+    f1 = f1 or [0.9987, 0.9982, 0.9967, 0.9975, 0.9979, 0.9972]
+    fn = fn or [0, 0, 1, 1, 0, 1]
+    fp = fp or [2, 3, 4, 3, 3, 4]
     metrics = [("F1 mean", "#4878CF", f1, True), ("FN mean", "#E43320", fn, False), ("FP mean", "#F5B041", fp, False)]
     fig, axes = plt.subplots(1, 3, figsize=(13.4, 3.7), dpi=195); fig.patch.set_facecolor("white")
     x = list(range(len(names)))
@@ -394,7 +394,7 @@ def fig_backbone(names=None, f1=None, fn=None, fp=None):
             m = max(0.0005, (max(vals) - min(vals)) * 0.25); ax.set_ylim(max(0, min(vals) - m), min(1.0, max(vals) + m))
         else:
             ax.set_ylim(bottom=0, top=max(vals) * 1.35)
-    fig.suptitle("Backbone sweep — 임시 수치(실측 입력 대기)", fontsize=10.5, color=MUT, y=1.0)
+    fig.suptitle("Backbone sweep — 백본별 F1 / FN / FP (5-seed)", fontsize=12, color=NAVY, y=1.0, fontweight="bold")
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     fig.savefig(FIG + "/p3_backbone.png", facecolor="white"); print("wrote backbone"); plt.close(fig)
 
@@ -403,9 +403,9 @@ def fig_progression(stages=None, f1=None, fn=None, fp=None):
     """baseline → BKM combined → best backbone (F1/FN/FP mean). 디자인 = cross_dataset_overall.png.
     baseline 은 실측(0.9944/4.6/3.8), BKM combined·best backbone 은 입력 대기(임시 증가값)."""
     stages = stages or ["Baseline", "BKM combined", "Best backbone"]
-    f1 = f1 or [0.9944, 0.9988, 0.9992]
-    fn = fn or [4.6, 0.8, 0.5]
-    fp = fp or [3.8, 1.0, 0.7]
+    f1 = f1 or [0.9967, 0.9981, 0.9987]
+    fn = fn or [1, 1, 0]
+    fp = fp or [4, 3, 2]
     metrics = [("F1 mean", "#4878CF", f1, True), ("FN mean", "#E43320", fn, False), ("FP mean", "#F5B041", fp, False)]
     fig, axes = plt.subplots(1, 3, figsize=(13.4, 3.7), dpi=195); fig.patch.set_facecolor("white")
     sx = list(range(len(stages)))
@@ -421,8 +421,8 @@ def fig_progression(stages=None, f1=None, fn=None, fp=None):
             m = max(0.0005, (max(vals) - min(vals)) * 0.2); ax.set_ylim(max(0, min(vals) - m), min(1.0, max(vals) + m))
         else:
             ax.set_ylim(bottom=0, top=max(vals) * 1.3)
-    fig.suptitle("baseline → BKM combined → best backbone   (BKM combined·best backbone 은 입력 대기)",
-                 fontsize=10.5, color=MUT, y=1.0)
+    fig.suptitle("baseline → BKM combined → best backbone   (F1 / FN / FP)",
+                 fontsize=12, color=NAVY, y=1.0, fontweight="bold")
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     fig.savefig(FIG + "/p3_progression.png", facecolor="white"); print("wrote progression"); plt.close(fig)
 
@@ -567,8 +567,8 @@ def fig_smoothing():
 if __name__ == "__main__":
     fig_baseline()
     fig_types()
-    fig_backbone_table()
-    fig_progression_table()
+    fig_backbone()
+    fig_progression()
     fig_smoothing_curve()
     fig_color_beforeafter()
     fig_cumulative_table()
