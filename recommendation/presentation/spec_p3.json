@@ -55,36 +55,31 @@
     {
       "type": "image_grid",
       "kicker": "P3 | 결과 ①",
-      "title": "백본 비교와 누적 개선 (F1, FN/FP 표기)",
+      "title": "백본·누적 개선과 smoothing·color (binary gate, 5-seed)",
       "bullets": [
-        "동일 데이터·프로토콜에서 백본을 교체한 backbone sweep 과, baseline 에 옵션을 누적 적용한 뒤 최적 백본까지 반영한 단계별 개선을 비교했습니다 (binary gate, 5-seed)"
+        "백본 비교와 누적 개선(F1 0.9967→0.9987), checkpoint 평활화(smoothing window)와 color 변경 효과를 한 화면에 정리했습니다 (threshold 0.9)"
       ],
-      "body_h": 0.56,
+      "body_h": 0.46,
       "images": [
         {
-          "src": "p3_backbone.png",
-          "caption": ""
-        },
-        {
-          "src": "p3_progression.png",
+          "diagram": "p3_quad",
           "caption": ""
         }
       ],
-      "grid_cols": 2,
-      "grid_gap": 0.4,
-      "img_note": "binary gate 기준 — baseline F1 0.9967(FN1/FP4) → 5-seed best 0.9987(FN0/FP2), threshold 0.9 · 백본/조건별 세부는 추가 실험"
+      "grid_cols": 1,
+      "img_note": ""
     },
     {
       "type": "image_grid",
       "kicker": "P3 | 결과 ②",
-      "title": "옵션 누적 성능표와 smoothing·color 효과",
+      "title": "옵션을 누적 적용하며 성능이 올라가는 전체 표",
       "bullets": [
-        "baseline 에 옵션을 누적 적용하면 F1 0.9967→0.9987로 오르고, checkpoint 평활화(smoothing window)와 rendering color 변경이 안정적 선택·분리도 향상에 기여했습니다"
+        "baseline 에서 시작해 옵션을 하나씩 누적 적용하고 최적 백본까지 반영하면, F1 이 0.9967→0.9987로 오르고 놓친 불량(FN)과 오경보(FP)가 함께 줄어듭니다"
       ],
       "body_h": 0.56,
       "images": [
         {
-          "src": "p3_merged.png",
+          "src": "p3_cumulative_table.png",
           "caption": ""
         }
       ],

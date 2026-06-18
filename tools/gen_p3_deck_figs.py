@@ -629,7 +629,5 @@ def fig_smoothing():
 if __name__ == "__main__":
     fig_baseline()
     fig_types()
-    fig_backbone()
-    fig_progression()
-    fig_merged()
+    fig_cumulative_table()
     fig_robust()

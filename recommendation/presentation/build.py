@@ -1087,20 +1087,145 @@ def _pyvips_stream_diagram(slide, x, y, w, h):
 
 
 def _episode_trend_diagram(slide, x, y, w, h):
-    """순차 episode 기반 정상 baseline 생성을 네이티브 객체로 표현(사용자가 직접 편집 가능).
-    상단(a): episode 밴드(밀도별) 사이 구분선 + 회색 fleet 산점 + 파랑 target 연속선(점 연결) +
-    점선 baseline. 하단(b): 노이즈 3종을 연결선으로 그려 패턴이 보이게."""
+    """P3 normal trend generator: split normal baseline and noise-family scatter panels."""
     import random
     rnd = random.Random(7)
     x, y, w, h = int(x), int(y), int(w), int(h)
     def I(v): return int(Inches(v))
-    BLUE = RGBColor(0x3A, 0x6F, 0xD0); GRAY = RGBColor(0xAE, 0xB4, 0xBD)
+    BLUE = RGBColor(0x2D, 0x63, 0xB8); GRAY = RGBColor(0xA7, 0xAD, 0xB6)
     RED = RGBColor(0xCC, 0x33, 0x28); NV = RGBColor(0x0F, 0x1E, 0x3D)
     TL = RGBColor(0x12, 0xB5, 0xB0); MU = RGBColor(0x6B, 0x72, 0x80)
-    DIV = RGBColor(0xAC, 0xB4, 0xC0)
 
     def dot(cx, cy, d, color):
         sp = slide.shapes.add_shape(MSO_SHAPE.OVAL, Emu(int(cx - d / 2)), Emu(int(cy - d / 2)), Emu(int(d)), Emu(int(d)))
+        sp.fill.solid(); sp.fill.fore_color.rgb = color; sp.line.fill.background(); sp.shadow.inherit = False
+
+    def axes(ax, ay, aw, ah):
+        _rect(slide, Emu(ax), Emu(ay + ah - I(0.015)), Emu(aw), Emu(I(0.015)), RGBColor(0xD4, 0xDA, 0xE3))
+        _rect(slide, Emu(ax), Emu(ay), Emu(I(0.015)), Emu(ah), RGBColor(0xD4, 0xDA, 0xE3))
+
+    gap = I(0.26)
+    left_w = int((w - gap) * 0.64)
+    right_w = w - gap - left_w
+    left_x = x
+    right_x = x + left_w + gap
+    head_h = I(0.34)
+    legend_h = I(0.20)
+    body_y = y + head_h + legend_h + I(0.08)
+    body_h = h - head_h - legend_h - I(0.10)
+
+    # -- (a) normal baseline: one sequential scatter plot with episode density bands --
+    _text(slide, Emu(left_x), Emu(y), Emu(left_w), Emu(head_h),
+          [[("(a) Normal baseline  -  sequential episodes", dict(size=12.6, bold=True, color=NV))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+    _text(slide, Emu(left_x), Emu(y + head_h), Emu(left_w), Emu(legend_h),
+          [[("gray = fleet/reference     blue = sampled observations", dict(size=9.8, bold=True, color=MU))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+
+    ax = left_x + I(0.18); ay = body_y + I(0.04)
+    aw = left_w - I(0.36); ah = body_h - I(0.12)
+    _rect(slide, Emu(ax), Emu(ay), Emu(aw), Emu(ah), RGBColor(0xFC, 0xFD, 0xFE),
+          line=RGBColor(0xD7, 0xDE, 0xEA), line_w=Pt(1))
+    axes(ax + I(0.18), ay + I(0.20), aw - I(0.34), ah - I(0.42))
+    plot_x = ax + I(0.24); plot_y = ay + I(0.28)
+    plot_w = aw - I(0.46); plot_h = ah - I(0.58)
+    bands = [
+        ("Dense", 74, RGBColor(0xEA, 0xF0, 0xF8)),
+        ("Sparse", 24, RGBColor(0xFB, 0xF4, 0xE5)),
+        ("Missing", 0, RGBColor(0xFB, 0xEC, 0xEA)),
+        ("Sparse", 22, RGBColor(0xFB, 0xF4, 0xE5)),
+        ("Dense", 70, RGBColor(0xEA, 0xF0, 0xF8)),
+    ]
+    band_w = plot_w // len(bands)
+    for bi, (name, active_n, fill) in enumerate(bands):
+        bx = plot_x + bi * band_w
+        bw = band_w if bi < len(bands) - 1 else plot_w - band_w * bi
+        _rect(slide, Emu(bx), Emu(plot_y), Emu(bw), Emu(plot_h), fill,
+              line=RGBColor(0xE1, 0xE6, 0xEF), line_w=Pt(0.6))
+        _text(slide, Emu(bx + I(0.02)), Emu(plot_y + I(0.02)), Emu(bw - I(0.04)), Emu(I(0.18)),
+              [[(name, dict(size=9.4, bold=True, color=NV if name == "Dense" else MU))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+        # Dense gray background makes the fleet/reference distribution visible.
+        for _ in range(42):
+            tx = bx + I(0.08) + rnd.random() * max(1, bw - I(0.16))
+            ty = plot_y + I(0.34) + rnd.random() * max(1, plot_h - I(0.50))
+            dot(tx, ty, I(0.030), GRAY)
+        if active_n == 0:
+            _text(slide, Emu(bx), Emu(plot_y + plot_h // 2 - I(0.10)), Emu(bw), Emu(I(0.22)),
+                  [[("missing", dict(size=10.2, bold=True, color=RED))]],
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+            continue
+        center = plot_y + int(plot_h * (0.47 + 0.06 * (bi % 2)))
+        spread = 0.22 if name == "Dense" else 0.12
+        for _ in range(active_n):
+            tx = bx + I(0.10) + rnd.random() * max(1, bw - I(0.20))
+            ty = center + int(rnd.uniform(-spread, spread) * plot_h)
+            dot(tx, ty, I(0.040), BLUE)
+
+    # -- (b) measurement noise: separate scatter panels, one noise type per chart --
+    _text(slide, Emu(right_x), Emu(y), Emu(right_w), Emu(head_h),
+          [[("(b) Measurement noise", dict(size=12.0, bold=True, color=NV))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+    _text(slide, Emu(right_x), Emu(y + head_h), Emu(right_w), Emu(legend_h),
+          [[("gray = fleet/reference     color = sampled εₜ", dict(size=9.3, bold=True, color=MU))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+
+    titles = ["Gaussian iid", "Correlated AR(1)", "Laplacian"]
+    formulas = ["εₜ ~ N(0, σ²)", "εₜ = ρεₜ₋₁ + ηₜ", "εₜ ~ Laplace(0, b)"]
+    pcol = [BLUE, TL, NV]
+    panel_gap = I(0.10)
+    panel_h = (body_h - 2 * panel_gap) // 3
+    for pi, title in enumerate(titles):
+        py = body_y + pi * (panel_h + panel_gap)
+        _rect(slide, Emu(right_x), Emu(py), Emu(right_w), Emu(panel_h), RGBColor(0xFC, 0xFD, 0xFE),
+              line=RGBColor(0xD7, 0xDE, 0xEA), line_w=Pt(1))
+        _text(slide, Emu(right_x + I(0.12)), Emu(py + I(0.03)), Emu(right_w * 0.40), Emu(I(0.20)),
+              [[(title, dict(size=10.8, bold=True, color=NV))]], anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+        _text(slide, Emu(right_x + int(right_w * 0.44)), Emu(py + I(0.03)), Emu(right_w * 0.50), Emu(I(0.20)),
+              [[(formulas[pi], dict(size=9.6, bold=True, color=MU, name="Cambria Math"))]],
+              align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+        px0 = right_x + I(0.22); px1 = right_x + right_w - I(0.22)
+        cy = py + int(panel_h * 0.58); half = int(panel_h * 0.28)
+        axes(px0, py + I(0.27), px1 - px0, panel_h - I(0.42))
+        for _ in range(58):
+            tx = px0 + rnd.random() * max(1, px1 - px0)
+            ty = cy + int(rnd.uniform(-0.80, 0.80) * half)
+            dot(tx, ty, I(0.026), GRAY)
+        if pi == 0:
+            vals = [rnd.gauss(0, 0.38) for _ in range(30)]
+        elif pi == 1:
+            vals = []
+            v = 0.0
+            for _ in range(30):
+                v = 0.82 * v + rnd.gauss(0, 0.18)
+                vals.append(max(-0.85, min(0.85, v)))
+        else:
+            vals = [rnd.gauss(0, 0.16) for _ in range(26)] + [0.92, -0.88, 0.74, -0.68]
+        for k, v in enumerate(vals):
+            tx = px0 + int((px1 - px0) * (k + 0.5) / len(vals))
+            ty = cy - int(max(-0.95, min(0.95, v)) * half)
+            dot(tx, ty, I(0.044), RED if (pi == 2 and abs(v) > 0.60) else pcol[pi])
+
+def _p3_quad_diagram(slide, x, y, w, h):
+    """P3 결과 4분할 네이티브 — 백본 bar / progression bar / smoothing 곡선 / color 전후.
+    모든 데이터 글자 12pt 이상, 전부 편집 가능한 네이티브 객체."""
+    import os as _os
+    import random as _random
+    import math as _math
+    rnd = _random.Random(11)
+    x, y, w, h = int(x), int(y), int(w), int(h)
+    def I(v): return int(Inches(v))
+    NV = RGBColor(0x0F, 0x1E, 0x3D); BL = RGBColor(0x3A, 0x6F, 0xD0); GR = RGBColor(0xAE, 0xB4, 0xBD)
+    RD = RGBColor(0xCC, 0x33, 0x28); MU = RGBColor(0x6B, 0x72, 0x80)
+
+    def rect(rx, ry, rw, rh, color, line=None, lw=None, shape=MSO_SHAPE.RECTANGLE):
+        return _rect(slide, Emu(int(rx)), Emu(int(ry)), Emu(int(rw)), Emu(int(rh)), color, line=line, line_w=lw, shape=shape)
+
+    def txt(tx, ty, tw, th, runs, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False):
+        _text(slide, Emu(int(tx)), Emu(int(ty)), Emu(int(tw)), Emu(int(th)), runs, align=align, anchor=anchor, wrap=wrap)
+
+    def dot(cx, cy, d, color, shape=MSO_SHAPE.OVAL):
+        sp = slide.shapes.add_shape(shape, Emu(int(cx - d / 2)), Emu(int(cy - d / 2)), Emu(int(d)), Emu(int(d)))
         sp.fill.solid(); sp.fill.fore_color.rgb = color; sp.line.fill.background(); sp.shadow.inherit = False
 
     def line(x1, y1, x2, y2, color, wpt):
@@ -1111,99 +1236,83 @@ def _episode_trend_diagram(slide, x, y, w, h):
         for i in range(len(pts) - 1):
             line(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], color, wpt)
 
-    top_h = int(h * 0.60)
-    # -- (a) baseline panel --
-    secA = y + I(0.04)
-    _text(slide, Emu(x + I(0.15)), Emu(secA), Emu(w - I(0.3)), Emu(I(0.26)),
-          [[("(a) Normal baseline  -  sequential episodes", dict(size=13, bold=True, color=NV)),
-            ("    gray = fleet,  blue = target", dict(size=10.5, color=MU))]],
-          anchor=MSO_ANCHOR.MIDDLE)
-    px0 = x + I(0.25); px1 = x + w - I(0.25)
-    lbl_y = secA + I(0.30)
-    pa_top = lbl_y + I(0.26); pa_bot = y + top_h - I(0.05)
-    base_y = (pa_top + pa_bot) // 2
-    half = (pa_bot - pa_top) // 2 - I(0.05)
-    episodes = [("Dense", 1.5), ("Sparse", 1.0), ("Missing", 0.7), ("Dense", 1.4),
-                ("Thin", 0.9), ("Dense", 1.3), ("Sparse", 1.0)]
-    tw = sum(e[1] for e in episodes)
-    edgec = {"Dense": NV, "Sparse": RGBColor(0xC9, 0x8A, 0x22), "Missing": RED, "Thin": MU}
-    bandfill = {"Dense": RGBColor(0xEA, 0xF0, 0xF8), "Sparse": RGBColor(0xFB, 0xF4, 0xE5),
-                "Missing": RGBColor(0xFB, 0xEC, 0xEA), "Thin": RGBColor(0xF2, 0xF3, 0xF6)}
-    density = {"Dense": 14, "Sparse": 7, "Missing": 0, "Thin": 4}
-    dotd = I(0.05)
-    bounds = [px0]; tgt = []; gray = []
-    cxr = px0
-    for (kind, wt) in episodes:
-        bw = int((px1 - px0) * wt / tw)
-        _rect(slide, Emu(cxr), Emu(pa_top), Emu(bw), Emu(pa_bot - pa_top), bandfill[kind])
-        _text(slide, Emu(cxr), Emu(lbl_y), Emu(bw), Emu(I(0.24)),
-              [[(kind, dict(size=12.5, bold=True, color=edgec[kind]))]],
-              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
-        n = density[kind]
-        for k in range(n):
-            ddx = cxr + int(bw * (k + 0.5) / max(1, n))
-            ddy = base_y + int(rnd.uniform(-0.34, 0.34) * half)
-            tgt.append((ddx, ddy))
-        gn = max(0, n // 3)
-        for k in range(gn):
-            gx = cxr + int(bw * (k + 0.45) / max(1, gn))
-            gy = base_y - int(0.58 * half) + int(rnd.uniform(-0.18, 0.18) * half)
-            gray.append((gx, gy))
-        cxr += bw; bounds.append(cxr)
-    for bx in bounds[1:-1]:
-        line(bx, pa_top - I(0.02), bx, pa_bot, DIV, 1.2)
-    dn = 46; seg = (px1 - px0) // dn
-    for i in range(0, dn, 2):
-        _rect(slide, Emu(px0 + i * seg), Emu(base_y - I(0.006)), Emu(int(seg * 1.1)), Emu(I(0.012)),
-              RGBColor(0x8A, 0x92, 0x9E))
-    tgt.sort()
-    polyline(tgt, BLUE, 1.6)
-    for (gx, gy) in gray:
-        dot(gx, gy, int(dotd * 0.8), GRAY)
-    for (tx, ty) in tgt:
-        dot(tx, ty, dotd, BLUE)
-    # -- (b) noise panels (connected lines so the pattern is visible) --
-    secB = y + top_h + I(0.03)
-    _text(slide, Emu(x + I(0.15)), Emu(secB), Emu(w - I(0.3)), Emu(I(0.24)),
-          [[("(b) Measurement noise  -  one type per chart", dict(size=13, bold=True, color=NV))]],
-          anchor=MSO_ANCHOR.MIDDLE)
-    np_top = secB + I(0.28); np_bot = y + h - I(0.05)
-    gap = I(0.3); pw = (w - I(0.3) - 2 * gap) // 3
-    titles = ["Gaussian iid", "Correlated AR(1)", "Laplacian"]
-    subs = ["base dispersion", "equipment drift", "hunting (heavy-tail)"]
-    pcol = [BLUE, TL, NV]
-    for pi in range(3):
-        bx = x + I(0.15) + pi * (pw + gap)
-        _rect(slide, Emu(bx), Emu(np_top), Emu(pw), Emu(np_bot - np_top), RGBColor(0xFC, 0xFD, 0xFE),
-              line=RGBColor(0xD7, 0xDE, 0xEA), line_w=Pt(1))
-        _text(slide, Emu(bx), Emu(np_top + I(0.03)), Emu(pw), Emu(I(0.22)),
-              [[(titles[pi], dict(size=11.5, bold=True, color=NV))]],
-              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
-        sk_top = np_top + I(0.32); sk_bot = np_bot - I(0.24)
-        sk_mid = (sk_top + sk_bot) // 2; sk_half = (sk_bot - sk_top) // 2
-        sx0 = bx + I(0.16); sx1 = bx + pw - I(0.16); nn = 18
-        pts = []; reds = []
-        if pi == 0:
-            for k in range(nn):
-                pts.append((sx0 + int((sx1 - sx0) * k / (nn - 1)), sk_mid + int(rnd.uniform(-0.6, 0.6) * sk_half)))
-        elif pi == 1:
-            v = 0.0
-            for k in range(nn):
-                v = max(-0.9, min(0.9, 0.8 * v + rnd.uniform(-0.32, 0.32)))
-                pts.append((sx0 + int((sx1 - sx0) * k / (nn - 1)), sk_mid - int(v * sk_half)))
-        else:
-            spikes = {5: 0.95, 12: -0.98}
-            for k in range(nn):
-                px_ = sx0 + int((sx1 - sx0) * k / (nn - 1))
-                if k in spikes:
-                    yy = sk_mid - int(spikes[k] * sk_half); pts.append((px_, yy)); reds.append((px_, yy))
-                else:
-                    pts.append((px_, sk_mid + int(rnd.uniform(-0.12, 0.12) * sk_half)))
-        polyline(pts, pcol[pi], 1.5)
-        for (rx, ry) in reds:
-            dot(rx, ry, I(0.06), RED)
-        _text(slide, Emu(bx), Emu(sk_bot + I(0.02)), Emu(pw), Emu(I(0.2)),
-              [[(subs[pi], dict(size=9.5, color=MU))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+    gap = I(0.30)
+    qw = (w - gap) // 2; qh = (h - gap) // 2
+    quads = [(x, y), (x + qw + gap, y), (x, y + qh + gap), (x + qw + gap, y + qh + gap)]
+    for (qx, qy) in quads:
+        rect(qx, qy, qw, qh, WHITE, line=RGBColor(0xD7, 0xDE, 0xEA), lw=Pt(1.0))
+
+    # ---- native F1 bar chart ----
+    def barchart(qx, qy, title, names, f1, fn, fp, roles):
+        txt(qx + I(0.1), qy + I(0.06), qw - I(0.2), I(0.30), [[(title, dict(size=13, bold=True, color=NV))]])
+        pa_l = qx + I(0.16); pa_r = qx + qw - I(0.16)
+        pa_top = qy + I(0.46); pa_bot = qy + qh - I(0.50)
+        lo, hi = 0.9960, 0.99905
+        n = len(names); slot = (pa_r - pa_l) / n
+        bw = min(slot * 0.6, I(0.85))
+        cmap = {"best": NV, "imp": BL, "base": GR}
+        for i, (nm, v, fnv, fpv, rl) in enumerate(zip(names, f1, fn, fp, roles)):
+            cx = pa_l + slot * (i + 0.5)
+            bh = int((v - lo) / (hi - lo) * (pa_bot - pa_top))
+            rect(cx - bw / 2, pa_bot - bh, bw, bh, cmap[rl])
+            txt(cx - slot / 2, pa_bot - bh - I(0.27), slot, I(0.25), [[(("%.4f" % v), dict(size=12, bold=True, color=NV))]])
+            txt(cx - slot / 2, pa_bot + I(0.03), slot, I(0.23), [[(nm, dict(size=12, bold=True, color=NV))]])
+            txt(cx - slot / 2, pa_bot + I(0.25), slot, I(0.21), [[(("FN %d / FP %d" % (fnv, fpv)), dict(size=12, color=MU))]])
+        line(pa_l, pa_bot, pa_r, pa_bot, RGBColor(0xC7, 0xCD, 0xD6), 1.1)
+
+    # Q1 backbone
+    qx, qy = quads[0]
+    barchart(qx, qy, "Backbone sweep — F1 (5-seed)",
+             ["dinov3", "base", "tiny", "swin", "maxvit", "effv2"],
+             [0.9987, 0.9982, 0.9967, 0.9975, 0.9979, 0.9972],
+             [0, 0, 1, 1, 0, 1], [2, 3, 4, 3, 3, 4],
+             ["best", "imp", "base", "imp", "imp", "imp"])
+    # Q2 progression
+    qx, qy = quads[1]
+    barchart(qx, qy, "baseline → BKM combined → best backbone",
+             ["Baseline", "BKM\ncombined", "Best\nbackbone"],
+             [0.9967, 0.9981, 0.9987], [1, 1, 0], [4, 3, 2],
+             ["base", "imp", "best"])
+
+    # Q3 smoothing curve (native)
+    qx, qy = quads[2]
+    txt(qx + I(0.1), qy + I(0.06), qw - I(0.2), I(0.28), [[("Smoothing window — 안정 checkpoint 선택", dict(size=13, bold=True, color=NV))]])
+    sl = qx + I(0.18); sr = qx + qw - I(0.16)
+    st = qy + I(0.66); sb = qy + qh - I(0.20)
+    lo2, hi2 = 0.9835, 0.9985
+    N = 22
+    xs = [sl + (sr - sl) * k / (N - 1) for k in range(N)]
+    base = [0.985 + 0.0102 * (1 - _math.exp(-(k + 1) / 7.5)) for k in range(N)]
+    raw = [base[k] + rnd.uniform(-0.0016, 0.0016) for k in range(N)]
+    raw[7] += 0.0018; raw[12] -= 0.0028; raw[17] += 0.0012
+    sm = [sum(raw[max(0, k - 1):k + 2]) / len(raw[max(0, k - 1):k + 2]) for k in range(N)]
+    def ymap(v): return sb - (v - lo2) / (hi2 - lo2) * (sb - st)
+    polyline([(xs[k], ymap(raw[k])) for k in range(N)], GR, 1.4)
+    polyline([(xs[k], ymap(sm[k])) for k in range(N)], BL, 2.6)
+    rp = max(range(N), key=lambda k: raw[k]); sp = max(range(N), key=lambda k: sm[k])
+    dot(xs[rp], ymap(raw[rp]), I(0.10), RD)
+    dot(xs[sp], ymap(sm[sp]), I(0.14), NV, shape=MSO_SHAPE.DIAMOND)
+    line(sl, sb, sr, sb, RGBColor(0xC7, 0xCD, 0xD6), 1.0)
+    txt(qx + I(0.18), qy + I(0.36), qw - I(0.34), I(0.26),
+        [[("test F1 →  raw 0.9971  /  window 0.9987", dict(size=12, bold=True, color=NV))]], align=PP_ALIGN.LEFT)
+    txt(qx + I(0.1), qy + qh - I(0.20), qw - I(0.2), I(0.18),
+        [[("— median window (안정)   ", dict(size=12, color=BL)), ("● raw (불안정)", dict(size=12, color=GR))]], align=PP_ALIGN.CENTER)
+
+    # Q4 color before/after (native pictures + native labels)
+    qx, qy = quads[3]
+    txt(qx + I(0.1), qy + I(0.06), qw - I(0.2), I(0.28), [[("Color 변경 전후 — target 색 대비↑ 분리도 향상", dict(size=13, bold=True, color=NV))]])
+    imgs = [("p3r_color_baseline.png", "Before (파랑)"), ("p3r_color_c01.png", "After (빨강)")]
+    isz = min(I(1.5), qh - I(0.95)); igap = I(0.5)
+    total = isz * 2 + igap; ix0 = qx + (qw - total) // 2; iy = qy + I(0.42)
+    for j, (fn_img, lab) in enumerate(imgs):
+        ipath = _os.path.join(FIG_DIR, fn_img)
+        ix = ix0 + j * (isz + igap)
+        if _os.path.exists(ipath):
+            slide.shapes.add_picture(ipath, Emu(int(ix)), Emu(int(iy)), Emu(int(isz)), Emu(int(isz)))
+            rect(ix, iy, isz, isz, None, line=RGBColor(0xC7, 0xCD, 0xD6), lw=Pt(1.0)) if False else None
+        txt(ix - I(0.15), iy + isz + I(0.04), isz + I(0.3), I(0.24), [[(lab, dict(size=12, bold=True, color=NV))]])
+
+
 
 def _caption_runs(text, sz):
     """이미지 캡션을 '굵은 라벨 + 얇은 부연' 위계로 분리한다(첫 '·' 기준).
@@ -1399,6 +1508,8 @@ def s_image_grid(slide, d, idx):
                 _pyvips_stream_diagram(slide, x, y, cw, img_h)
             if im["diagram"] == "episode_trend":
                 _episode_trend_diagram(slide, x, y, cw, img_h)
+            if im["diagram"] == "p3_quad":
+                _p3_quad_diagram(slide, x, y, cw, img_h)
             if im.get("caption"):
                 cap_pad = int(gx) // 2
                 _text(slide, Emu(int(x) - cap_pad), Emu(int(y)+int(chh)-int(cap_h)),
@@ -2614,13 +2725,15 @@ def s_papertext(slide, d, idx):
             if fg.get("head"):
                 lines.append([(fg["head"], dict(size=14.5, bold=True, color=NAVY))])
                 lines.append([(" ", dict(size=5, color=WHITE))])
-            for sec in fg["sections"]:
+            for si, sec in enumerate(fg["sections"]):
                 lab, content = sec[0], sec[1]
                 lines.append([(lab, dict(size=13.5, bold=True, italic=(not _kr(lab)),
                                          color=NAVY, name=(FONT if _kr(lab) else MONO)))])
                 for cc in content:
                     lines.append([("    " + cc, dict(size=13, color=INK,
                                                      name=(FONT if _kr(cc) else MONO)))])
+                if si < len(fg["sections"]) - 1:
+                    lines.append([(" ", dict(size=5.5, color=WHITE))])
             _text(slide, Emu(fx + int(Inches(0.30))), Emu(fy + int(Inches(0.14))),
                   Emu(cw - int(Inches(0.54))), Emu(box_h - int(Inches(0.28))),
                   lines, anchor=MSO_ANCHOR.MIDDLE)
@@ -2738,6 +2851,109 @@ def _image_pair(slide, x, y, w, h, img1, img2, lab1, lab2):
           [[(lab2, dict(size=10.5, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
 
 
+def _evidence_table(slide, x, y, w, h, headers, rows, col_fracs,
+                    highlight_rows=None, font_size=9.0, recipe_col=1,
+                    header_size=9.2, row_gap_pt=0.6):
+    """Compact evidence table for portfolio-metric slides."""
+    highlight_rows = set(highlight_rows or [])
+    total_w = int(w)
+    total_h = int(h)
+    fr_sum = float(sum(col_fracs))
+    widths = [int(total_w * f / fr_sum) for f in col_fracs]
+    widths[-1] += total_w - sum(widths)
+    header_h = int(Inches(0.42))
+    row_h = int((total_h - header_h) / max(1, len(rows)))
+
+    cx = int(x)
+    for j, head in enumerate(headers):
+        cw = widths[j]
+        _rect(slide, Emu(cx), y, Emu(cw), Emu(header_h), NAVY, line=WHITE)
+        _text(slide, Emu(cx + int(Inches(0.04))), y, Emu(cw - int(Inches(0.08))), Emu(header_h),
+              [[(str(head), dict(size=header_size, bold=True, color=WHITE))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        cx += cw
+
+    for i, row in enumerate(rows):
+        cy = int(y) + header_h + i * row_h
+        fill = RGBColor(0xE9, 0xF3, 0xED) if i in highlight_rows else (PANEL if i % 2 == 0 else WHITE)
+        line = RGBColor(0xC8, 0xD8, 0xCE) if i in highlight_rows else RGBColor(0xE0, 0xE6, 0xEF)
+        cx = int(x)
+        for j, val in enumerate(row):
+            cw = widths[j]
+            _rect(slide, Emu(cx), Emu(cy), Emu(cw), Emu(row_h - int(Pt(row_gap_pt))), fill, line=line)
+            align = PP_ALIGN.LEFT if j == recipe_col else PP_ALIGN.CENTER
+            pad = int(Inches(0.06 if j == recipe_col else 0.035))
+            _text(slide, Emu(cx + pad), Emu(cy + int(Inches(0.01))),
+                  Emu(cw - 2 * pad), Emu(row_h - int(Inches(0.02))),
+                  [[(str(val), dict(size=font_size, bold=(i in highlight_rows), color=NAVY if i in highlight_rows else INK))]],
+                  align=align, anchor=MSO_ANCHOR.MIDDLE)
+            cx += cw
+
+
+def s_p1_known_perf(slide, d, idx):
+    _bg(slide, WHITE)
+    _title_block_compact(slide, "P1 | Known evidence", "Known 16-class backbone scan and staged improvement")
+    _text(slide, Inches(0.80), Inches(1.42), Inches(11.8), Inches(0.34),
+          [[("portfolio.md 기준 성능값: 실전 현업 데이터 16 class / 1,500 labeled / 4:1 stratified split.",
+             dict(size=13.2, bold=True, color=NAVY))]])
+
+    headers = ["Stage", "Configuration", "Weighted F1", "Decision / note"]
+    rows = [
+        ("Baseline", "ImageNet pretrained CNN", "0.78", "starting point"),
+        ("Backbone", "ViT", "0.81", "same split"),
+        ("Backbone", "Swin", "0.84", "same split"),
+        ("Backbone", "EffNetV2", "0.85", "same split"),
+        ("Backbone", "MaxViT", "0.87", "119.5M params / 74.2G FLOPs"),
+        ("Backbone", "ConvNeXtV2", "0.87", "selected: 88.6M params / 45.1G FLOPs"),
+        ("HPO", "ConvNeXtV2 + Optuna", "0.92", "warmup→cosine schedule, focal loss, class-imbalance weighting, augmentation strength"),
+        ("Cascade", "ConvNeXtV2 + Optuna + ROI-YOLO", "0.95", "low-confidence wafer only"),
+    ]
+    _evidence_table(slide, Inches(0.70), Inches(1.88), Inches(12.0), Inches(4.10),
+                    headers, rows, [1.15, 2.90, 1.05, 4.05], highlight_rows={7},
+                    font_size=10.0, header_size=10.0, recipe_col=1)
+
+    card_y = Inches(6.18)
+    cards = [
+        ("0.78 → 0.87", "backbone gain"),
+        ("0.87 → 0.92", "Optuna HPO"),
+        ("0.92 → 0.95", "ROI-YOLO cascade"),
+    ]
+    cw = Inches(3.72); gap = Inches(0.36); x0 = Inches(0.92)
+    for i, (big, lab) in enumerate(cards):
+        x = Emu(int(x0) + i * (int(cw) + int(gap)))
+        _metric_card_compact(slide, x, card_y, cw, Inches(0.78), big, lab, "", color=COVER_BAR)
+    _footer(slide, idx)
+
+
+def s_unknown_ablation(slide, d, idx):
+    _bg(slide, WHITE)
+    _title_block_compact(slide, "P1 | Unknown evidence", "Contrastive recipe ablation on generated evaluation set")
+    _text(slide, Inches(0.80), Inches(1.40), Inches(11.8), Inches(0.34),
+          [[("portfolio.md 기준: 생성 데이터 개발 지표입니다. 실전 운영 검증(2,000장 review, 13 후보 group 중 7건 확인)과 분리해 제시합니다.",
+             dict(size=12.6, bold=True, color=NAVY))]])
+
+    headers = ["#", "Recipe (per class 500, normal 2000)", "M1 capture", "M2 noise", "M3 Completeness", "Sil"]
+    rows = [
+        ("1", "Global InfoNCE only (baseline)", "0.9337", "15.78%", "0.9468", "0.582"),
+        ("2", "+ Local DenseCL (LW=0.5)", "0.9361", "13.87%", "0.9502", "0.514"),
+        ("3", "+ MoCo Queue 4096", "0.9356", "9.45%", "0.9474", "0.573"),
+        ("4", "+ NV-Retriever NEG 0.72", "0.9250", "8.23%", "0.9485", "0.611"),
+        ("5", "+ NeCo 0.2 (5-tool full)", "0.9559", "6.66%", "0.9660", "0.6104"),
+        ("6", "Final recipe (Local DenseCL 제외 4-tool)", "0.9559", "6.66%", "0.9660", "0.781"),
+        ("7", "Final recipe + noise threshold τ=0.5", "0.9619", "0.00%", "0.9679", "0.781"),
+    ]
+    _evidence_table(slide, Inches(0.62), Inches(1.90), Inches(12.10), Inches(4.30),
+                    headers, rows, [0.42, 4.80, 1.20, 1.05, 1.45, 0.82],
+                    highlight_rows={6}, font_size=11.0, header_size=10.5, recipe_col=1)
+
+    _rect(slide, Inches(0.82), Inches(6.38), Inches(11.75), Inches(0.34), PANEL, line=LINE)
+    _rect(slide, Inches(0.82), Inches(6.38), Inches(0.10), Inches(0.34), COVER_BAR)
+    _text(slide, Inches(1.00), Inches(6.38), Inches(11.35), Inches(0.34),
+          [[("Final generated-set metric: capture 0.9619 / noise 0.00% / Completeness 0.9679 / Silhouette 0.781.",
+             dict(size=11.0, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _footer(slide, idx)
+
+
 def s_p2_intro(slide, d, idx):
     _bg(slide, WHITE)
     _title_block_compact(slide, "P2 | Chip multi-label", "Single-failure source to 2-combo evaluation setting")
@@ -2754,7 +2970,7 @@ def s_p2_intro(slide, d, idx):
         [("single-failure source만 보유\n직접적인 2-combo supervision 없음", dict(size=12.8, color=INK))],
         [(" ", dict(size=4, color=WHITE))],
         [("Eval", dict(size=15, bold=True, color=NAVY))],
-        [("eval은 2-combo + Normal/Invalid/OOD 포함\nsource와 eval distribution 불일치", dict(size=12.8, color=INK))],
+        [("3,850-chip benchmark\n2-combo/negative tail 포함", dict(size=12.8, color=INK))],
     ]
     _text(slide, x+Inches(0.28), y+Inches(0.28), w-Inches(0.55), h-Inches(0.45), lines)
 
@@ -2795,9 +3011,9 @@ def s_p2_intro(slide, d, idx):
     _rect(slide, rx, eval_y, rw, eval_h, WHITE, line=LINE)
     _rect(slide, rx, eval_y, Inches(0.10), eval_h, RGBColor(0x2B,0xA6,0x6B))
     _text(slide, rx+Inches(0.24), eval_y+Inches(0.16), rw-Inches(0.48), Inches(0.28),
-          [[("Eval target: 2-combo classes + negative tail", dict(size=14.4, bold=True, color=NAVY))]])
+          [[("Eval target: 3,850-chip controlled benchmark", dict(size=14.4, bold=True, color=NAVY))]])
     _text(slide, rx+Inches(0.24), eval_y+Inches(0.48), rw-Inches(0.48), Inches(0.20),
-          [[("Evaluation includes six 2-combo classes plus Normal, Invalid, and OOD.",
+          [[("single 4 + 2-combo 6 + Normal/Invalid/OOD negative tail.",
              dict(size=10.4, color=MUTED))]])
     eval_imgs = [
         ("chip_combo_bb_fork_selected.png", "bb+fk"),
@@ -2856,74 +3072,83 @@ def s_p2_fcmpm(slide, d, idx):
             _rect(slide, ax, card_y+Inches(0.42), Inches(0.20), Inches(0.20),
                   RGBColor(0xC7,0xCF,0xDA), shape=MSO_SHAPE.RIGHT_ARROW)
 
-    _rect(slide, Inches(1.02), Inches(5.92), Inches(11.22), Inches(0.42), WHITE, line=LINE)
-    _rect(slide, Inches(1.02), Inches(5.92), Inches(0.10), Inches(0.42), COVER_BAR)
-    _text(slide, Inches(1.20), Inches(5.92), Inches(10.88), Inches(0.42),
-          [[("해석: FCM은 약한 2-combo positive probability를 올리고, FCM-PM은 그 상승분을 유지하면서 FAR tail을 억제합니다.",
-             dict(size=11.2, bold=True, color=NAVY))]],
-          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _rect(slide, Inches(1.02), Inches(5.82), Inches(11.22), Inches(0.62), WHITE, line=LINE)
+    _rect(slide, Inches(1.02), Inches(5.82), Inches(0.10), Inches(0.62), COVER_BAR)
+    _text(slide, Inches(1.22), Inches(5.88), Inches(1.56), Inches(0.18),
+          [[("Algorithmic view", dict(size=9.8, bold=True, color=MUTED))]],
+          anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, Inches(2.78), Inches(5.87), Inches(9.20), Inches(0.44),
+          [[("FCM: x_mix = M * x_A + (1-M) * x_B,   y_mix = y_A ∪ y_B",
+             dict(size=10.4, bold=True, color=NAVY, name="Cambria Math"))],
+           [("Pair Mask: L_total = BCE(x_mix, y_mix) + λ BCE(x_mask, y_A / y_B)",
+             dict(size=10.4, bold=True, color=NAVY, name="Cambria Math"))]],
+          anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
 
 def s_p2_validation(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P2 | 검증 결과", "Recipe ladder after val-margin selection")
+    _title_block_compact(slide, "P2 | 검증 결과", "Multi-label recipe performance table (per class 2000)")
+    _text(slide, Inches(0.72), Inches(1.40), Inches(12.0), Inches(0.32),
+          [[("portfolio.md 기준: 현업 failure chip 원천 + 도메인 확률분포 기반 생성/검증. 단일 대표 모델은 FCM-PM + val_margin selection입니다.",
+             dict(size=12.4, bold=True, color=NAVY))]])
 
-    # ladder table
-    x = Inches(0.75); y = Inches(1.85); w = Inches(7.35); h = Inches(4.95)
-    _rect(slide, x, y, w, h, WHITE, line=LINE)
-    _rect(slide, x, y, w, Inches(0.45), NAVY)
-    _text(slide, x+Inches(0.18), y, w-Inches(0.36), Inches(0.45),
-          [[("Recipe ladder (single model 기준)", dict(size=13.2, bold=True, color=WHITE))]], anchor=MSO_ANCHOR.MIDDLE)
-    rows = [
-        ("CE + LS 0.10 (early)", "0.8634*", "-"),
-        ("BCE + Label Smoothing", "0.1093", "99.47%"),
-        ("Focal / ASL", "0.7980 / 0.6435", "45.72% / 100%"),
-        ("Random CutMix", "0.9359", "42.05%"),
-        ("CutMix + Pair Mask", "0.9491", "24.62%"),
-        ("FCM-PM + val-F1", "0.9652", "0.15%"),
-        ("FCM-PM + val-margin", "0.9927", "0.00%"),
+    main_headers = ["#", "Recipe", "bit_F1", "single", "2combo", "FAR"]
+    main_rows = [
+        ("1", "BCE + Label Smoothing", "0.1093", "0.1896", "0.0668", "99.47%"),
+        ("2", "Sigmoid Focal Loss", "0.7980", "0.8724", "0.7050", "45.72%"),
+        ("3", "Asymmetric Loss (ASL)", "0.6435", "0.5379", "0.7320", "100%"),
+        ("4", "CutMix (random rectangle)", "0.9359", "0.9566", "0.9070", "42.05%"),
+        ("5", "CutMix + Pair Mask", "0.9491", "0.9728", "0.9281", "24.62%"),
+        ("6", "FCM-PM + val_f1 selection", "0.9652", "1.0000", "0.9517", "0.15%"),
+        ("7", "FCM-PM + val_margin selection", "0.9927", "0.9996", "0.9871", "0.00%"),
+        ("8", "vote_majority_bits Ensemble", "0.9956", "1.0000", "0.9921", "0.00%"),
+        ("9", "Knowledge Distillation", "0.9799", "1.0000", "0.9638", "0.00%"),
     ]
-    yy = int(y) + int(Inches(0.58)); row_h = int(Inches(0.55))
-    for i, (name, f1, far) in enumerate(rows):
-        fill = RGBColor(0xE8,0xEC,0xF2) if i == len(rows)-1 else (PANEL if i % 2 == 0 else WHITE)
-        _rect(slide, x+Inches(0.14), Emu(yy+i*row_h), w-Inches(0.28), Emu(row_h-int(Pt(1))), fill, line=RGBColor(0xE0,0xE6,0xEF))
-        _text(slide, x+Inches(0.32), Emu(yy+i*row_h), Inches(3.25), Emu(row_h),
-              [[(name, dict(size=11.4, bold=(i==len(rows)-1), color=NAVY if i==len(rows)-1 else INK))]], anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, x+Inches(3.85), Emu(yy+i*row_h), Inches(1.35), Emu(row_h),
-              [[(f1, dict(size=11.4, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, x+Inches(5.55), Emu(yy+i*row_h), Inches(1.25), Emu(row_h),
-              [[(far, dict(size=11.4, bold=True, color=RGBColor(0xCC,0x33,0x28) if far not in ["0.00%", "-"] else (RGBColor(0x2B,0xA6,0x6B) if far == "0.00%" else MUTED))) ]],
-              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    _text(slide, x+Inches(3.80), y+Inches(0.47), Inches(1.45), Inches(0.20),
-          [[("bit-F1", dict(size=10.5, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
-    _text(slide, x+Inches(5.55), y+Inches(0.47), Inches(1.25), Inches(0.20),
-          [[("Total FAR", dict(size=10.5, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
-    _text(slide, x+Inches(0.32), y+Inches(4.66), w-Inches(0.64), Inches(0.18),
-          [[("*CE row는 early macro-F1, 이후 rows는 bit-F1 / Total FAR 기준", dict(size=8.8, color=MUTED))]])
+    _evidence_table(slide, Inches(0.42), Inches(1.82), Inches(8.05), Inches(4.58),
+                    main_headers, main_rows,
+                    [0.35, 2.85, 0.76, 0.72, 0.82, 0.68],
+                    highlight_rows={6, 7}, font_size=9.2, header_size=9.2, recipe_col=1)
 
-    rx = Inches(8.35); ry = Inches(1.85); rw = Inches(4.20); rh = Inches(4.95)
-    _rect(slide, rx, ry, rw, rh, PANEL, line=LINE)
-    _rect(slide, rx, ry, Inches(0.10), rh, COVER_BAR)
-    _text(slide, rx+Inches(0.28), ry+Inches(0.28), rw-Inches(0.56), Inches(0.36),
-          [[("Final recipe", dict(size=15, bold=True, color=NAVY))]])
-    _metric_card_compact(slide, rx+Inches(0.35), ry+Inches(0.90), Inches(3.45), Inches(0.95),
-                         "0.9927", "bit-F1", "single model")
-    _metric_card_compact(slide, rx+Inches(0.35), ry+Inches(2.05), Inches(3.45), Inches(0.95),
-                         "0.00%", "Total FAR", "Normal / Invalid / OOD")
-    _metric_card_compact(slide, rx+Inches(0.35), ry+Inches(3.20), Inches(3.45), Inches(0.95),
-                         "FCM-PM", "best recipe", "val-margin selected")
-    _text(slide, rx+Inches(0.28), ry+Inches(4.38), rw-Inches(0.56), Inches(0.32),
-          [[("val-margin selection and NB rejection explain the FAR-tail reduction.",
-             dict(size=10.6, bold=True, color=NAVY))]],
+    side_headers = ["Candidate", "NI-FAR", "OOD-FAR", "Cost"]
+    side_rows = [
+        ("FCM-PM + val_margin", "0.00%", "0.00%", "1x / 1x / 1x"),
+        ("vote_majority_bits", "0.00%", "0.00%", "5x / 1/5x / 5x"),
+        ("Knowledge Distillation", "0.00%", "0.00%", "1x / 1x / 1x"),
+    ]
+    _rect(slide, Inches(8.74), Inches(1.82), Inches(4.08), Inches(0.34), PANEL, line=LINE)
+    _text(slide, Inches(8.84), Inches(1.82), Inches(3.88), Inches(0.34),
+          [[("Negative-tail and deployment cost", dict(size=11.0, bold=True, color=NAVY))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _evidence_table(slide, Inches(8.74), Inches(2.26), Inches(4.08), Inches(1.76),
+                    side_headers, side_rows,
+                    [1.65, 0.62, 0.70, 1.00],
+                    highlight_rows={0, 1}, font_size=8.8, header_size=8.5, recipe_col=0)
 
+    _rect(slide, Inches(8.74), Inches(4.30), Inches(4.08), Inches(1.58), PANEL, line=LINE)
+    _rect(slide, Inches(8.74), Inches(4.30), Inches(0.10), Inches(1.58), COVER_BAR)
+    _text(slide, Inches(8.96), Inches(4.48), Inches(3.62), Inches(0.28),
+          [[("Portfolio interpretation", dict(size=12.0, bold=True, color=NAVY))]])
+    lines = [
+        [("FCM-PM + val_margin", dict(size=10.3, bold=True, color=NAVY))],
+        [("대표 single model: bit_F1 0.9927 / Total FAR 0.00%", dict(size=9.8, color=INK))],
+        [("Ensemble은 bit_F1 0.9956이지만 cost 5x", dict(size=9.8, color=INK))],
+        [("KD는 1x cost 후보: bit_F1 0.9799 / FAR 0.00%", dict(size=9.8, color=INK))],
+    ]
+    _text(slide, Inches(8.96), Inches(4.82), Inches(3.62), Inches(0.82), lines)
+
+    strip_y = Inches(6.52); strip_h = Inches(0.46); strip_x = Inches(0.64); strip_w = Inches(12.05)
+    _rect(slide, strip_x, strip_y, strip_w, strip_h, PANEL, line=LINE)
+    _rect(slide, strip_x, strip_y, Inches(0.10), strip_h, COVER_BAR)
+    _text(slide, strip_x+Inches(0.18), strip_y, strip_w-Inches(0.36), strip_h,
+          [[("대표 single model: bit_F1 0.9927 / Total FAR 0.00%. Champion ensemble: bit_F1 0.9956 / Total FAR 0.00%지만 cost는 5x / 1/5x / 5x.",
+             dict(size=10.6, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx, size=d.get("footer_size", 9))
 
 
 def s_p2_selection(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P2 | selection & reject", "val-margin selection and GaussianNB rejection protocol")
+    _title_block_compact(slide, "P2 | selection & reject", "val_margin selection and negative-tail control")
 
     # Left: val-margin selection
     lx = Inches(0.75); ly = Inches(1.78); lw = Inches(5.70); lh = Inches(4.95)
@@ -2932,7 +3157,7 @@ def s_p2_selection(slide, d, idx):
     _text(slide, lx+Inches(0.28), ly+Inches(0.22), lw-Inches(0.56), Inches(0.32),
           [[("val-margin checkpoint selection", dict(size=16.0, bold=True, color=NAVY))]])
     _text(slide, lx+Inches(0.28), ly+Inches(0.62), lw-Inches(0.56), Inches(0.25),
-          [[("margin = mean(p_pos) - mean(p_neg)", dict(size=13.2, bold=True, color=INK, name="Consolas"))]])
+          [[("val_margin = mean(p_positive) - max(p_negative)", dict(size=12.0, bold=True, color=INK, name="Consolas"))]])
 
     chart_x = int(lx) + int(Inches(0.62)); chart_y = int(ly) + int(Inches(1.46))
     base_y = chart_y + int(Inches(1.55)); bar_w = int(Inches(0.16)); step = int(Inches(0.78))
@@ -2967,12 +3192,12 @@ def s_p2_selection(slide, d, idx):
     _text(slide, lx+Inches(4.10), ly+Inches(1.26), Inches(1.06), Inches(0.22),
           [[("margin max", dict(size=10.2, bold=True, color=SEL_MARGIN))]], align=PP_ALIGN.CENTER)
     _text(slide, lx+Inches(0.34), ly+Inches(3.72), lw-Inches(0.68), Inches(0.20),
-          [[("measured impact: train/class 200, eval/class 20000", dict(size=9.6, bold=True, color=MUTED))]],
+          [[("portfolio evidence: correlation with test bit_F1", dict(size=9.6, bold=True, color=MUTED))]],
           align=PP_ALIGN.CENTER)
     card_y = ly+Inches(3.92); card_h = Inches(0.66); card_w = Inches(2.42)
     impacts = [
-        ("val-F1 max", "test F1 0.9652", "FAR 0.15%"),
-        ("val-margin max", "test F1 0.9927", "FAR 0.00%"),
+        ("val_f1", "Spearman -0.10", "weak"),
+        ("val_margin", "Spearman +0.56", "selected"),
     ]
     for ii, (head, val, delta) in enumerate(impacts):
         cx = Emu(int(lx)+int(Inches(0.30))+ii*(int(card_w)+int(Inches(0.25))))
@@ -2987,14 +3212,14 @@ def s_p2_selection(slide, d, idx):
               [[(delta, dict(size=9.8, bold=True, color=side_col))]],
               align=PP_ALIGN.RIGHT)
 
-    # Right: GaussianNB reject
+    # Right: negative-tail control
     rx = Inches(6.85); ry = Inches(1.78); rw = Inches(5.70); rh = Inches(4.95)
     _rect(slide, rx, ry, rw, rh, WHITE, line=LINE)
     _rect(slide, rx, ry, Inches(0.10), rh, RGBColor(0x2B,0xA6,0x6B))
     _text(slide, rx+Inches(0.28), ry+Inches(0.22), rw-Inches(0.56), Inches(0.32),
-          [[("GaussianNB reject", dict(size=16.0, bold=True, color=NAVY))]])
+          [[("Reject gate and deployment candidates", dict(size=15.2, bold=True, color=NAVY))]])
     _text(slide, rx+Inches(0.28), ry+Inches(0.60), rw-Inches(0.56), Inches(0.28),
-          [[("10개 known class별 4-bit probability 분포를 기억하고, 분포 밖 조합은 reject합니다",
+          [[("max-prob < 0.55 → Normal gate; ensemble/KD는 배포 후보로 비교",
              dict(size=11.4, bold=True, color=INK))]])
 
     bit_labels = ["bb", "fk", "sc", "sr"]
@@ -3030,12 +3255,12 @@ def s_p2_selection(slide, d, idx):
               [[(tag, dict(size=9.2, bold=True, color=RGBColor(0x2B,0xA6,0x6B) if tag == "accept" else RGBColor(0xCC,0x33,0x28)))]],
               align=PP_ALIGN.CENTER)
     _text(slide, rx+Inches(0.34), ry+Inches(3.34), rw-Inches(0.68), Inches(0.20),
-          [[("measured impact: NB reject sidecar", dict(size=9.6, bold=True, color=MUTED))]],
+          [[("portfolio evidence: inference-stage robustness candidates", dict(size=9.6, bold=True, color=MUTED))]],
           align=PP_ALIGN.CENTER)
     card_y = ry+Inches(3.56); card_h = Inches(0.66); card_w = Inches(2.42)
     impacts = [
-        ("accepted F1", "0.9962 → 0.9965", "+0.0003"),
-        ("false accept", "small → 0", "tail reject"),
+        ("max-prob gate", "< 0.55 → Normal", "tail control"),
+        ("ensemble", "bit_F1 0.9956", "FAR 0.00%"),
     ]
     for ii, (head, val, delta) in enumerate(impacts):
         cx = Emu(int(rx)+int(Inches(0.30))+ii*(int(card_w)+int(Inches(0.25))))
@@ -3049,8 +3274,8 @@ def s_p2_selection(slide, d, idx):
               [[(delta, dict(size=9.6, bold=True, color=RGBColor(0x2B,0xA6,0x6B)))]],
               align=PP_ALIGN.RIGHT)
     _text(slide, rx+Inches(0.52), ry+Inches(4.34), rw-Inches(1.04), Inches(0.25),
-          [[("trade-off: reject-empty bit-F1 0.9954, POS false reject 282",
-             dict(size=9.2, color=MUTED))]], align=PP_ALIGN.CENTER)
+          [[("Knowledge Distillation: bit_F1 0.9799 / Total FAR 0.00% / 1x cost",
+             dict(size=9.2, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
 
     _footer(slide, idx)
 
@@ -3059,7 +3284,7 @@ def s_p3_intro(slide, d, idx):
     _bg(slide, WHITE)
     _title_block_compact(slide, "P3 | Trend anomaly generator", "Real-label scarcity addressed by generator benchmark")
     _text(slide, Inches(0.85), Inches(1.86), Inches(6.2), Inches(0.52),
-          [[("Core contribution — field decision criteria를 generator rule로 정식화해 label-scarce 조건에서도 validation benchmark를 구축했습니다.",
+          [[("Core contribution — 10년 trend 판정 기준을 generator rule로 정식화해 validation benchmark를 구축했습니다.",
              dict(size=16, bold=True, color=NAVY))]])
     # left flow
     steps = [
@@ -3125,39 +3350,33 @@ def s_p3_generator(slide, d, idx):
     _bg(slide, WHITE)
     _title_block_compact(slide, "P3 | generator rule", "Baseline generator: episode + noise sampling")
     _text(slide, Inches(0.85), Inches(1.47), Inches(11.6), Inches(0.32),
-          [[("정상 trend는 region별 baseline 위에 episode density와 noise family를 샘플링해 생성합니다. anomaly 주입은 다음 장에서 분리해 설명합니다.",
-             dict(size=13.2, color=INK))]])
+          [[("정상 trend는 region별 baseline에 episode density와 noise family를 샘플링해 구성합니다. anomaly injection은 다음 장에서 분리합니다.",
+             dict(size=12.8, color=INK))]])
 
     # Normal baseline only: episode/density/noise sampling.
-    fig_x, fig_y, fig_w, fig_h = Inches(0.78), Inches(1.86), Inches(11.75), Inches(3.58)
+    fig_x, fig_y, fig_w, fig_h = Inches(0.78), Inches(1.82), Inches(11.75), Inches(3.82)
     _rect(slide, fig_x, fig_y, fig_w, fig_h, WHITE, line=LINE)
     _episode_trend_diagram(slide, fig_x+Inches(0.10), fig_y+Inches(0.08),
                            fig_w-Inches(0.20), fig_h-Inches(0.16))
 
     # Bottom rule cards: equations for how one synthetic normal trend is assembled.
-    card_y = Inches(5.62); card_h = Inches(0.96); card_w = Inches(2.88); gap = Inches(0.18); x0 = Inches(0.78)
+    card_y = Inches(5.82); card_h = Inches(0.60); card_w = Inches(2.88); gap = Inches(0.18); x0 = Inches(0.78)
     cards = [
-        ("Episode", "K ~ UnifInt(Kmin,Kmax)\nL_k ~ UnifInt(Lmin,Lmax)"),
-        ("Density", "E_k ∈ {dense,sparse,\nmissing,thin}"),
-        ("Noise mixture", "ε_t = w_g ε_g + w_c ε_c + w_l ε_l\nw ~ Dirichlet(α)"),
-        ("Trend output", "y_t = μ_region + ε_t\nwith episode mask"),
+        ("Episode", "sample count and length"),
+        ("Density", "dense / sparse / missing / thin"),
+        ("Noise mixture", "Gaussian + AR(1) + Laplacian"),
+        ("Trend output", "baseline + noise with episode mask"),
     ]
     for i, (head, rows) in enumerate(cards):
         x = Emu(int(x0) + i*(int(card_w)+int(gap)))
         _rect(slide, x, card_y, card_w, card_h, WHITE, line=LINE)
-        _rect(slide, x, card_y, card_w, Inches(0.30), NAVY)
-        _text(slide, x+Inches(0.10), card_y, card_w-Inches(0.20), Inches(0.34),
-              [[(head, dict(size=10.8, bold=True, color=WHITE))]],
+        _rect(slide, x, card_y, card_w, Inches(0.22), NAVY)
+        _text(slide, x+Inches(0.10), card_y, card_w-Inches(0.20), Inches(0.24),
+              [[(head, dict(size=9.8, bold=True, color=WHITE))]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, x+Inches(0.14), card_y+Inches(0.36), card_w-Inches(0.28), Inches(0.52),
-              [[(rows, dict(size=8.6, color=INK, name="Consolas" if any(ch in rows for ch in "~=+(){}") else FONT))]],
+        _text(slide, x+Inches(0.14), card_y+Inches(0.26), card_w-Inches(0.28), Inches(0.28),
+              [[(rows, dict(size=8.9, color=INK, name=FONT))]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-
-    _rect(slide, Inches(1.05), Inches(6.66), Inches(11.25), Inches(0.26), PANEL, line=LINE)
-    _rect(slide, Inches(1.05), Inches(6.66), Inches(0.10), Inches(0.26), COVER_BAR)
-    _text(slide, Inches(1.20), Inches(6.66), Inches(11.0), Inches(0.26),
-          [[("Normal baseline: region mean + episode density + sampled noise. This becomes the base signal before anomaly injection.",
-             dict(size=10.3, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
 
@@ -3168,9 +3387,10 @@ def s_p3_result(slide, d, idx):
           [[("Normal baseline에 5가지 anomaly injection rule을 더해 normal/abnormal 1차 gate를 검증했습니다.",
              dict(size=14.2, color=INK))]])
 
-    # 5 anomaly types in a 2-row figure grid. The 6th cell carries the equations.
-    x0 = Inches(0.72); y0 = Inches(1.93); cw = Inches(3.86); ch = Inches(1.72)
-    gapx = Inches(0.25); gapy = Inches(0.18)
+    # 5 anomaly types in a 2-row figure grid. Keep trend panels image-dominant:
+    # no per-card text inside the trend panels; the 6th cell carries labels/equations.
+    x0 = Inches(1.15); y0 = Inches(1.86); cw = Inches(3.55); ch = Inches(1.90)
+    gapx = Inches(0.18); gapy = Inches(0.14)
     imgs = [
         ("trend_mean_shift_view.png", "Mean shift", "y_t = x_t + δ"),
         ("trend_standard_deviation_view.png", "Std change", "y_t = μ + A(x_t - μ)"),
@@ -3183,11 +3403,8 @@ def s_p3_result(slide, d, idx):
         x = Emu(int(x0)+col*(int(cw)+int(gapx)))
         y = Emu(int(y0)+row*(int(ch)+int(gapy)))
         _rect(slide, x, y, cw, ch, WHITE, line=LINE)
-        _img_fit(slide, src, x+Inches(0.12), y+Inches(0.10), cw-Inches(0.24), ch-Inches(0.58), frame=False)
-        _text(slide, x+Inches(0.08), y+ch-Inches(0.43), cw-Inches(0.16), Inches(0.20),
-              [[(head, dict(size=12.5, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
-        _text(slide, x+Inches(0.08), y+ch-Inches(0.22), cw-Inches(0.16), Inches(0.16),
-              [[(formula, dict(size=8.7, bold=True, color=MUTED, name="Consolas"))]], align=PP_ALIGN.CENTER)
+        _img_cover(slide, src, x+Inches(0.06), y+Inches(0.06),
+                   cw-Inches(0.12), ch-Inches(0.12), focus_y=0.50)
 
     fx = Emu(int(x0)+2*(int(cw)+int(gapx)))
     fy = Emu(int(y0)+1*(int(ch)+int(gapy)))
@@ -3206,30 +3423,31 @@ def s_p3_result(slide, d, idx):
           eq_lines, anchor=MSO_ANCHOR.MIDDLE)
 
     # result strip
-    strip_x, strip_y, strip_w, strip_h = Inches(0.90), Inches(5.68), Inches(11.55), Inches(0.54)
+    strip_x, strip_y, strip_w, strip_h = Inches(0.90), Inches(5.90), Inches(11.55), Inches(0.50)
     _rect(slide, strip_x, strip_y, strip_w, strip_h, PANEL, line=LINE)
     vals = [
-        ("Synthetic PoC", "현업 적용 전"),
-        ("Test 1,500", "TN/FN/FP/TP 746/1/4/749"),
-        ("F1 0.9967", "normal/abnormal gate"),
+        ("Test 1,500", "normal 750 / abnormal 5종×150"),
+        ("F1 0.9967", "TN/FN/FP/TP 746/1/4/749"),
         ("Recall 0.9987", "abnormal class"),
+        ("5-seed best 0.9987", "TN/FN/FP/TP 748/0/2/750"),
+        ("threshold 0.9", "normal gate"),
     ]
     cell_w = Emu(int(strip_w) // len(vals))
     for i, (big, sub) in enumerate(vals):
         x = Emu(int(strip_x) + i*int(cell_w))
         if i > 0:
             _rect(slide, x, strip_y+Inches(0.09), Pt(1), strip_h-Inches(0.18), LINE)
-        _text(slide, x+Inches(0.10), strip_y+Inches(0.08), cell_w-Inches(0.20), Inches(0.22),
-              [[(big, dict(size=13.0, bold=True, color=NAVY if i != 3 else RGBColor(0x2B,0xA6,0x6B)))]],
+        _text(slide, x+Inches(0.08), strip_y+Inches(0.08), cell_w-Inches(0.16), Inches(0.22),
+              [[(big, dict(size=11.5, bold=True, color=NAVY if i not in (2, 3) else RGBColor(0x2B,0xA6,0x6B)))]],
               align=PP_ALIGN.CENTER)
-        _text(slide, x+Inches(0.10), strip_y+Inches(0.33), cell_w-Inches(0.20), Inches(0.18),
-              [[(sub, dict(size=9.6, color=MUTED))]], align=PP_ALIGN.CENTER)
+        _text(slide, x+Inches(0.08), strip_y+Inches(0.32), cell_w-Inches(0.16), Inches(0.20),
+              [[(sub, dict(size=9.4, color=MUTED))]], align=PP_ALIGN.CENTER)
 
-    _rect(slide, Inches(0.90), Inches(6.31), Inches(11.5), Inches(0.34), WHITE, line=LINE)
-    _rect(slide, Inches(0.90), Inches(6.31), Inches(0.10), Inches(0.34), COVER_BAR)
-    _text(slide, Inches(1.08), Inches(6.31), Inches(11.10), Inches(0.34),
-          [[("Validation controls: LR sweep, color/smoothing, label smoothing, stochastic depth, focal+EMA, val-F1 median, normal threshold",
-             dict(size=10.6, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _rect(slide, Inches(0.90), Inches(6.46), Inches(11.5), Inches(0.30), WHITE, line=LINE)
+    _rect(slide, Inches(0.90), Inches(6.46), Inches(0.10), Inches(0.30), COVER_BAR)
+    _text(slide, Inches(1.08), Inches(6.46), Inches(11.10), Inches(0.30),
+          [[("Validation controls: LR sweep, color/smoothing, label smoothing, stochastic depth, focal+EMA, val-F1 median, normal threshold 0.9",
+             dict(size=10.2, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
 
@@ -3802,6 +4020,7 @@ DISPATCH = {"title": s_title, "section": s_section, "stats": s_stats, "bullets":
             "two_col": s_two_col, "image_grid": s_image_grid, "table": s_table, "closing": s_closing,
             "flow": s_flow, "timeline": s_timeline, "cards": s_cards, "pipeline": s_pipeline,
             "papertext": s_papertext, "archflow": s_archflow,
+            "p1_known_perf": s_p1_known_perf, "unknown_ablation": s_unknown_ablation,
             "unknown_simclr_hardneg": s_unknown_simclr_hardneg,
             "unknown_moco_explain": s_unknown_moco_explain,
             "unknown_neco_explain": s_unknown_neco_explain,
