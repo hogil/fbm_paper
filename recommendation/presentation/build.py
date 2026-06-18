@@ -54,7 +54,7 @@ def _is_dark(c):
     return (0.2126 * r + 0.7152 * g + 0.0722 * b) < 165
 
 
-MIN_FONT = 10.5  # 발표 덱 최소 폰트 floor — 보이는 글자는 절대 이 아래로 안 내려감 (빈 spacer 제외)
+MIN_FONT = 11.0  # 발표 덱 최소 폰트 floor — 보이는 글자는 절대 이 아래로 안 내려감 (빈 spacer 제외)
 
 def _set_font(run, size=None, bold=None, color=None, italic=None, name=FONT):
     f = run.font
@@ -1291,8 +1291,8 @@ def _p3_quad_diagram(slide, x, y, w, h):
     txt(qx + I(0.1), qy + I(0.06), qw - I(0.2), I(0.30),
         [[("5-seed robustness — summary", dict(size=13, bold=True, color=NV))]])
     summary_cards = [
-        ("Mean boundary", "main", "not best seed"),
-        ("Best seed", "reference", "not main claim"),
+        ("Mean F1", "0.9967", "main claim"),
+        ("Best F1", "0.9987", "reference"),
         ("Test split", "1,500", "750/750 split"),
     ]
     card_w = (qw - I(0.56)) // 3
@@ -1303,7 +1303,7 @@ def _p3_quad_diagram(slide, x, y, w, h):
              line=RGBColor(0xD7, 0xDE, 0xEA), lw=Pt(1.0))
         txt(cx + I(0.08), card_y + I(0.14), card_w - I(0.16), I(0.22),
             [[(head, dict(size=11.5, bold=True, color=MU))]])
-        value_size = 15.8 if i < 2 else 19
+        value_size = 18.0 if i < 2 else 19
         txt(cx + I(0.08), card_y + I(0.42), card_w - I(0.16), I(0.38),
             [[(value, dict(size=value_size, bold=True, color=NV))]])
         sub_size = 9.2 if i == 2 else 10.4
@@ -2711,7 +2711,7 @@ def _draw_pyvips(slide, X, Y, W, H):
     arrow(0.425, 0.642, 0.035, 0.035)
     box(0.485, 0.585, 0.210, 0.150, COOL, line=COOL_LINE, shape=MSO_SHAPE.RECTANGLE)
     txt(0.490, 0.588, 0.200, 0.060, "streaming\nC pipeline", size=9.4, bold=True, color=INK)
-    txt(0.500, 0.655, 0.180, 0.050, "decode\nencode", size=10.4, bold=True, color=MUTED_INK)
+    txt(0.495, 0.672, 0.200, 0.040, "decode/encode", size=10.4, bold=True, color=MUTED_INK)
     arrow(0.710, 0.642, 0.035, 0.035)
     box(0.790, 0.606, 0.090, 0.072, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT_LINE, shape=MSO_SHAPE.RECTANGLE)
     for i in range(4):
@@ -3002,17 +3002,17 @@ def s_p1_known_perf(slide, d, idx):
     headers = ["Stage", "Configuration", "Weighted F1", "Decision / note"]
     rows = [
         ("Baseline", "ImageNet pretrained CNN", "0.78", "starting point"),
-        ("Backbone", "ViT", "0.81", "same split"),
-        ("Backbone", "Swin", "0.84", "same split"),
-        ("Backbone", "EffNetV2", "0.85", "same split"),
+        ("Backbone", "ViT", "0.81", ""),
+        ("Backbone", "Swin", "0.84", ""),
+        ("Backbone", "EffNetV2", "0.85", ""),
         ("Backbone", "MaxViT", "0.87", "119.5M params / 74.2G FLOPs"),
-        ("Backbone", "ConvNeXtV2", "0.87", "selected: 88.6M params / 45.1G FLOPs"),
-        ("HPO", "ConvNeXtV2 + Optuna", "0.92", "warmup→cosine schedule, focal loss, class-imbalance weighting, augmentation strength"),
-        ("Cascade", "ConvNeXtV2 + Optuna + ROI-YOLO", "0.95", "low-confidence wafer only"),
+        ("Backbone", "ConvNeXtV2", "0.87", "selected: 88.6M / 45.1G"),
+        ("HPO", "ConvNeXtV2 + Optuna", "0.92", "schedule / focal / imbalance / augmentation"),
+        ("Cascade", "ConvNeXtV2 + Optuna + ROI-YOLO", "0.95", "low-confidence only"),
     ]
     _native_evidence_table(slide, Inches(0.70), Inches(1.88), Inches(12.0), Inches(4.10),
                            headers, rows, [1.15, 2.90, 1.05, 4.05],
-                           font_size=9.7, header_size=10.2, left_cols={1, 3},
+                           font_size=10.4, header_size=10.7, left_cols={1, 3},
                            bold_rows={7})
 
     card_y = Inches(6.18)
@@ -3052,9 +3052,9 @@ def s_unknown_ablation(slide, d, idx):
 
     _rect(slide, Inches(0.82), Inches(6.38), Inches(11.75), Inches(0.34), PANEL, line=LINE)
     _rect(slide, Inches(0.82), Inches(6.38), Inches(0.10), Inches(0.34), COVER_BAR)
-    _text(slide, Inches(1.00), Inches(6.38), Inches(11.35), Inches(0.34),
-          [[("Final generated-set metric: capture 0.9619 / noise 0.00% / Completeness 0.9679 / Silhouette 0.781.",
-             dict(size=11.0, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, Inches(1.00), Inches(6.36), Inches(11.35), Inches(0.38),
+          [[("Noise 15.78% → 0.00%  /  Capture 0.9337 → 0.9619",
+             dict(size=14.0, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
 
@@ -3227,39 +3227,38 @@ def s_p2_validation(slide, d, idx):
         ("8", "vote_majority_bits Ensemble", "0.9956", "1.0000", "0.9921", "0.00%", "champion\ncost 5x"),
         ("9", "Knowledge Distillation", "0.9799", "1.0000", "0.9638", "0.00%", "1x candidate"),
     ]
-    _native_evidence_table(slide, Inches(0.70), Inches(1.82), Inches(7.88), Inches(4.84),
+    _native_evidence_table(slide, Inches(0.70), Inches(1.82), Inches(8.30), Inches(5.05),
                            main_headers, main_rows,
-                           [0.33, 2.58, 0.68, 0.60, 0.68, 0.58, 1.22],
-                           font_size=8.9, header_size=9.2, left_cols={1, 6},
+                           [0.34, 2.74, 0.70, 0.62, 0.70, 0.58, 1.18],
+                           font_size=10.0, header_size=10.2, left_cols={1, 6},
                            bold_rows={6, 7})
 
-    side_headers = ["Candidate", "NI-FAR", "OOD-FAR", "Cost\n(L/T/P)", "Interp."]
-    side_rows = [
-        ("FCM-PM", "0.00%", "0.00%", "1x / 1x / 1x", "selected\nsingle model"),
-        ("Ensemble", "0.00%", "0.00%", "5x / 1/5x / 5x", "best F1\ncost 5x"),
-        ("KD student", "0.00%", "0.00%", "1x / 1x / 1x", "deploy\ncandidate"),
-    ]
-    _rect(slide, Inches(8.74), Inches(1.82), Inches(4.08), Inches(0.34), PANEL, line=LINE)
-    _text(slide, Inches(8.84), Inches(1.82), Inches(3.88), Inches(0.34),
+    _rect(slide, Inches(9.20), Inches(1.82), Inches(3.62), Inches(0.40), PANEL, line=LINE)
+    _text(slide, Inches(9.30), Inches(1.82), Inches(3.42), Inches(0.40),
           [[("Negative-tail and deployment cost", dict(size=11.0, bold=True, color=NAVY))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    _native_evidence_table(slide, Inches(8.74), Inches(2.26), Inches(4.08), Inches(1.86),
-                           side_headers, side_rows,
-                           [1.25, 0.55, 0.62, 0.92, 0.92],
-                           font_size=8.0, header_size=8.2, left_cols={0, 4},
-                           bold_rows={0, 1})
-
-    _rect(slide, Inches(8.74), Inches(4.30), Inches(4.08), Inches(1.58), PANEL, line=LINE)
-    _rect(slide, Inches(8.74), Inches(4.30), Inches(0.10), Inches(1.58), COVER_BAR)
-    _text(slide, Inches(8.96), Inches(4.48), Inches(3.62), Inches(0.28),
-          [[("Selected model", dict(size=12.0, bold=True, color=NAVY))]])
-    lines = [
-        [("Representative setting", dict(size=10.8, bold=True, color=NAVY))],
-        [("대표 claim은 1x cost single model", dict(size=10.4, color=INK))],
-        [("Ensemble은 upper-bound reference", dict(size=10.4, color=INK))],
-        [("KD는 single-student 배포 후보", dict(size=10.4, color=INK))],
+    side_cards = [
+        ("FCM-PM", "NI/OOD FAR 0.00%", "1x cost", "selected single"),
+        ("Ensemble", "best-F1 reference", "5x cost", "upper-bound"),
+        ("KD student", "single-student", "1x cost", "deploy candidate"),
     ]
-    _text(slide, Inches(8.96), Inches(4.76), Inches(3.62), Inches(0.98), lines)
+    sy = Inches(2.42)
+    for i, (head, far, cost, role) in enumerate(side_cards):
+        y = Emu(int(sy) + i * int(Inches(1.06)))
+        _rect(slide, Inches(9.20), y, Inches(3.62), Inches(0.92), PANEL if i != 1 else WHITE, line=LINE)
+        _rect(slide, Inches(9.20), y, Inches(0.09), Inches(0.92), COVER_BAR)
+        _text(slide, Inches(9.38), y+Inches(0.10), Inches(1.20), Inches(0.24),
+              [[(head, dict(size=12.2, bold=True, color=NAVY))]],
+              anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, Inches(10.64), y+Inches(0.10), Inches(1.86), Inches(0.24),
+              [[(far, dict(size=11.0, bold=True, color=INK))]],
+              align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, Inches(9.38), y+Inches(0.50), Inches(1.08), Inches(0.22),
+              [[(cost, dict(size=11.0, bold=True, color=INK))]],
+              anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, Inches(10.50), y+Inches(0.50), Inches(1.98), Inches(0.22),
+              [[(role, dict(size=11.0, bold=True, color=NAVY))]],
+              align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
 
     _footer(slide, idx, size=d.get("footer_size", 9))
 
@@ -3315,7 +3314,7 @@ def s_p2_selection(slide, d, idx):
     _text(slide, lx+Inches(0.34), ly+Inches(3.72), lw-Inches(0.68), Inches(0.20),
           [[("post-hoc check: correlation with held-out eval bit_F1", dict(size=9.6, bold=True, color=MUTED))]],
           align=PP_ALIGN.CENTER)
-    card_y = ly+Inches(3.92); card_h = Inches(0.66); card_w = Inches(2.42)
+    card_y = ly+Inches(3.94); card_h = Inches(0.80); card_w = Inches(2.42)
     impacts = [
         ("val_f1", "Spearman -0.10", "weak"),
         ("val_margin", "Spearman +0.56", "selected"),
@@ -3325,11 +3324,11 @@ def s_p2_selection(slide, d, idx):
         side_col = SEL_F1 if ii == 0 else SEL_MARGIN
         _rect(slide, cx, card_y, card_w, card_h, RGBColor(0xF4,0xF7,0xFB), line=RGBColor(0xD7,0xDE,0xE8))
         _rect(slide, cx, card_y, Inches(0.07), card_h, side_col)
-        _text(slide, cx+Inches(0.14), card_y+Inches(0.06), Inches(0.70), Inches(0.18),
+        _text(slide, cx+Inches(0.14), card_y+Inches(0.08), Inches(1.10), Inches(0.20),
               [[(head, dict(size=9.6, bold=True, color=MUTED))]])
-        _text(slide, cx+Inches(0.14), card_y+Inches(0.24), Inches(1.26), Inches(0.24),
+        _text(slide, cx+Inches(0.14), card_y+Inches(0.40), Inches(1.30), Inches(0.26),
               [[(val, dict(size=10.8, bold=True, color=NAVY))]])
-        _text(slide, cx+Inches(1.44), card_y+Inches(0.19), Inches(0.82), Inches(0.25),
+        _text(slide, cx+Inches(1.46), card_y+Inches(0.34), Inches(0.82), Inches(0.25),
               [[(delta, dict(size=9.8, bold=True, color=side_col))]],
               align=PP_ALIGN.RIGHT)
 
@@ -3340,7 +3339,7 @@ def s_p2_selection(slide, d, idx):
     _text(slide, rx+Inches(0.28), ry+Inches(0.22), rw-Inches(0.56), Inches(0.32),
           [[("NB reject: independent bit-likelihood profile", dict(size=14.0, bold=True, color=NAVY))]])
     _text(slide, rx+Inches(0.28), ry+Inches(0.60), rw-Inches(0.56), Inches(0.26),
-          [[("No 4D/GMM fitting; four output bits are checked independently",
+          [[("4 output bits independently checked",
              dict(size=10.2, bold=True, color=INK))]])
     _text(slide, rx+Inches(0.28), ry+Inches(0.88), rw-Inches(0.56), Inches(0.20),
           [[("gray band = 99.7% range per bit",
@@ -3359,7 +3358,7 @@ def s_p2_selection(slide, d, idx):
               [[(title, dict(size=9.4, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
         ax_x = x + Inches(0.42)
         ax_w = w - Inches(0.58)
-        row_y = y + Inches(0.43)
+        row_y = y + Inches(0.62)
         row_gap = Inches(0.34)
         band_h = Inches(0.07)
         for j, (lab, col) in enumerate(zip(bit_labels, bit_colors)):
@@ -3402,14 +3401,14 @@ def s_p2_selection(slide, d, idx):
     for pi, args in enumerate(panels):
         profile_card(px0 + (pw + pg) * pi, py0, pw, ph, *args)
 
-    _rect(slide, rx+Inches(0.32), ry+Inches(3.88), rw-Inches(0.64), Inches(0.48),
+    _rect(slide, rx+Inches(0.32), ry+Inches(3.80), rw-Inches(0.64), Inches(0.58),
           RGBColor(0xF4,0xF7,0xFB), line=RGBColor(0xD7,0xDE,0xE8))
-    _text(slide, rx+Inches(0.44), ry+Inches(3.96), rw-Inches(0.88), Inches(0.14),
-          [[("Accept: four independent output bits match one known profile",
-             dict(size=9.2, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
-    _text(slide, rx+Inches(0.44), ry+Inches(4.14), rw-Inches(0.88), Inches(0.14),
-          [[("tail/OOD is not learned as a class; reject by known-profile mismatch",
-             dict(size=9.4, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
+    _text(slide, rx+Inches(0.44), ry+Inches(3.88), rw-Inches(0.88), Inches(0.16),
+          [[("One known profile matched → ACCEPT",
+             dict(size=10.2, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
+    _text(slide, rx+Inches(0.44), ry+Inches(4.14), rw-Inches(0.88), Inches(0.16),
+          [[("No profile matched → REJECT",
+             dict(size=10.2, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
     card_y = ry+Inches(4.50); card_h = Inches(0.44); card_w = Inches(2.42)
     impacts = [
         ("NB profile", "10 known classes", "4 single + 6 combo"),
@@ -3461,7 +3460,7 @@ def s_p3_intro(slide, d, idx):
     rx = Inches(6.85); ry = Inches(2.05)
     _metric_card_compact(slide, rx, ry, Inches(1.75), Inches(1.05), "Rule", "domain coding", "region/noise/anomaly")
     _metric_card_compact(slide, rx+Inches(1.95), ry, Inches(1.75), Inches(1.05), "Normal", "baseline control", "fleet-bound stats")
-    _metric_card_compact(slide, rx+Inches(3.90), ry, Inches(1.75), Inches(1.05), "Robust", "shortcut check", "color/median/threshold")
+    _metric_card_compact(slide, rx+Inches(3.90), ry, Inches(1.75), Inches(1.05), "Robust", "shortcut check", "color/median/NT")
     _rect(slide, rx, Inches(3.34), Inches(5.65), Inches(3.18), WHITE, line=LINE)
     _rect(slide, rx, Inches(3.34), Inches(5.65), Inches(0.40), NAVY)
     _text(slide, rx+Inches(0.18), Inches(3.40), Inches(5.30), Inches(0.28),
@@ -3509,9 +3508,9 @@ def s_p3_generator(slide, d, idx):
     card_y = Inches(5.72); card_h = Inches(0.92); card_w = Inches(2.88); gap = Inches(0.18); x0 = Inches(0.78)
     cards = [
         ("Episode", "K ~ U(Kmin,Kmax),  L_k ~ U(Lmin,Lmax)", "구간 개수와 길이를 먼저 결정"),
-        ("Density", "m_k ~ Cat(dense,sparse,very_sparse,thin,missing)", "구간별 관측 point 수를 결정"),
-        ("Noise", "ε_t ∈ {N(0,σ²), AR(1), Laplace(0,b)}", "측정 산포 family를 episode별 부여"),
-        ("Output", "y_t = μ_region(t) + ε_t  if active", "missing 구간 제외 후 normal trend 생성"),
+        ("Density", "m_k ~ Cat(5 density types)", "구간별 관측 point 수를 결정"),
+        ("Noise", "ε_t ~ N / AR(1) / Laplace", "측정 산포 family를 episode별 부여"),
+        ("Output", "y_t = μ_region(t) + ε_t", "active 구간만 연결"),
     ]
     for i, (head, formula, desc) in enumerate(cards):
         x = Emu(int(x0) + i*(int(card_w)+int(gap)))
@@ -3521,10 +3520,10 @@ def s_p3_generator(slide, d, idx):
               [[(head, dict(size=10.4, bold=True, color=WHITE))]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
         _text(slide, x+Inches(0.10), card_y+Inches(0.34), card_w-Inches(0.20), Inches(0.24),
-              [[(formula, dict(size=9.1, bold=True, color=NAVY, name="Cambria Math"))]],
+              [[(formula, dict(size=10.2, bold=True, color=NAVY, name="Cambria Math"))]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
         _text(slide, x+Inches(0.14), card_y+Inches(0.62), card_w-Inches(0.28), Inches(0.22),
-              [[(desc, dict(size=9.2, color=INK, name=FONT))]],
+              [[(desc, dict(size=10.0, color=INK, name=FONT))]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 

@@ -245,13 +245,13 @@
     {
       "type": "image_grid",
       "kicker": "P1 | Known 2단계 상세",
-      "title": "Known validation: CNN tuning → selective ROI-YOLO",
+      "title": "Known validation: CNN tuning and ROI cascade",
       "bullets": [
-        "**1-stage CNN** — 1,500장 labeled data와 위치·국소 pattern 중심 특성에서는 CNN의 locality inductive bias가 더 sample-efficient하다고 판단했습니다. 동일 split에서 ConvNeXtV2와 MaxViT는 F1 0.87 동급이었고, ConvNeXtV2가 더 가벼워 채택했습니다",
-        "**Tuning** — Optuna로 warmup→cosine, focal loss, class-imbalance, augmentation strength를 조정해 F1 0.92까지 올렸습니다",
-        "**2-stage ROI-YOLO** — low-confidence wafer만 ROI chip failure pattern으로 2차 분류해 최종 F1 0.95를 달성했습니다"
+        "**1-stage CNN** — 위치·국소 pattern 중심 특성에서는 CNN의 locality inductive bias가 더 sample-efficient하다고 판단했습니다. ConvNeXtV2는 MaxViT와 F1 0.87 동급이면서 더 가벼웠습니다",
+        "**Tuning** — Optuna로 schedule, focal loss, class-imbalance, augmentation strength를 조정해 F1 0.92까지 올렸습니다"
       ],
-      "body_h": 1.08,
+      "body_h": 0.82,
+      "bullet_size": 14.8,
       "img_tile": "#E4EAF4",
       "images": [
         {
@@ -402,17 +402,17 @@
           "color": "#0F1E3D",
           "bullets": [
             "DRAM D1a/b/c/d 전제품 분석 파트에서 **매일 사용 중**, 일 2만 wafer 처리",
-            "분석 공수 **90% 이상 절감**과 **P3WN 수율 +0.02%p 개선 1건**의 사업 기여를 창출",
+            "분석 공수 **90% 이상 절감**과 **P3WN 수율 +0.02%p 개선 1건**의 정량 산정 기여를 창출",
             "조회 48매 한계를 **대량 조회 viewer**로 확장하고, 검토 방식을 **Failbit Map 변환과 검색** 중심으로 재구성",
             {
-              "t": "올해 기여는 공수 절감과 P3WN 수율 개선 1건을 합산한 기준",
+              "t": "공수 절감과 P3WN 수율 개선 1건을 합산한 정량 산정 기준",
               "lvl": 1
             }
           ],
           "chips": [
             {
               "big": "123억",
-              "label": "올해 총 사업 기여"
+              "label": "정량 산정 기여"
             },
             {
               "big": "공수 90%↓",
@@ -630,6 +630,7 @@
       "bullets": [
         "**P1** — 좌표 보존 Failbit Map과 viewer를 운영 자산으로 만들고, Known 및 Unknown 검토 flow까지 연결했습니다",
         "**P2/P3** — 2-combo GT와 real abnormal label 부족을 synthetic validation 구조로 보완했습니다",
+        "**조직 확산** — 현업 시연, 모델 개발 자문, 코드·기술 공유로 제조품질 AI 활용을 확산했습니다",
         "**핵심** — 데이터 생성 → 모델 → viewer → human review → label/retrain으로 이어지는 제조품질 AI 개발 체계를 구축했습니다"
       ],
       "kpis": [
