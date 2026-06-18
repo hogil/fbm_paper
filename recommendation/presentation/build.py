@@ -546,7 +546,7 @@ def s_bullets(slide, d, idx):
     has_img = bool(d.get("image"))
     # 본문 컬럼 우측 경계를 이미지 좌측(7.95")보다 충분히 안쪽(6.75")으로 당겨 거터(여백)를
     # 확보 → 본문이 그림 영역을 침범하거나 단어 중간에서 끊기는 충돌을 방지.
-    bx, bw = Inches(0.7), (Inches(6.0) if has_img else Inches(12.0))
+    bx, bw = Inches(0.7), (Inches(d.get("body_w", 6.0)) if has_img else Inches(12.0))
     # lead_metric(좌하단 핵심 지표 카드)이 있으면 불릿 영역을 위쪽 슬롯(1.9~5.55")으로 한정하고
     # TOP 정렬해, 불릿이 4개여도 아래로 흩어지지 않게 하고 그 아래 빈 띠를 지표 카드로 메운다
     # (slide2·5 좌측 칼럼 하단 공백 과다 해결).
@@ -575,8 +575,9 @@ def s_bullets(slide, d, idx):
                    [(mc.get("label", ""), dict(size=10.5, bold=True, color=RGBColor(0x4A,0x56,0x66)))]],
                   align=PP_ALIGN.LEFT, anchor=MSO_ANCHOR.MIDDLE)
     else:
-        _bullets_tf(slide, bx, Inches(1.9), bw, Inches(4.78), d.get("bullets", []),
-                    size=d.get("size", 16), gap=d.get("gap", 14), anchor=MSO_ANCHOR.MIDDLE,
+        body_anchor = MSO_ANCHOR.TOP if d.get("body_anchor") == "top" else MSO_ANCHOR.MIDDLE
+        _bullets_tf(slide, bx, Inches(d.get("body_y", 1.9)), bw, Inches(d.get("body_h", 4.78)), d.get("bullets", []),
+                    size=d.get("size", 16), gap=d.get("gap", 14), anchor=body_anchor,
                     line_spacing=1.12)
     if has_img:
         # 이미지 박스를 좌측(7.15")으로 더 당기고 폭(5.55")·높이(4.55")를 키워 sparse 한 wafer
@@ -666,7 +667,7 @@ def _cluster3_diagram(slide, x, y, w, h):
     cap_h = int(Inches(0.26))
     pan_y = y + cap_h
     pan_h = h - cap_h
-    caps = ["① Unlabeled points", "② Self-supervised clustering", "③ Similarity 0.72 cut / same-defect 유지"]
+    caps = ["① Unlabeled points", "② Self-supervised clustering", "③ Similarity 0.72 cut / same-failure 유지"]
     cap_cols = [MUTED, NAVY, ACCENT]
     px0 = x
     centers_for = {
@@ -1087,8 +1088,8 @@ def _pyvips_stream_diagram(slide, x, y, w, h):
 
 def _episode_trend_diagram(slide, x, y, w, h):
     """순차 episode 기반 정상 baseline 생성을 네이티브 객체로 표현(사용자가 직접 편집 가능).
-    상단(a): episode 밴드(밀도별 Dense/Sparse/Missing/Thin) + 회색 fleet/파랑 target 산점 dot +
-    점선 baseline, 밴드 라벨은 밴드 위 중앙정렬(=trend 와 정렬). 하단(b): 노이즈 3종 미니 패널."""
+    상단(a): episode 밴드(밀도별) 사이 구분선 + 회색 fleet 산점 + 파랑 target 연속선(점 연결) +
+    점선 baseline. 하단(b): 노이즈 3종을 연결선으로 그려 패턴이 보이게."""
     import random
     rnd = random.Random(7)
     x, y, w, h = int(x), int(y), int(w), int(h)
@@ -1096,62 +1097,81 @@ def _episode_trend_diagram(slide, x, y, w, h):
     BLUE = RGBColor(0x3A, 0x6F, 0xD0); GRAY = RGBColor(0xAE, 0xB4, 0xBD)
     RED = RGBColor(0xCC, 0x33, 0x28); NV = RGBColor(0x0F, 0x1E, 0x3D)
     TL = RGBColor(0x12, 0xB5, 0xB0); MU = RGBColor(0x6B, 0x72, 0x80)
+    DIV = RGBColor(0xAC, 0xB4, 0xC0)
 
     def dot(cx, cy, d, color):
         sp = slide.shapes.add_shape(MSO_SHAPE.OVAL, Emu(int(cx - d / 2)), Emu(int(cy - d / 2)), Emu(int(d)), Emu(int(d)))
         sp.fill.solid(); sp.fill.fore_color.rgb = color; sp.line.fill.background(); sp.shadow.inherit = False
 
+    def line(x1, y1, x2, y2, color, wpt):
+        cn = slide.shapes.add_connector(1, Emu(int(x1)), Emu(int(y1)), Emu(int(x2)), Emu(int(y2)))
+        cn.line.color.rgb = color; cn.line.width = Pt(wpt); cn.shadow.inherit = False
+
+    def polyline(pts, color, wpt):
+        for i in range(len(pts) - 1):
+            line(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], color, wpt)
+
     top_h = int(h * 0.60)
-    # ── (a) baseline panel ──
+    # -- (a) baseline panel --
     secA = y + I(0.04)
     _text(slide, Emu(x + I(0.15)), Emu(secA), Emu(w - I(0.3)), Emu(I(0.26)),
-          [[("(a) Normal baseline  —  sequential episodes", dict(size=13, bold=True, color=NV)),
+          [[("(a) Normal baseline  -  sequential episodes", dict(size=13, bold=True, color=NV)),
             ("    gray = fleet,  blue = target", dict(size=10.5, color=MU))]],
           anchor=MSO_ANCHOR.MIDDLE)
     px0 = x + I(0.25); px1 = x + w - I(0.25)
     lbl_y = secA + I(0.30)
     pa_top = lbl_y + I(0.26); pa_bot = y + top_h - I(0.05)
     base_y = (pa_top + pa_bot) // 2
-    half = (pa_bot - pa_top) // 2 - I(0.04)
+    half = (pa_bot - pa_top) // 2 - I(0.05)
     episodes = [("Dense", 1.5), ("Sparse", 1.0), ("Missing", 0.7), ("Dense", 1.4),
                 ("Thin", 0.9), ("Dense", 1.3), ("Sparse", 1.0)]
     tw = sum(e[1] for e in episodes)
     edgec = {"Dense": NV, "Sparse": RGBColor(0xC9, 0x8A, 0x22), "Missing": RED, "Thin": MU}
     bandfill = {"Dense": RGBColor(0xEA, 0xF0, 0xF8), "Sparse": RGBColor(0xFB, 0xF4, 0xE5),
                 "Missing": RGBColor(0xFB, 0xEC, 0xEA), "Thin": RGBColor(0xF2, 0xF3, 0xF6)}
-    density = {"Dense": 15, "Sparse": 7, "Missing": 0, "Thin": 4}
-    dotd = I(0.05); jx = I(0.018)
+    density = {"Dense": 14, "Sparse": 7, "Missing": 0, "Thin": 4}
+    dotd = I(0.05)
+    bounds = [px0]; tgt = []; gray = []
     cxr = px0
     for (kind, wt) in episodes:
         bw = int((px1 - px0) * wt / tw)
-        _rect(slide, Emu(cxr), Emu(pa_top), Emu(bw - I(0.02)), Emu(pa_bot - pa_top), bandfill[kind])
+        _rect(slide, Emu(cxr), Emu(pa_top), Emu(bw), Emu(pa_bot - pa_top), bandfill[kind])
         _text(slide, Emu(cxr), Emu(lbl_y), Emu(bw), Emu(I(0.24)),
               [[(kind, dict(size=12.5, bold=True, color=edgec[kind]))]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
         n = density[kind]
         for k in range(n):
-            ddx = cxr + int(bw * (k + 0.5) / max(1, n)) + rnd.randint(-jx, jx)
-            ddy = base_y + int(rnd.uniform(-0.55, 0.55) * half)
-            dot(ddx, ddy, dotd, BLUE)
+            ddx = cxr + int(bw * (k + 0.5) / max(1, n))
+            ddy = base_y + int(rnd.uniform(-0.34, 0.34) * half)
+            tgt.append((ddx, ddy))
         gn = max(0, n // 3)
         for k in range(gn):
-            ddx = cxr + int(bw * (k + 0.4) / max(1, gn))
-            ddy = base_y - int(0.52 * half) + int(rnd.uniform(-0.22, 0.22) * half)
-            dot(ddx, ddy, int(dotd * 0.82), GRAY)
-        cxr += bw
+            gx = cxr + int(bw * (k + 0.45) / max(1, gn))
+            gy = base_y - int(0.58 * half) + int(rnd.uniform(-0.18, 0.18) * half)
+            gray.append((gx, gy))
+        cxr += bw; bounds.append(cxr)
+    for bx in bounds[1:-1]:
+        line(bx, pa_top - I(0.02), bx, pa_bot, DIV, 1.2)
     dn = 46; seg = (px1 - px0) // dn
     for i in range(0, dn, 2):
         _rect(slide, Emu(px0 + i * seg), Emu(base_y - I(0.006)), Emu(int(seg * 1.1)), Emu(I(0.012)),
               RGBColor(0x8A, 0x92, 0x9E))
-    # ── (b) noise panels ──
+    tgt.sort()
+    polyline(tgt, BLUE, 1.6)
+    for (gx, gy) in gray:
+        dot(gx, gy, int(dotd * 0.8), GRAY)
+    for (tx, ty) in tgt:
+        dot(tx, ty, dotd, BLUE)
+    # -- (b) noise panels (connected lines so the pattern is visible) --
     secB = y + top_h + I(0.03)
     _text(slide, Emu(x + I(0.15)), Emu(secB), Emu(w - I(0.3)), Emu(I(0.24)),
-          [[("(b) Measurement noise  —  one type per chart", dict(size=13, bold=True, color=NV))]],
+          [[("(b) Measurement noise  -  one type per chart", dict(size=13, bold=True, color=NV))]],
           anchor=MSO_ANCHOR.MIDDLE)
     np_top = secB + I(0.28); np_bot = y + h - I(0.05)
     gap = I(0.3); pw = (w - I(0.3) - 2 * gap) // 3
     titles = ["Gaussian iid", "Correlated AR(1)", "Laplacian"]
     subs = ["base dispersion", "equipment drift", "hunting (heavy-tail)"]
+    pcol = [BLUE, TL, NV]
     for pi in range(3):
         bx = x + I(0.15) + pi * (pw + gap)
         _rect(slide, Emu(bx), Emu(np_top), Emu(pw), Emu(np_bot - np_top), RGBColor(0xFC, 0xFD, 0xFE),
@@ -1159,28 +1179,31 @@ def _episode_trend_diagram(slide, x, y, w, h):
         _text(slide, Emu(bx), Emu(np_top + I(0.03)), Emu(pw), Emu(I(0.22)),
               [[(titles[pi], dict(size=11.5, bold=True, color=NV))]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
-        sk_top = np_top + I(0.30); sk_bot = np_bot - I(0.24)
+        sk_top = np_top + I(0.32); sk_bot = np_bot - I(0.24)
         sk_mid = (sk_top + sk_bot) // 2; sk_half = (sk_bot - sk_top) // 2
-        sx0 = bx + I(0.18); sx1 = bx + pw - I(0.18); nn = 16
+        sx0 = bx + I(0.16); sx1 = bx + pw - I(0.16); nn = 18
+        pts = []; reds = []
         if pi == 0:
             for k in range(nn):
-                dot(sx0 + int((sx1 - sx0) * k / (nn - 1)), sk_mid + int(rnd.uniform(-0.62, 0.62) * sk_half), I(0.042), NV)
+                pts.append((sx0 + int((sx1 - sx0) * k / (nn - 1)), sk_mid + int(rnd.uniform(-0.6, 0.6) * sk_half)))
         elif pi == 1:
             v = 0.0
             for k in range(nn):
-                v = max(-0.85, min(0.85, 0.78 * v + rnd.uniform(-0.30, 0.30)))
-                dot(sx0 + int((sx1 - sx0) * k / (nn - 1)), sk_mid - int(v * sk_half), I(0.042), TL)
+                v = max(-0.9, min(0.9, 0.8 * v + rnd.uniform(-0.32, 0.32)))
+                pts.append((sx0 + int((sx1 - sx0) * k / (nn - 1)), sk_mid - int(v * sk_half)))
         else:
-            spikes = {4: 0.92, 11: -0.96}
+            spikes = {5: 0.95, 12: -0.98}
             for k in range(nn):
-                px = sx0 + int((sx1 - sx0) * k / (nn - 1))
+                px_ = sx0 + int((sx1 - sx0) * k / (nn - 1))
                 if k in spikes:
-                    dot(px, sk_mid - int(spikes[k] * sk_half), I(0.058), RED)
+                    yy = sk_mid - int(spikes[k] * sk_half); pts.append((px_, yy)); reds.append((px_, yy))
                 else:
-                    dot(px, sk_mid + int(rnd.uniform(-0.16, 0.16) * sk_half), I(0.042), NV)
+                    pts.append((px_, sk_mid + int(rnd.uniform(-0.12, 0.12) * sk_half)))
+        polyline(pts, pcol[pi], 1.5)
+        for (rx, ry) in reds:
+            dot(rx, ry, I(0.06), RED)
         _text(slide, Emu(bx), Emu(sk_bot + I(0.02)), Emu(pw), Emu(I(0.2)),
               [[(subs[pi], dict(size=9.5, color=MU))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
-
 
 def _caption_runs(text, sz):
     """이미지 캡션을 '굵은 라벨 + 얇은 부연' 위계로 분리한다(첫 '·' 기준).
@@ -1725,8 +1748,8 @@ def s_closing(slide, d, idx):
         # 카드(5.02") 위에서 끝나도록, 블록을 약간 올리고(2.62→2.46) 가용 높이를 카드 직전
         # (2.46→4.86", 2.40")까지로 넓히며 불릿 간격을 8→6 으로 조여 한 줄 늘어난 본문이 카드
         # 영역으로 흘러내려 겹치던 충돌을 제거한다(slide17 — 첫 불릿 2줄 압축 + 보조설명 분리).
-        _bullets_tf(slide, Inches(0.97), Inches(2.46), Inches(11.4), Inches(2.40),
-                    d["bullets"], size=14.5, gap=6, line_spacing=1.02)
+        _bullets_tf(slide, Inches(0.97), Inches(2.40), Inches(11.4), Inches(2.42),
+                    d["bullets"], size=15.6, gap=11, line_spacing=1.08)
     if has_kpi:
         kpis = d["kpis"]; n = len(kpis)
         gap = Inches(0.3); total = Inches(11.4)
@@ -1756,9 +1779,9 @@ def s_closing(slide, d, idx):
             # 카드 내부(big+label+sub)를 한 텍스트 블록으로 묶어 카드 전체 높이에 수직 중앙정렬 →
             # 상단 teal 바 아래 가용 영역에 균등 배치(이전엔 big/label 이 위로 몰리고 하단이 비었음).
             blk = [[(st["big"], dict(size=big_pt, bold=True, color=NAVY))],
-                   [(st["label"], dict(size=12.5, bold=True, color=INK))]]
+                   [(st["label"], dict(size=13.2, bold=True, color=INK))]]
             if st.get("sub"):
-                blk.append([(st.get("sub"), dict(size=11, color=RGBColor(0x55,0x60,0x75)))])
+                blk.append([(st.get("sub"), dict(size=11.4, color=RGBColor(0x55,0x60,0x75)))])
             tbk = _text(slide, x+Inches(0.1), Emu(int(y)+int(Inches(0.1))),
                         Emu(int(cw)-int(Inches(0.2))), Emu(int(ch)-int(Inches(0.1))), blk,
                         align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
@@ -2421,8 +2444,8 @@ def _draw_numba(slide, X, Y, W, H):
     box(0.345, 0.580, 0.175, 0.090, JIT_BG, line=BD, shape=MSO_SHAPE.RECTANGLE)
     txt(0.350, 0.584, 0.165, 0.080, "JIT\ncompile", size=12.0, bold=True, color=INK)
     arrow(0.535, 0.612, 0.040, 0.032)
-    box(0.590, 0.590, 0.255, 0.070, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT, shape=MSO_SHAPE.RECTANGLE)
-    txt(0.595, 0.594, 0.245, 0.062, "native loop reused", size=12.0, bold=True, color=INK)
+    box(0.575, 0.580, 0.290, 0.095, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT, shape=MSO_SHAPE.RECTANGLE)
+    txt(0.585, 0.584, 0.270, 0.087, "native loop\nreused", size=11.5, bold=True, color=INK)
 
     box(0.075, 0.735, 0.205, 0.075, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT, shape=MSO_SHAPE.RECTANGLE)
     txt(0.080, 0.739, 0.195, 0.067, "input data", size=12.0, bold=True, color=INK)
@@ -2546,7 +2569,7 @@ def s_papertext(slide, d, idx):
     top = int(Inches(2.0))
     if d.get("bullets"):
         bh = int(Inches(d.get("body_h", 0.7)))
-        marker_color = RGBColor(0x6A, 0x6A, 0x6A) if d.get("grayscale") else ACCENT
+        marker_color = ACCENT
         _bullets_tf(slide, Inches(0.7), Emu(top), Inches(12.0), Emu(bh),
                     d["bullets"], size=d.get("bullet_size", 14), gap=5, marker=marker_color)
         top = top + bh + int(Inches(0.14))
@@ -2622,7 +2645,7 @@ def s_archflow(slide, d, idx):
     TINT = RGBColor(0xF2, 0xF4, 0xF8)
     stages = d["stages"]
     n = len(stages)
-    cx = I(6.0); full_w = I(9.8); full_x = cx - full_w // 2
+    cx = int(EMU_W) // 2; full_w = I(9.8); full_x = cx - full_w // 2
     top = I(1.95); bottom = I(6.95)
     arrow_h = I(0.32)
 
@@ -2717,21 +2740,21 @@ def _image_pair(slide, x, y, w, h, img1, img2, lab1, lab2):
 
 def s_p2_intro(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P2 | Chip multi-label", "Single-defect source to 2-combo evaluation setting")
+    _title_block_compact(slide, "P2 | Chip multi-label", "Single-failure source to 2-combo evaluation setting")
 
     # Problem definition only: source와 eval을 분리해서 보여준다.
-    x = Inches(0.75); y = Inches(1.82); w = Inches(3.75); h = Inches(4.88)
+    x = Inches(0.65); y = Inches(1.82); w = Inches(3.45); h = Inches(4.88)
     _rect(slide, x, y, w, h, PANEL, line=LINE)
     _rect(slide, x, y, Inches(0.10), h, COVER_BAR)
     lines = [
         [("Problem", dict(size=15, bold=True, color=NAVY))],
-        [("real 2-combo ground truth가 부족해 multi-label 학습과 검증이 막힘", dict(size=14.6, bold=True, color=NAVY))],
+        [("real 2-combo GT 부족\nlimited supervision / validation", dict(size=13.8, bold=True, color=NAVY))],
         [(" ", dict(size=4, color=WHITE))],
         [("Source", dict(size=15, bold=True, color=NAVY))],
-        [("single-defect chip 이미지는 확보되어 있지만, 그대로는 2-combo label을 학습하기 어렵습니다.", dict(size=13.2, color=INK))],
+        [("single-failure source만 보유\n직접적인 2-combo supervision 없음", dict(size=12.8, color=INK))],
         [(" ", dict(size=4, color=WHITE))],
         [("Eval", dict(size=15, bold=True, color=NAVY))],
-        [("평가는 2-combo와 Normal/Invalid/OOD까지 포함합니다. 결국 source와 eval의 분포가 다릅니다.", dict(size=13.2, color=INK))],
+        [("eval은 2-combo + Normal/Invalid/OOD 포함\nsource와 eval distribution 불일치", dict(size=12.8, color=INK))],
     ]
     _text(slide, x+Inches(0.28), y+Inches(0.28), w-Inches(0.55), h-Inches(0.45), lines)
 
@@ -2739,43 +2762,43 @@ def s_p2_intro(slide, d, idx):
         _rect(slide, tx, ty, tw, th, WHITE, line=RGBColor(0xD6,0xDE,0xEA))
         _img_fit(slide, img, tx+Inches(0.06), ty+Inches(0.06), tw-Inches(0.12), th-Inches(0.34), frame=False)
         _text(slide, tx+Inches(0.04), ty+th-Inches(0.25), tw-Inches(0.08), Inches(0.18),
-              [[(label, dict(size=8.1, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+              [[(label, dict(size=9.4, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
-    rx = Inches(4.85); rw = Inches(7.70)
+    rx = Inches(4.42); rw = Inches(8.10)
     src_y = Inches(1.82); src_h = Inches(2.08)
     eval_y = Inches(4.34); eval_h = Inches(2.36)
 
     _rect(slide, rx, src_y, rw, src_h, WHITE, line=LINE)
     _rect(slide, rx, src_y, Inches(0.10), src_h, COVER_BAR)
     _text(slide, rx+Inches(0.24), src_y+Inches(0.16), rw-Inches(0.48), Inches(0.28),
-          [[("Source bank: single-defect 원천", dict(size=13.8, bold=True, color=NAVY))]])
+          [[("Source bank: single-failure samples", dict(size=14.4, bold=True, color=NAVY))]])
     _text(slide, rx+Inches(0.24), src_y+Inches(0.48), rw-Inches(0.48), Inches(0.20),
-          [[("train 원천을 먼저 split한 뒤, train source 안에서만 synthetic 조합을 만듭니다.",
-             dict(size=9.8, color=MUTED))]])
+          [[("train split 이후 train source 안에서만 synthetic combination을 생성합니다.",
+             dict(size=10.4, color=MUTED))]])
     source_imgs = [
         ("chip_eval_bank_boundary_selected.png", "bb"),
         ("chip_eval_fork_selected.png", "fk"),
         ("chip_eval_scratch_selected.png", "sc"),
         ("chip_eval_scratch_rot_selected.png", "sr"),
     ]
-    tile_w = Inches(1.24); tile_h = Inches(1.12); gap = Inches(0.30)
-    tx0 = int(rx) + int(Inches(0.42)); ty = src_y + Inches(0.78)
+    tile_w = Inches(1.40); tile_h = Inches(1.18); gap = Inches(0.30)
+    tx0 = int(rx) + int(Inches(0.48)); ty = src_y + Inches(0.76)
     for i, (img, lab) in enumerate(source_imgs):
         chip_tile(img, lab, Emu(tx0 + i*(int(tile_w)+int(gap))), ty, tile_w, tile_h)
 
     _rect(slide, rx+Inches(2.95), Inches(3.96), Inches(1.60), Inches(0.28),
           COVER_BAR, shape=MSO_SHAPE.DOWN_ARROW)
     _text(slide, rx+Inches(4.72), Inches(3.95), Inches(2.7), Inches(0.28),
-          [[("eval에서 요구되는 조합/negative는 더 복잡함", dict(size=9.3, bold=True, color=MUTED))]],
+          [[("evaluation requires combo classes and negative tail", dict(size=10.0, bold=True, color=MUTED))]],
           align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
 
     _rect(slide, rx, eval_y, rw, eval_h, WHITE, line=LINE)
     _rect(slide, rx, eval_y, Inches(0.10), eval_h, RGBColor(0x2B,0xA6,0x6B))
     _text(slide, rx+Inches(0.24), eval_y+Inches(0.16), rw-Inches(0.48), Inches(0.28),
-          [[("Eval target: 2-combo + negative tail", dict(size=13.8, bold=True, color=NAVY))]])
+          [[("Eval target: 2-combo classes + negative tail", dict(size=14.4, bold=True, color=NAVY))]])
     _text(slide, rx+Inches(0.24), eval_y+Inches(0.48), rw-Inches(0.48), Inches(0.20),
-          [[("맞혀야 하는 이미지는 2-combo 6종뿐 아니라 Normal, Invalid, OOD까지 포함합니다.",
-             dict(size=9.8, color=MUTED))]])
+          [[("Evaluation includes six 2-combo classes plus Normal, Invalid, and OOD.",
+             dict(size=10.4, color=MUTED))]])
     eval_imgs = [
         ("chip_combo_bb_fork_selected.png", "bb+fk"),
         ("chip_combo_bb_scratch_selected.png", "bb+sc"),
@@ -2783,16 +2806,16 @@ def s_p2_intro(slide, d, idx):
         ("chip_eval_normal_selected.png", "normal"),
         ("chip_eval_invalid_selected.png", "invalid"),
     ]
-    tile_w2 = Inches(1.12); tile_h2 = Inches(1.20); gap2 = Inches(0.17)
-    tx0 = int(rx) + int(Inches(0.34)); ty = eval_y + Inches(0.86)
+    tile_w2 = Inches(1.26); tile_h2 = Inches(1.32); gap2 = Inches(0.17)
+    tx0 = int(rx) + int(Inches(0.38)); ty = eval_y + Inches(0.82)
     for i, (img, lab) in enumerate(eval_imgs):
         chip_tile(img, lab, Emu(tx0 + i*(int(tile_w2)+int(gap2))), ty, tile_w2, tile_h2)
 
     _rect(slide, x+Inches(0.28), y+h-Inches(0.88), w-Inches(0.56), Inches(0.58),
           WHITE, line=RGBColor(0xD6,0xDE,0xEA))
     _text(slide, x+Inches(0.45), y+h-Inches(0.82), w-Inches(0.90), Inches(0.46),
-          [[("핵심: source와 eval 분포가 달라 probability structure와 reject 설계가 필요합니다.",
-             dict(size=9.7, bold=True, color=NAVY))]],
+          [[("Design implication: distribution gap requires probability modeling and reject logic.",
+             dict(size=10.2, bold=True, color=NAVY))]],
           anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx, size=d.get("footer_size", 9))
 
@@ -2801,8 +2824,8 @@ def s_p2_fcmpm(slide, d, idx):
     _bg(slide, WHITE)
     _title_block_compact(slide, "P2 | FCM-PM 원리", "FCM-PM: positive-probability gain with FAR-tail control")
     _text(slide, Inches(0.85), Inches(1.52), Inches(11.75), Inches(0.34),
-          [[("FCM은 full-cover 합성으로 weak 2-combo pos prob를 올립니다. Pair Mask는 합성 배경 loss를 분리해 Normal/OOD FAR tail을 낮춥니다.",
-             dict(size=13.4, color=INK))]])
+          [[("FCM은 full-cover 합성으로 약한 2-combo positive probability를 끌어올리고, Pair Mask는 합성 배경 loss를 차단해 Normal/OOD FAR tail을 낮춥니다.",
+             dict(size=13.2, color=INK))]])
 
     fig_x, fig_y, fig_w, fig_h = Inches(0.78), Inches(1.98), Inches(11.78), Inches(2.30)
     _rect(slide, fig_x, fig_y, fig_w, fig_h, WHITE, line=LINE)
@@ -2811,9 +2834,9 @@ def s_p2_fcmpm(slide, d, idx):
 
     card_y = Inches(4.52); card_h = Inches(1.05); card_w = Inches(3.70); gap = Inches(0.22); x0 = Inches(0.78)
     cards = [
-        ("Normal baseline", "pos prob: weak combo 낮음\nFAR tail: 낮지만 recall 부족"),
-        ("FCM", "pos prob: 상승\nFAR tail: 같이 상승할 risk"),
-        ("FCM-PM", "pos prob: 유지\nFAR tail: 0.00%까지 억제"),
+        ("Normal baseline", "2-combo pos. prob 낮음\nFAR 낮지만 recall 약함"),
+        ("FCM", "pos. prob 상승\nFAR tail 동반 상승 가능"),
+        ("FCM-PM", "pos. prob 유지\nFAR tail 0.00%로 억제"),
     ]
     for i, (head, body) in enumerate(cards):
         x = Emu(int(x0) + i*(int(card_w)+int(gap)))
@@ -2825,7 +2848,7 @@ def s_p2_fcmpm(slide, d, idx):
         _text(slide, x+Inches(0.22), card_y+Inches(0.12), card_w-Inches(0.40), Inches(0.24),
               [[(head, dict(size=12.2, bold=True, color=NAVY))]])
         _text(slide, x+Inches(0.22), card_y+Inches(0.43), card_w-Inches(0.40), Inches(0.48),
-              [[(body, dict(size=10.4, bold=(i==2), color=NAVY if i==2 else INK,
+              [[(body, dict(size=11.4, bold=(i==2), color=NAVY if i==2 else INK,
                             name=FONT))]],
               anchor=MSO_ANCHOR.MIDDLE)
         if i < 2:
@@ -2836,7 +2859,7 @@ def s_p2_fcmpm(slide, d, idx):
     _rect(slide, Inches(1.02), Inches(5.92), Inches(11.22), Inches(0.42), WHITE, line=LINE)
     _rect(slide, Inches(1.02), Inches(5.92), Inches(0.10), Inches(0.42), COVER_BAR)
     _text(slide, Inches(1.20), Inches(5.92), Inches(10.88), Inches(0.42),
-          [[("Interpretation: FCM raises weak 2-combo positive probability; FCM-PM preserves the gain while suppressing FAR tail.",
+          [[("해석: FCM은 약한 2-combo positive probability를 올리고, FCM-PM은 그 상승분을 유지하면서 FAR tail을 억제합니다.",
              dict(size=11.2, bold=True, color=NAVY))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
@@ -2844,7 +2867,7 @@ def s_p2_fcmpm(slide, d, idx):
 
 def s_p2_validation(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P2 | 검증 결과", "val-margin 선택 이후 recipe ladder 성능")
+    _title_block_compact(slide, "P2 | 검증 결과", "Recipe ladder after val-margin selection")
 
     # ladder table
     x = Inches(0.75); y = Inches(1.85); w = Inches(7.35); h = Inches(4.95)
@@ -2861,23 +2884,23 @@ def s_p2_validation(slide, d, idx):
         ("FCM-PM + val-F1", "0.9652", "0.15%"),
         ("FCM-PM + val-margin", "0.9927", "0.00%"),
     ]
-    yy = int(y) + int(Inches(0.60)); row_h = int(Inches(0.52))
+    yy = int(y) + int(Inches(0.58)); row_h = int(Inches(0.55))
     for i, (name, f1, far) in enumerate(rows):
         fill = RGBColor(0xE8,0xEC,0xF2) if i == len(rows)-1 else (PANEL if i % 2 == 0 else WHITE)
         _rect(slide, x+Inches(0.14), Emu(yy+i*row_h), w-Inches(0.28), Emu(row_h-int(Pt(1))), fill, line=RGBColor(0xE0,0xE6,0xEF))
         _text(slide, x+Inches(0.32), Emu(yy+i*row_h), Inches(3.25), Emu(row_h),
-              [[(name, dict(size=10.6, bold=(i==len(rows)-1), color=NAVY if i==len(rows)-1 else INK))]], anchor=MSO_ANCHOR.MIDDLE)
+              [[(name, dict(size=11.4, bold=(i==len(rows)-1), color=NAVY if i==len(rows)-1 else INK))]], anchor=MSO_ANCHOR.MIDDLE)
         _text(slide, x+Inches(3.85), Emu(yy+i*row_h), Inches(1.35), Emu(row_h),
-              [[(f1, dict(size=10.6, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+              [[(f1, dict(size=11.4, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
         _text(slide, x+Inches(5.55), Emu(yy+i*row_h), Inches(1.25), Emu(row_h),
-              [[(far, dict(size=10.6, bold=True, color=RGBColor(0xCC,0x33,0x28) if far not in ["0.00%", "-"] else (RGBColor(0x2B,0xA6,0x6B) if far == "0.00%" else MUTED))) ]],
+              [[(far, dict(size=11.4, bold=True, color=RGBColor(0xCC,0x33,0x28) if far not in ["0.00%", "-"] else (RGBColor(0x2B,0xA6,0x6B) if far == "0.00%" else MUTED))) ]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _text(slide, x+Inches(3.80), y+Inches(0.47), Inches(1.45), Inches(0.20),
-          [[("bit-F1", dict(size=9.5, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
+          [[("bit-F1", dict(size=10.5, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
     _text(slide, x+Inches(5.55), y+Inches(0.47), Inches(1.25), Inches(0.20),
-          [[("Total FAR", dict(size=9.5, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
+          [[("Total FAR", dict(size=10.5, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
     _text(slide, x+Inches(0.32), y+Inches(4.66), w-Inches(0.64), Inches(0.18),
-          [[("*CE row는 early macro-F1, 이후 rows는 bit-F1 / Total FAR 기준", dict(size=7.6, color=MUTED))]])
+          [[("*CE row는 early macro-F1, 이후 rows는 bit-F1 / Total FAR 기준", dict(size=8.8, color=MUTED))]])
 
     rx = Inches(8.35); ry = Inches(1.85); rw = Inches(4.20); rh = Inches(4.95)
     _rect(slide, rx, ry, rw, rh, PANEL, line=LINE)
@@ -2891,8 +2914,8 @@ def s_p2_validation(slide, d, idx):
     _metric_card_compact(slide, rx+Inches(0.35), ry+Inches(3.20), Inches(3.45), Inches(0.95),
                          "FCM-PM", "best recipe", "val-margin selected")
     _text(slide, rx+Inches(0.28), ry+Inches(4.38), rw-Inches(0.56), Inches(0.32),
-          [[("앞 장의 val-margin / NB reject 설계가 FAR tail을 줄이는 근거입니다.",
-             dict(size=10.0, bold=True, color=NAVY))]],
+          [[("val-margin selection and NB rejection explain the FAR-tail reduction.",
+             dict(size=10.6, bold=True, color=NAVY))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
     _footer(slide, idx, size=d.get("footer_size", 9))
@@ -2907,9 +2930,9 @@ def s_p2_selection(slide, d, idx):
     _rect(slide, lx, ly, lw, lh, WHITE, line=LINE)
     _rect(slide, lx, ly, Inches(0.10), lh, COVER_BAR)
     _text(slide, lx+Inches(0.28), ly+Inches(0.22), lw-Inches(0.56), Inches(0.32),
-          [[("val-margin best model select", dict(size=15.0, bold=True, color=NAVY))]])
+          [[("val-margin checkpoint selection", dict(size=16.0, bold=True, color=NAVY))]])
     _text(slide, lx+Inches(0.28), ly+Inches(0.62), lw-Inches(0.56), Inches(0.25),
-          [[("margin = mean(p_pos) - mean(p_neg)", dict(size=12.0, bold=True, color=INK, name="Consolas"))]])
+          [[("margin = mean(p_pos) - mean(p_neg)", dict(size=13.2, bold=True, color=INK, name="Consolas"))]])
 
     chart_x = int(lx) + int(Inches(0.62)); chart_y = int(ly) + int(Inches(1.46))
     base_y = chart_y + int(Inches(1.55)); bar_w = int(Inches(0.16)); step = int(Inches(0.78))
@@ -2917,45 +2940,51 @@ def s_p2_selection(slide, d, idx):
     vals_margin = [0.18, 0.27, 0.39, 0.54, 0.82]
     vals_eval = [0.20, 0.30, 0.44, 0.57, 0.84]
     colors = [RGBColor(0xB8,0xC2,0xD0), RGBColor(0x2F,0x3A,0x4F), RGBColor(0x78,0xB8,0x8D)]
+    SEL_F1 = RGBColor(0xD9,0x8C,0x1F)
+    SEL_MARGIN = RGBColor(0x2B,0xA6,0x6B)
     labels = ["val-F1", "val-margin", "eval-F1"]
     for li, (lab, col) in enumerate(zip(labels, colors)):
-        xx = int(lx) + int(Inches(0.68)) + li * int(Inches(1.18))
-        _rect(slide, Emu(xx), ly+Inches(1.02), Inches(0.12), Inches(0.12), col)
-        _text(slide, Emu(xx+int(Inches(0.16))), ly+Inches(0.98), Inches(0.88), Inches(0.18),
-              [[(lab, dict(size=8.3, bold=True, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
+        xx = int(lx) + int(Inches(0.60)) + li * int(Inches(1.36))
+        _rect(slide, Emu(xx), ly+Inches(0.99), Inches(0.20), Inches(0.20), col)
+        _text(slide, Emu(xx+int(Inches(0.26))), ly+Inches(0.955), Inches(1.02), Inches(0.24),
+              [[(lab, dict(size=12.0, bold=True, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
     for i in range(5):
         bx = chart_x + i*step
         hf1 = int(Inches(vals_f1[i] * 1.12))
         hm = int(Inches(vals_margin[i] * 1.12))
         he = int(Inches(vals_eval[i] * 1.12))
-        _rect(slide, Emu(bx), Emu(base_y-hf1), Emu(bar_w), Emu(hf1), colors[0])
+        _rect(slide, Emu(bx), Emu(base_y-hf1), Emu(bar_w), Emu(hf1),
+              SEL_F1 if i == 3 else colors[0])
         _rect(slide, Emu(bx+bar_w+int(Inches(0.06))), Emu(base_y-hm), Emu(bar_w), Emu(hm),
-              colors[1] if i < 4 else RGBColor(0x2B,0xA6,0x6B))
+              SEL_MARGIN if i == 4 else colors[1])
         _rect(slide, Emu(bx+2*bar_w+int(Inches(0.12))), Emu(base_y-he), Emu(bar_w), Emu(he),
-              colors[2] if i < 4 else RGBColor(0x2B,0xA6,0x6B))
+              SEL_MARGIN if i == 4 else (SEL_F1 if i == 3 else colors[2]))
         _text(slide, Emu(bx-int(Inches(0.02))), Emu(base_y+int(Inches(0.07))), Inches(0.58), Inches(0.16),
-              [[(f"epoch {i+1}", dict(size=7.2, color=MUTED))]], align=PP_ALIGN.CENTER)
+              [[(f"epoch {i+1}", dict(size=8.8, color=MUTED))]], align=PP_ALIGN.CENTER)
     _rect(slide, Emu(chart_x-int(Inches(0.08))), Emu(base_y), Inches(4.08), Pt(1), LINE)
-    _text(slide, lx+Inches(4.12), ly+Inches(1.26), Inches(0.92), Inches(0.22),
-          [[("selected", dict(size=9.2, bold=True, color=RGBColor(0x2B,0xA6,0x6B)))]], align=PP_ALIGN.CENTER)
+    _text(slide, lx+Inches(3.28), ly+Inches(1.22), Inches(0.98), Inches(0.22),
+          [[("val-F1 max", dict(size=10.2, bold=True, color=SEL_F1))]], align=PP_ALIGN.CENTER)
+    _text(slide, lx+Inches(4.10), ly+Inches(1.26), Inches(1.06), Inches(0.22),
+          [[("margin max", dict(size=10.2, bold=True, color=SEL_MARGIN))]], align=PP_ALIGN.CENTER)
     _text(slide, lx+Inches(0.34), ly+Inches(3.72), lw-Inches(0.68), Inches(0.20),
-          [[("measured impact: train/class 200, eval/class 20000", dict(size=8.4, bold=True, color=MUTED))]],
+          [[("measured impact: train/class 200, eval/class 20000", dict(size=9.6, bold=True, color=MUTED))]],
           align=PP_ALIGN.CENTER)
-    card_y = ly+Inches(3.98); card_h = Inches(0.56); card_w = Inches(2.28)
+    card_y = ly+Inches(3.92); card_h = Inches(0.66); card_w = Inches(2.42)
     impacts = [
-        ("bit-F1", "0.9928 → 0.9958", "+0.0030"),
-        ("Total FAR", "11.93% → 0.29%", "-11.64pp"),
+        ("val-F1 max", "test F1 0.9652", "FAR 0.15%"),
+        ("val-margin max", "test F1 0.9927", "FAR 0.00%"),
     ]
     for ii, (head, val, delta) in enumerate(impacts):
-        cx = Emu(int(lx)+int(Inches(0.46))+ii*(int(card_w)+int(Inches(0.30))))
+        cx = Emu(int(lx)+int(Inches(0.30))+ii*(int(card_w)+int(Inches(0.25))))
+        side_col = SEL_F1 if ii == 0 else SEL_MARGIN
         _rect(slide, cx, card_y, card_w, card_h, RGBColor(0xF4,0xF7,0xFB), line=RGBColor(0xD7,0xDE,0xE8))
-        _rect(slide, cx, card_y, Inches(0.07), card_h, RGBColor(0x2B,0xA6,0x6B))
+        _rect(slide, cx, card_y, Inches(0.07), card_h, side_col)
         _text(slide, cx+Inches(0.14), card_y+Inches(0.06), Inches(0.70), Inches(0.18),
-              [[(head, dict(size=8.2, bold=True, color=MUTED))]])
-        _text(slide, cx+Inches(0.14), card_y+Inches(0.24), Inches(1.42), Inches(0.22),
-              [[(val, dict(size=9.0, bold=True, color=NAVY))]])
-        _text(slide, cx+Inches(1.58), card_y+Inches(0.18), Inches(0.56), Inches(0.25),
-              [[(delta, dict(size=9.0, bold=True, color=RGBColor(0x2B,0xA6,0x6B)))]],
+              [[(head, dict(size=9.6, bold=True, color=MUTED))]])
+        _text(slide, cx+Inches(0.14), card_y+Inches(0.24), Inches(1.26), Inches(0.24),
+              [[(val, dict(size=10.8, bold=True, color=NAVY))]])
+        _text(slide, cx+Inches(1.44), card_y+Inches(0.19), Inches(0.82), Inches(0.25),
+              [[(delta, dict(size=9.8, bold=True, color=side_col))]],
               align=PP_ALIGN.RIGHT)
 
     # Right: GaussianNB reject
@@ -2963,19 +2992,19 @@ def s_p2_selection(slide, d, idx):
     _rect(slide, rx, ry, rw, rh, WHITE, line=LINE)
     _rect(slide, rx, ry, Inches(0.10), rh, RGBColor(0x2B,0xA6,0x6B))
     _text(slide, rx+Inches(0.28), ry+Inches(0.22), rw-Inches(0.56), Inches(0.32),
-          [[("GaussianNB reject", dict(size=15.0, bold=True, color=NAVY))]])
+          [[("GaussianNB reject", dict(size=16.0, bold=True, color=NAVY))]])
     _text(slide, rx+Inches(0.28), ry+Inches(0.60), rw-Inches(0.56), Inches(0.28),
-          [[("single 4 + 2-combo 6 = known 10 class의 4-bit 분포를 기억",
-             dict(size=9.7, bold=True, color=INK))]])
+          [[("10개 known class별 4-bit probability 분포를 기억하고, 분포 밖 조합은 reject합니다",
+             dict(size=11.4, bold=True, color=INK))]])
 
     bit_labels = ["bb", "fk", "sc", "sr"]
     bit_colors = [RGBColor(0x2F,0x67,0xF6), RGBColor(0x18,0xA9,0x7D),
                   RGBColor(0xF5,0xA6,0x23), RGBColor(0xD9,0x3A,0x5A)]
     for bi, (lab, col) in enumerate(zip(bit_labels, bit_colors)):
-        bx = int(rx) + int(Inches(0.32)) + bi * int(Inches(0.48))
-        _rect(slide, Emu(bx), ry+Inches(1.02), Inches(0.11), Inches(0.11), col)
-        _text(slide, Emu(bx+int(Inches(0.15))), ry+Inches(0.985), Inches(0.28), Inches(0.16),
-              [[(lab, dict(size=6.8, bold=True, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
+        bx = int(rx) + int(Inches(0.34)) + bi * int(Inches(0.60))
+        _rect(slide, Emu(bx), ry+Inches(0.99), Inches(0.20), Inches(0.20), col)
+        _text(slide, Emu(bx+int(Inches(0.26))), ry+Inches(0.955), Inches(0.34), Inches(0.24),
+              [[(lab, dict(size=12.0, bold=True, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
 
     panels = [
         ("single bb", [0.84, 0.12, 0.13, 0.11], "accept"),
@@ -2988,7 +3017,7 @@ def s_p2_selection(slide, d, idx):
         px = px0 + pi * (pw + pg)
         _rect(slide, Emu(px), Emu(py0), Emu(pw), Emu(ph), RGBColor(0xF7,0xF9,0xFC), line=RGBColor(0xD7,0xDE,0xE8))
         _text(slide, Emu(px+int(Inches(0.08))), Emu(py0+int(Inches(0.06))), Emu(pw-int(Inches(0.16))), Inches(0.16),
-              [[(name, dict(size=7.8, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
+              [[(name, dict(size=9.2, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
         base = py0 + int(Inches(1.08)); max_h = int(Inches(0.72)); bw = int(Inches(0.17)); gap = int(Inches(0.10))
         bars_w = 4 * bw + 3 * gap
         bx0 = px + (pw - bars_w)//2
@@ -2998,30 +3027,30 @@ def s_p2_selection(slide, d, idx):
             bx = bx0 + bj * (bw + gap)
             _rect(slide, Emu(bx), Emu(base-bh), Emu(bw), Emu(bh), bit_colors[bj])
         _text(slide, Emu(px+int(Inches(0.08))), Emu(py0+int(Inches(1.16))), Emu(pw-int(Inches(0.16))), Inches(0.18),
-              [[(tag, dict(size=7.6, bold=True, color=RGBColor(0x2B,0xA6,0x6B) if tag == "accept" else RGBColor(0xCC,0x33,0x28)))]],
+              [[(tag, dict(size=9.2, bold=True, color=RGBColor(0x2B,0xA6,0x6B) if tag == "accept" else RGBColor(0xCC,0x33,0x28)))]],
               align=PP_ALIGN.CENTER)
     _text(slide, rx+Inches(0.34), ry+Inches(3.34), rw-Inches(0.68), Inches(0.20),
-          [[("measured impact: NB reject sidecar", dict(size=8.4, bold=True, color=MUTED))]],
+          [[("measured impact: NB reject sidecar", dict(size=9.6, bold=True, color=MUTED))]],
           align=PP_ALIGN.CENTER)
-    card_y = ry+Inches(3.60); card_h = Inches(0.56); card_w = Inches(2.28)
+    card_y = ry+Inches(3.56); card_h = Inches(0.66); card_w = Inches(2.42)
     impacts = [
         ("accepted F1", "0.9962 → 0.9965", "+0.0003"),
-        ("false accept NEG", "small → 0", "tail off"),
+        ("false accept", "small → 0", "tail reject"),
     ]
     for ii, (head, val, delta) in enumerate(impacts):
-        cx = Emu(int(rx)+int(Inches(0.46))+ii*(int(card_w)+int(Inches(0.30))))
+        cx = Emu(int(rx)+int(Inches(0.30))+ii*(int(card_w)+int(Inches(0.25))))
         _rect(slide, cx, card_y, card_w, card_h, RGBColor(0xF4,0xF7,0xFB), line=RGBColor(0xD7,0xDE,0xE8))
         _rect(slide, cx, card_y, Inches(0.07), card_h, RGBColor(0x2B,0xA6,0x6B))
         _text(slide, cx+Inches(0.14), card_y+Inches(0.06), Inches(1.02), Inches(0.18),
-              [[(head, dict(size=8.2, bold=True, color=MUTED))]])
-        _text(slide, cx+Inches(0.14), card_y+Inches(0.24), Inches(1.35), Inches(0.22),
-              [[(val, dict(size=9.0, bold=True, color=NAVY))]])
-        _text(slide, cx+Inches(1.45), card_y+Inches(0.18), Inches(0.68), Inches(0.25),
-              [[(delta, dict(size=9.0, bold=True, color=RGBColor(0x2B,0xA6,0x6B)))]],
+              [[(head, dict(size=9.4, bold=True, color=MUTED))]])
+        _text(slide, cx+Inches(0.14), card_y+Inches(0.24), Inches(1.30), Inches(0.24),
+              [[(val, dict(size=10.6, bold=True, color=NAVY))]])
+        _text(slide, cx+Inches(1.50), card_y+Inches(0.19), Inches(0.76), Inches(0.25),
+              [[(delta, dict(size=9.6, bold=True, color=RGBColor(0x2B,0xA6,0x6B)))]],
               align=PP_ALIGN.RIGHT)
     _text(slide, rx+Inches(0.52), ry+Inches(4.34), rw-Inches(1.04), Inches(0.25),
           [[("trade-off: reject-empty bit-F1 0.9954, POS false reject 282",
-             dict(size=8.2, color=MUTED))]], align=PP_ALIGN.CENTER)
+             dict(size=9.2, color=MUTED))]], align=PP_ALIGN.CENTER)
 
     _footer(slide, idx)
 
@@ -3058,60 +3087,60 @@ def s_p3_intro(slide, d, idx):
     _metric_card_compact(slide, rx, ry, Inches(1.75), Inches(1.05), "7,000", "trend samples", "3,500+3,500")
     _metric_card_compact(slide, rx+Inches(1.95), ry, Inches(1.75), Inches(1.05), "5×3×5", "rule space", "region/noise/anomaly")
     _metric_card_compact(slide, rx+Inches(3.90), ry, Inches(1.75), Inches(1.05), "0.9967", "Binary F1", "PoC")
-    _rect(slide, rx, Inches(3.45), Inches(5.65), Inches(2.72), WHITE, line=LINE)
-    _rect(slide, rx, Inches(3.45), Inches(5.65), Inches(0.38), NAVY)
-    _text(slide, rx+Inches(0.18), Inches(3.50), Inches(5.30), Inches(0.28),
-          [[("성능 안정화 stack", dict(size=13.0, bold=True, color=WHITE))]],
+    _rect(slide, rx, Inches(3.34), Inches(5.65), Inches(3.18), WHITE, line=LINE)
+    _rect(slide, rx, Inches(3.34), Inches(5.65), Inches(0.40), NAVY)
+    _text(slide, rx+Inches(0.18), Inches(3.40), Inches(5.30), Inches(0.28),
+          [[("Stabilization and shortcut-control stack", dict(size=12.6, bold=True, color=WHITE))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     tune_cards = [
-        ("LR sweep", "3e-5/3e-4 안정\n1e-4/1e-3 collapse 확인"),
+        ("LR sweep", "3e-5/3e-4 stable\n1e-4/1e-3 collapse"),
         ("Label smoothing", "0.02 sweet spot\nFN 4.6 -> 0.8"),
         ("Stochastic depth", "0.05 regularization\nFP 3.8 -> 1.4"),
-        ("Focal + EMA", "gamma=2.0, EMA 0.95\nhard anomaly / weight 안정"),
-        ("Normal ratio", "3300 hard-normal\nFP/FN 동시 개선"),
-        ("Median + NT", "val-F1 median\nnormal threshold 0.9"),
+        ("Focal + EMA", "gamma=2.0, EMA 0.95\nhard-anomaly stability"),
+        ("Normal ratio", "hard-normal 3,300\nFP/FN balance"),
+        ("Color + median + NT", "color/smoothing check\nval-F1 median, NT 0.9"),
     ]
-    tx0, ty0 = int(rx) + int(Inches(0.20)), int(Inches(3.94))
-    tw, th = int(Inches(1.70)), int(Inches(0.58))
-    hgap, vgap = int(Inches(0.17)), int(Inches(0.18))
+    tx0, ty0 = int(rx) + int(Inches(0.22)), int(Inches(3.88))
+    tw, th = int(Inches(2.54)), int(Inches(0.62))
+    hgap, vgap = int(Inches(0.16)), int(Inches(0.13))
     for i, (head, body) in enumerate(tune_cards):
-        cx = tx0 + (i % 3) * (tw + hgap)
-        cy = ty0 + (i // 3) * (th + vgap)
+        cx = tx0 + (i % 2) * (tw + hgap)
+        cy = ty0 + (i // 2) * (th + vgap)
         _rect(slide, Emu(cx), Emu(cy), Emu(tw), Emu(th), PANEL, line=LINE)
         _rect(slide, Emu(cx), Emu(cy), Emu(int(Inches(0.06))), Emu(th), COVER_BAR)
         _text(slide, Emu(cx+int(Inches(0.13))), Emu(cy+int(Inches(0.07))),
               Emu(tw-int(Inches(0.20))), Emu(int(Inches(0.17))),
-              [[(head, dict(size=9.2, bold=True, color=NAVY))]])
+              [[(head, dict(size=10.4, bold=True, color=NAVY))]])
         _text(slide, Emu(cx+int(Inches(0.13))), Emu(cy+int(Inches(0.26))),
-              Emu(tw-int(Inches(0.20))), Emu(int(Inches(0.24))),
-              [[(body, dict(size=7.4, color=MUTED))]])
-    _text(slide, rx, Inches(5.92), Inches(5.65), Inches(0.22),
-          [[("PoC 수치보다 중요한 점: generator, 학습 안정화, color/alpha shortcut check를 함께 묶은 것",
-             dict(size=9.4, bold=True, color=NAVY))]],
+              Emu(tw-int(Inches(0.20))), Emu(int(Inches(0.29))),
+              [[(body, dict(size=8.8, color=MUTED))]])
+    _text(slide, rx+Inches(0.15), Inches(6.24), Inches(5.35), Inches(0.22),
+          [[("Interpretation: generator validity, training stability, and shortcut checks are evaluated together.",
+             dict(size=9.6, bold=True, color=NAVY))]],
           align=PP_ALIGN.CENTER)
     _footer(slide, idx)
 
 
 def s_p3_generator(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P3 | generator rule", "baseline 생성과 anomaly 합성 규칙을 분리")
+    _title_block_compact(slide, "P3 | generator rule", "Baseline generator: episode + noise sampling")
     _text(slide, Inches(0.85), Inches(1.47), Inches(11.6), Inches(0.32),
-          [[("현장 판정 기준을 normal baseline, region/episode, noise, anomaly injection으로 나누어 synthetic benchmark를 만들었습니다.",
+          [[("정상 trend는 region별 baseline 위에 episode density와 noise family를 샘플링해 생성합니다. anomaly 주입은 다음 장에서 분리해 설명합니다.",
              dict(size=13.2, color=INK))]])
 
-    # Main figure: top part of the user's reference, cropped to remove the generated title text.
-    fig_x, fig_y, fig_w, fig_h = Inches(0.78), Inches(1.86), Inches(11.75), Inches(3.66)
+    # Normal baseline only: episode/density/noise sampling.
+    fig_x, fig_y, fig_w, fig_h = Inches(0.78), Inches(1.86), Inches(11.75), Inches(3.58)
     _rect(slide, fig_x, fig_y, fig_w, fig_h, WHITE, line=LINE)
-    _img_fit(slide, "p3_generator_top_reference.png", fig_x+Inches(0.10), fig_y+Inches(0.08),
-             fig_w-Inches(0.20), fig_h-Inches(0.16), frame=False)
+    _episode_trend_diagram(slide, fig_x+Inches(0.10), fig_y+Inches(0.08),
+                           fig_w-Inches(0.20), fig_h-Inches(0.16))
 
-    # bottom rule cards: short enough to read while the figure remains dominant.
-    card_y = Inches(5.70); card_h = Inches(0.74); card_w = Inches(2.88); gap = Inches(0.18); x0 = Inches(0.78)
+    # Bottom rule cards: equations for how one synthetic normal trend is assembled.
+    card_y = Inches(5.62); card_h = Inches(0.96); card_w = Inches(2.88); gap = Inches(0.18); x0 = Inches(0.78)
     cards = [
-        ("Baseline", "x_t ~ N(mu, sigma^2)"),
-        ("Region / episode", "dense, sparse, missing + K/L sampling"),
-        ("Noise", "Gaussian / correlated / Laplacian"),
-        ("Anomaly", "mean shift, std change, spike, drift"),
+        ("Episode", "K ~ UnifInt(Kmin,Kmax)\nL_k ~ UnifInt(Lmin,Lmax)"),
+        ("Density", "E_k ∈ {dense,sparse,\nmissing,thin}"),
+        ("Noise mixture", "ε_t = w_g ε_g + w_c ε_c + w_l ε_l\nw ~ Dirichlet(α)"),
+        ("Trend output", "y_t = μ_region + ε_t\nwith episode mask"),
     ]
     for i, (head, rows) in enumerate(cards):
         x = Emu(int(x0) + i*(int(card_w)+int(gap)))
@@ -3120,42 +3149,64 @@ def s_p3_generator(slide, d, idx):
         _text(slide, x+Inches(0.10), card_y, card_w-Inches(0.20), Inches(0.34),
               [[(head, dict(size=10.8, bold=True, color=WHITE))]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, x+Inches(0.14), card_y+Inches(0.38), card_w-Inches(0.28), Inches(0.28),
-              [[(rows, dict(size=9.2, color=INK, name="Consolas" if any(ch in rows for ch in "~=+()") else FONT))]],
+        _text(slide, x+Inches(0.14), card_y+Inches(0.36), card_w-Inches(0.28), Inches(0.52),
+              [[(rows, dict(size=8.6, color=INK, name="Consolas" if any(ch in rows for ch in "~=+(){}") else FONT))]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
-    _rect(slide, Inches(1.05), Inches(6.62), Inches(11.25), Inches(0.26), PANEL, line=LINE)
-    _rect(slide, Inches(1.05), Inches(6.62), Inches(0.10), Inches(0.26), COVER_BAR)
-    _text(slide, Inches(1.20), Inches(6.62), Inches(11.0), Inches(0.26),
-          [[("Dataset: normal 3,500 + abnormal 3,500 = 7,000. 핵심은 real anomaly label 부족을 검증 가능한 benchmark로 바꾼 점입니다.",
+    _rect(slide, Inches(1.05), Inches(6.66), Inches(11.25), Inches(0.26), PANEL, line=LINE)
+    _rect(slide, Inches(1.05), Inches(6.66), Inches(0.10), Inches(0.26), COVER_BAR)
+    _text(slide, Inches(1.20), Inches(6.66), Inches(11.0), Inches(0.26),
+          [[("Normal baseline: region mean + episode density + sampled noise. This becomes the base signal before anomaly injection.",
              dict(size=10.3, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
 
 def s_p3_result(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P3 | PoC validation", "대표 trend 3종과 synthetic gate 검증")
+    _title_block_compact(slide, "P3 | PoC validation", "Representative anomaly rules and synthetic gate validation")
     _text(slide, Inches(0.85), Inches(1.50), Inches(11.5), Inches(0.34),
-          [[("Normal과 anomaly를 구분하는 1차 gate를 synthetic benchmark에서 검증했습니다.",
-             dict(size=13.3, color=INK))]])
-    # images
-    y = Inches(1.95); h = Inches(3.72); x0 = Inches(0.72); cw = Inches(3.86); gap = Inches(0.25)
+          [[("Normal baseline에 5가지 anomaly injection rule을 더해 normal/abnormal 1차 gate를 검증했습니다.",
+             dict(size=14.2, color=INK))]])
+
+    # 5 anomaly types in a 2-row figure grid. The 6th cell carries the equations.
+    x0 = Inches(0.72); y0 = Inches(1.93); cw = Inches(3.86); ch = Inches(1.72)
+    gapx = Inches(0.25); gapy = Inches(0.18)
     imgs = [
-        ("trend_normal_view.png", "Normal", "baseline 주변"),
-        ("trend_mean_shift_view.png", "Mean shift", "평균 이동"),
-        ("trend_context_view.png", "Context anomaly", "legend-relative outlier"),
+        ("trend_mean_shift_view.png", "Mean shift", "y_t = x_t + δ"),
+        ("trend_standard_deviation_view.png", "Std change", "y_t = μ + A(x_t - μ)"),
+        ("trend_spike_view.png", "Spike", "y_t = x_t + Σ A_i 1(t=t_i)"),
+        ("trend_drift_view.png", "Drift", "y_t = x_t + r(t-s)"),
+        ("trend_context_view.png", "Context", "legend-relative shift"),
     ]
-    for i, (src, head, sub) in enumerate(imgs):
-        x = Emu(int(x0)+i*(int(cw)+int(gap)))
-        _rect(slide, x, y, cw, h, WHITE, line=LINE)
-        _img_fit(slide, src, x+Inches(0.16), y+Inches(0.18), cw-Inches(0.32), h-Inches(0.78), frame=False)
-        _text(slide, x, y+Inches(3.00), cw, Inches(0.28),
-              [[(head, dict(size=14, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
-        _text(slide, x, y+Inches(3.28), cw, Inches(0.22),
-              [[(sub, dict(size=10.5, color=MUTED))]], align=PP_ALIGN.CENTER)
+    for i, (src, head, formula) in enumerate(imgs):
+        row, col = divmod(i, 3)
+        x = Emu(int(x0)+col*(int(cw)+int(gapx)))
+        y = Emu(int(y0)+row*(int(ch)+int(gapy)))
+        _rect(slide, x, y, cw, ch, WHITE, line=LINE)
+        _img_fit(slide, src, x+Inches(0.12), y+Inches(0.10), cw-Inches(0.24), ch-Inches(0.58), frame=False)
+        _text(slide, x+Inches(0.08), y+ch-Inches(0.43), cw-Inches(0.16), Inches(0.20),
+              [[(head, dict(size=12.5, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
+        _text(slide, x+Inches(0.08), y+ch-Inches(0.22), cw-Inches(0.16), Inches(0.16),
+              [[(formula, dict(size=8.7, bold=True, color=MUTED, name="Consolas"))]], align=PP_ALIGN.CENTER)
+
+    fx = Emu(int(x0)+2*(int(cw)+int(gapx)))
+    fy = Emu(int(y0)+1*(int(ch)+int(gapy)))
+    _rect(slide, fx, fy, cw, ch, PANEL, line=LINE)
+    _rect(slide, fx, fy, Inches(0.10), ch, COVER_BAR)
+    _text(slide, fx+Inches(0.24), fy+Inches(0.16), cw-Inches(0.42), Inches(0.24),
+          [[("Injection equations", dict(size=13.0, bold=True, color=NAVY))]])
+    eq_lines = [
+        [("mean:  y_t = x_t + δ", dict(size=9.0, color=INK, name="Consolas"))],
+        [("scale: y_t = μ + A(x_t - μ)", dict(size=9.0, color=INK, name="Consolas"))],
+        [("spike: y_t = x_t + Σ A_i 1(t=t_i)", dict(size=9.0, color=INK, name="Consolas"))],
+        [("drift: y_t = x_t + r(t-s)", dict(size=9.0, color=INK, name="Consolas"))],
+        [("context: fleet/reference-relative shift", dict(size=9.0, color=INK, name="Consolas"))],
+    ]
+    _text(slide, fx+Inches(0.26), fy+Inches(0.48), cw-Inches(0.52), ch-Inches(0.58),
+          eq_lines, anchor=MSO_ANCHOR.MIDDLE)
 
     # result strip
-    strip_x, strip_y, strip_w, strip_h = Inches(0.90), Inches(5.88), Inches(11.55), Inches(0.54)
+    strip_x, strip_y, strip_w, strip_h = Inches(0.90), Inches(5.68), Inches(11.55), Inches(0.54)
     _rect(slide, strip_x, strip_y, strip_w, strip_h, PANEL, line=LINE)
     vals = [
         ("Synthetic PoC", "현업 적용 전"),
@@ -3172,13 +3223,13 @@ def s_p3_result(slide, d, idx):
               [[(big, dict(size=13.0, bold=True, color=NAVY if i != 3 else RGBColor(0x2B,0xA6,0x6B)))]],
               align=PP_ALIGN.CENTER)
         _text(slide, x+Inches(0.10), strip_y+Inches(0.33), cell_w-Inches(0.20), Inches(0.18),
-              [[(sub, dict(size=8.7, color=MUTED))]], align=PP_ALIGN.CENTER)
+              [[(sub, dict(size=9.6, color=MUTED))]], align=PP_ALIGN.CENTER)
 
-    _rect(slide, Inches(0.90), Inches(6.50), Inches(11.5), Inches(0.34), WHITE, line=LINE)
-    _rect(slide, Inches(0.90), Inches(6.50), Inches(0.10), Inches(0.34), COVER_BAR)
-    _text(slide, Inches(1.08), Inches(6.50), Inches(11.10), Inches(0.34),
-          [[("성능 안정화: LR sweep(3e-5/3e-4) | label smoothing 0.02 | stochastic depth 0.05 | focal gamma 2.0 | EMA 0.95 | val-F1 median | NT=0.9",
-             dict(size=9.4, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _rect(slide, Inches(0.90), Inches(6.31), Inches(11.5), Inches(0.34), WHITE, line=LINE)
+    _rect(slide, Inches(0.90), Inches(6.31), Inches(0.10), Inches(0.34), COVER_BAR)
+    _text(slide, Inches(1.08), Inches(6.31), Inches(11.10), Inches(0.34),
+          [[("Validation controls: LR sweep, color/smoothing, label smoothing, stochastic depth, focal+EMA, val-F1 median, normal threshold",
+             dict(size=10.6, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
 

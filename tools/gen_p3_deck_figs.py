@@ -427,10 +427,10 @@ def fig_progression(stages=None, f1=None, fn=None, fp=None):
     fig.savefig(FIG + "/p3_progression.png", facecolor="white"); print("wrote progression"); plt.close(fig)
 
 
-def _table_fig(path, cols, data, colw, figsize, best_row=None, ref_row=None, fs=12):
+def _table_fig(path, cols, data, colw, figsize, best_row=None, ref_row=None, fs=12, rowh=1.66):
     fig, ax = plt.subplots(figsize=figsize, dpi=195); fig.patch.set_facecolor("white"); ax.axis("off")
     tbl = ax.table(cellText=data, colLabels=cols, cellLoc="center", loc="center", colWidths=colw)
-    tbl.auto_set_font_size(False); tbl.set_fontsize(fs); tbl.scale(1, 1.66)
+    tbl.auto_set_font_size(False); tbl.set_fontsize(fs); tbl.scale(1, rowh)
     for (r, c), cell in tbl.get_celld().items():
         cell.set_edgecolor("#D7DEEA"); cell.set_linewidth(0.8)
         if r == 0:
@@ -519,21 +519,21 @@ def fig_color_beforeafter():
 
 
 def fig_cumulative_table():
-    """전체 옵션을 누적 적용하며 성능이 올라가는 전체표. 수치=임의(누적 증가)."""
-    cols = ["적용 단계 (옵션 누적)", "F1", "FN", "FP"]
+    """전체 옵션을 누적 적용하며 성능이 올라가는 전체표 — 옵션 / 조건값 컬럼 분리. 수치=임의(누적 증가)."""
+    cols = ["적용 옵션 (누적)", "조건값", "F1", "FN", "FP"]
     data = [
-        ["Baseline", "0.9944", "4.6", "3.8"],
-        ["+ 정상 비율 3300", "0.9962", "3.0", "2.6"],
-        ["+ Label Smoothing 0.02", "0.9971", "2.2", "2.2"],
-        ["+ Stochastic Depth 0.05", "0.9978", "1.6", "1.8"],
-        ["+ EMA 0.95", "0.9982", "1.2", "1.5"],
-        ["+ Focal γ 2.0", "0.9985", "1.0", "1.3"],
-        ["+ per-class / Abn.weight", "0.9987", "0.9", "1.1"],
-        ["+ Color c01 / Smoothing", "0.9989", "0.8", "1.0"],
-        ["+ Best backbone (BKM all)", "0.9992", "0.5", "0.7"],
+        ["Baseline", "—", "0.9944", "4.6", "3.8"],
+        ["+ 정상 비율", "700 → 3300", "0.9962", "3.0", "2.6"],
+        ["+ Label Smoothing", "0.02", "0.9971", "2.2", "2.2"],
+        ["+ Stochastic Depth", "0.05", "0.9978", "1.6", "1.8"],
+        ["+ EMA", "0.95", "0.9982", "1.2", "1.5"],
+        ["+ Focal γ", "2.0", "0.9985", "1.0", "1.3"],
+        ["+ per-class / Abn.weight", "700 / 1.5", "0.9987", "0.9", "1.1"],
+        ["+ Color / Smoothing", "c01 / win5", "0.9989", "0.8", "1.0"],
+        ["+ Best backbone", "convnext.tiny.dinov3", "0.9992", "0.5", "0.7"],
     ]
-    _table_fig(FIG + "/p3_cumulative_table.png", cols, data, [0.42, 0.20, 0.19, 0.19],
-               (9.4, 4.4), best_row=len(data), ref_row=1, fs=13); print("wrote cumulative_table")
+    _table_fig(FIG + "/p3_cumulative_table.png", cols, data, [0.30, 0.27, 0.15, 0.14, 0.14],
+               (13.0, 5.6), best_row=len(data), ref_row=1, fs=16, rowh=2.25); print("wrote cumulative_table")
 
 
 def fig_smoothing():
