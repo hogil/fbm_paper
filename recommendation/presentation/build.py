@@ -2919,6 +2919,56 @@ def _evidence_table(slide, x, y, w, h, headers, rows, col_fracs,
             cx += cw
 
 
+def _native_evidence_table(slide, x, y, w, h, headers, rows, col_fracs,
+                           font_size=8.4, header_size=8.8, left_cols=None,
+                           bold_rows=None):
+    """Editable PowerPoint table. Used where text must live inside table cells."""
+    left_cols = set(left_cols or [])
+    bold_rows = set(bold_rows or [])
+    table_shape = slide.shapes.add_table(len(rows) + 1, len(headers), x, y, w, h)
+    table = table_shape.table
+
+    total_w = int(w)
+    fr_sum = float(sum(col_fracs))
+    widths = [int(total_w * f / fr_sum) for f in col_fracs]
+    widths[-1] += total_w - sum(widths)
+    for j, width in enumerate(widths):
+        table.columns[j].width = Emu(width)
+
+    header_h = int(Inches(0.36))
+    row_h = int((int(h) - header_h) / max(1, len(rows)))
+    table.rows[0].height = Emu(header_h)
+    for i in range(1, len(rows) + 1):
+        table.rows[i].height = Emu(row_h)
+
+    def set_cell(cell, text, fill, size, bold=False, color=INK, align=PP_ALIGN.CENTER):
+        cell.fill.solid()
+        cell.fill.fore_color.rgb = _col(fill)
+        cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+        cell.margin_left = Inches(0.03)
+        cell.margin_right = Inches(0.03)
+        cell.margin_top = Inches(0.01)
+        cell.margin_bottom = Inches(0.01)
+        tf = cell.text_frame
+        tf.clear()
+        for li, line in enumerate(str(text).split("\n")):
+            p = tf.paragraphs[0] if li == 0 else tf.add_paragraph()
+            p.alignment = align
+            r = p.add_run()
+            r.text = line
+            _set_font(r, size=size, bold=bold, color=color)
+
+    for j, head in enumerate(headers):
+        set_cell(table.cell(0, j), head, NAVY, header_size, bold=True, color=WHITE)
+
+    for i, row in enumerate(rows, start=1):
+        fill = PANEL if i % 2 == 1 else WHITE
+        for j, val in enumerate(row):
+            align = PP_ALIGN.LEFT if j in left_cols else PP_ALIGN.CENTER
+            set_cell(table.cell(i, j), val, fill, font_size,
+                     bold=((i - 1) in bold_rows), color=INK, align=align)
+
+
 def s_p1_known_perf(slide, d, idx):
     _bg(slide, WHITE)
     _title_block_compact(slide, "P1 | Known evidence", "Known 16-class backbone scan and staged improvement")
@@ -3122,47 +3172,48 @@ def s_p2_validation(slide, d, idx):
           [[("portfolio.md 기준: 현업 failure chip 원천 + 도메인 확률분포 기반 생성/검증. 단일 대표 모델은 FCM-PM + val_margin selection입니다.",
              dict(size=12.4, bold=True, color=NAVY))]])
 
-    main_headers = ["#", "Recipe", "bit_F1", "single", "2combo", "FAR"]
+    main_headers = ["#", "Recipe", "bit_F1", "single", "2combo", "FAR", "Role"]
     main_rows = [
-        ("1", "BCE + Label Smoothing", "0.1093", "0.1896", "0.0668", "99.47%"),
-        ("2", "Sigmoid Focal Loss", "0.7980", "0.8724", "0.7050", "45.72%"),
-        ("3", "Asymmetric Loss (ASL)", "0.6435", "0.5379", "0.7320", "100%"),
-        ("4", "CutMix (random rectangle)", "0.9359", "0.9566", "0.9070", "42.05%"),
-        ("5", "CutMix + Pair Mask", "0.9491", "0.9728", "0.9281", "24.62%"),
-        ("6", "FCM-PM + val_f1 selection", "0.9652", "1.0000", "0.9517", "0.15%"),
-        ("7", "FCM-PM + val_margin selection", "0.9927", "0.9996", "0.9871", "0.00%"),
-        ("8", "vote_majority_bits Ensemble", "0.9956", "1.0000", "0.9921", "0.00%"),
-        ("9", "Knowledge Distillation", "0.9799", "1.0000", "0.9638", "0.00%"),
+        ("1", "BCE + Label Smoothing", "0.1093", "0.1896", "0.0668", "99.47%", "baseline"),
+        ("2", "Sigmoid Focal Loss", "0.7980", "0.8724", "0.7050", "45.72%", "loss trial"),
+        ("3", "Asymmetric Loss (ASL)", "0.6435", "0.5379", "0.7320", "100%", "FAR collapse"),
+        ("4", "CutMix (random rectangle)", "0.9359", "0.9566", "0.9070", "42.05%", "signal cut"),
+        ("5", "CutMix + Pair Mask", "0.9491", "0.9728", "0.9281", "24.62%", "FAR reduced"),
+        ("6", "FCM-PM + val_f1 selection", "0.9652", "1.0000", "0.9517", "0.15%", "selection ablation"),
+        ("7", "FCM-PM + val_margin selection", "0.9927", "0.9996", "0.9871", "0.00%", "selected single\nmain claim"),
+        ("8", "vote_majority_bits Ensemble", "0.9956", "1.0000", "0.9921", "0.00%", "champion\ncost 5x"),
+        ("9", "Knowledge Distillation", "0.9799", "1.0000", "0.9638", "0.00%", "1x candidate"),
     ]
-    _evidence_table(slide, Inches(0.42), Inches(1.82), Inches(8.05), Inches(4.58),
-                    main_headers, main_rows,
-                    [0.35, 2.85, 0.76, 0.72, 0.82, 0.68],
-                    highlight_rows={6, 7}, font_size=9.2, header_size=9.2, recipe_col=1)
+    _native_evidence_table(slide, Inches(0.36), Inches(1.82), Inches(8.28), Inches(4.62),
+                           main_headers, main_rows,
+                           [0.33, 2.58, 0.68, 0.60, 0.68, 0.58, 1.22],
+                           font_size=7.7, header_size=8.0, left_cols={1, 6},
+                           bold_rows={6, 7})
 
-    side_headers = ["Candidate", "NI-FAR", "OOD-FAR", "Cost"]
+    side_headers = ["Candidate", "NI-FAR", "OOD-FAR", "Cost", "Interpretation"]
     side_rows = [
-        ("FCM-PM + val_margin", "0.00%", "0.00%", "1x / 1x / 1x"),
-        ("vote_majority_bits", "0.00%", "0.00%", "5x / 1/5x / 5x"),
-        ("Knowledge Distillation", "0.00%", "0.00%", "1x / 1x / 1x"),
+        ("FCM-PM + val_margin", "0.00%", "0.00%", "1x / 1x / 1x", "selected\nsingle model"),
+        ("vote_majority_bits", "0.00%", "0.00%", "5x / 1/5x / 5x", "best F1\ncost 5x"),
+        ("Knowledge Distillation", "0.00%", "0.00%", "1x / 1x / 1x", "deploy\ncandidate"),
     ]
     _rect(slide, Inches(8.74), Inches(1.82), Inches(4.08), Inches(0.34), PANEL, line=LINE)
     _text(slide, Inches(8.84), Inches(1.82), Inches(3.88), Inches(0.34),
           [[("Negative-tail and deployment cost", dict(size=11.0, bold=True, color=NAVY))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    _evidence_table(slide, Inches(8.74), Inches(2.26), Inches(4.08), Inches(1.76),
-                    side_headers, side_rows,
-                    [1.65, 0.62, 0.70, 1.00],
-                    highlight_rows={0, 1}, font_size=8.8, header_size=8.5, recipe_col=0)
+    _native_evidence_table(slide, Inches(8.74), Inches(2.26), Inches(4.08), Inches(1.86),
+                           side_headers, side_rows,
+                           [1.25, 0.55, 0.62, 0.92, 0.92],
+                           font_size=7.2, header_size=7.4, left_cols={0, 4},
+                           bold_rows={0, 1})
 
     _rect(slide, Inches(8.74), Inches(4.30), Inches(4.08), Inches(1.58), PANEL, line=LINE)
     _rect(slide, Inches(8.74), Inches(4.30), Inches(0.10), Inches(1.58), COVER_BAR)
     _text(slide, Inches(8.96), Inches(4.48), Inches(3.62), Inches(0.28),
-          [[("Portfolio interpretation", dict(size=12.0, bold=True, color=NAVY))]])
+          [[("Selection interpretation", dict(size=12.0, bold=True, color=NAVY))]])
     lines = [
         [("FCM-PM + val_margin", dict(size=10.3, bold=True, color=NAVY))],
-        [("대표 single model: bit_F1 0.9927 / Total FAR 0.00%", dict(size=9.8, color=INK))],
-        [("Ensemble은 bit_F1 0.9956이지만 cost 5x", dict(size=9.8, color=INK))],
-        [("KD는 1x cost 후보: bit_F1 0.9799 / FAR 0.00%", dict(size=9.8, color=INK))],
+        [("대표 single model: bit_F1 0.9927 / FAR 0.00% / 1x cost", dict(size=9.8, color=INK))],
+        [("Ensemble은 최고 bit_F1 0.9956이지만 cost 5x", dict(size=9.8, color=INK))],
     ]
     _text(slide, Inches(8.96), Inches(4.82), Inches(3.62), Inches(0.82), lines)
 
