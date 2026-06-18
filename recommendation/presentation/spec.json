@@ -49,21 +49,31 @@
         1,
         3
       ],
-      "desc": "48매 단위 수작업 검토를 일 2만 wafer 규모의 Failbit Map 변환, 검색, 검토 체계로 확장했습니다",
+      "desc": "48매 단위 수작업 검토를 대량 Failbit Map 변환, 검색, 검토 체계로 확장했습니다",
       "kpi": "P1은 양산 운영, P2/P3은 validation/PoC 단계",
       "stat_cards": [
         {
-          "big": "일 2만",
-          "label": "wafer/day [운영]"
+          "big": "Data asset",
+          "label": "좌표 보존 FBM"
         },
         {
-          "big": "F1 0.95",
-          "label": "Known F1 [validation]"
+          "big": "AI model",
+          "label": "Known & Unknown"
+        }
+      ],
+      "side_stat_cards": [
+        {
+          "big": "양산 운영",
+          "label": "viewer + 처리 구조"
+        },
+        {
+          "big": "실전 검증",
+          "label": "Known model"
         }
       ],
       "ba": {
         "before": "조회 48매 한계, 수작업 검토",
-        "after": "일 2만 wafer 규모의 변환, 검색, 검토"
+        "after": "대량 wafer 규모의 변환, 검색, 검토"
       }
     },
     {
@@ -392,25 +402,25 @@
           "color": "#0F1E3D",
           "bullets": [
             "DRAM D1a/b/c/d 전제품 분석 파트에서 **매일 사용 중**, 일 2만 wafer 처리",
-            "분석 공수 **90% 이상 절감(연 26억 효과)**, 수율 **+0.02%p 개선(P3WN 1건 97억 효과)**",
+            "분석 공수 **90% 이상 절감**과 **P3WN 수율 +0.02%p 개선 1건**의 사업 기여를 창출",
             "조회 48매 한계를 **대량 조회 viewer**로 확장하고, 검토 방식을 **Failbit Map 변환과 검색** 중심으로 재구성",
             {
-              "t": "운영 기준은 처리 구조와 viewer이며, 공수 절감 효과와 수율 개선 사례는 합산 산정하지 않음",
+              "t": "올해 기여는 공수 절감과 P3WN 수율 개선 1건을 합산한 기준",
               "lvl": 1
             }
           ],
           "chips": [
             {
+              "big": "123억",
+              "label": "올해 총 사업 기여"
+            },
+            {
               "big": "공수 90%↓",
-              "label": "공수 절감"
+              "label": "검토 시간 절감"
             },
             {
-              "big": "97억/건",
-              "label": "수율 +0.02%p"
-            },
-            {
-              "big": "일 2만",
-              "label": "wafer/day"
+              "big": "수율 +0.02%p",
+              "label": "P3WN 1건"
             }
           ]
         },
@@ -418,7 +428,7 @@
           "head": "모델 — validation 완료, 서버 배포 준비 단계",
           "color": "#0F1E3D",
           "bullets": [
-            "Known **validation F1 0.95**(실전 16종/1,500장), Unknown은 **13→7 후보 확인**(현업 검토)까지만 반영",
+            "Known validation 완료(실전 16종/1,500장), Unknown 현업 review 완료",
             "classification model은 **2026년 9월 GPU 서버 배포 검증 예정**이며, 서버 성능은 배포 환경에서 별도 검증",
             "사내 인정: **'25 AI 센터 DS BP Good Challenger 수상**, **'26 MTC 제안 1등급 확정**, **'26 삼성 논문상 초록 통과**",
             {
@@ -428,12 +438,12 @@
           ],
           "chips": [
             {
-              "big": "F1 0.95",
-              "label": "Known validation (real data)"
+              "big": "validation 완료",
+              "label": "Known real data"
             },
             {
-              "big": "13→7",
-              "label": "Unknown candidate review"
+              "big": "현업 review",
+              "label": "Unknown candidate"
             },
             {
               "big": "2026.09",
@@ -454,15 +464,25 @@
       ],
       "rail_sub": "라벨 부족 대응 | Multi-label learning",
       "desc": "실제 2-combo GT가 부족한 조건에서 single-failure source를 조합해 학습 신호와 평가 구조를 구성했습니다",
-      "kpi": "Synthetic PoC, bit-F1 0.9927, Total FAR 0.00%",
+      "kpi": "Synthetic PoC, 2-combo learning signal + negative-tail control",
       "stat_cards": [
         {
           "big": "2-combo",
           "label": "synthetic PoC"
         },
         {
-          "big": "bit-F1 0.9927",
-          "label": "validation"
+          "big": "FAR tail",
+          "label": "negative control"
+        }
+      ],
+      "side_stat_cards": [
+        {
+          "big": "single-source",
+          "label": "supervision"
+        },
+        {
+          "big": "tail control",
+          "label": "FAR 억제"
         }
       ],
       "ba": {
@@ -482,7 +502,7 @@
     },
     {
       "type": "p2_selection",
-      "kicker": "P2 | NB reject",
+      "kicker": "P2 | selection + NB reject",
       "title": "val-margin selection and negative-tail control"
     },
     {
@@ -501,15 +521,25 @@
       ],
       "rail_sub": "Episode generation | Binary validation",
       "desc": "현장 trend 판정 기준을 episode 생성 규칙으로 옮기고, normal/abnormal binary validation으로 검증했습니다",
-      "kpi": "Synthetic benchmark 7,000 series, binary-F1 0.9967",
+      "kpi": "Synthetic benchmark 기반 episode generation + binary validation",
       "stat_cards": [
         {
-          "big": "7,000",
-          "label": "normal 3,500 + abnormal 3,500"
+          "big": "Benchmark",
+          "label": "episode generation"
         },
         {
-          "big": "F1 0.9967",
-          "label": "synthetic validation"
+          "big": "Validation",
+          "label": "binary gate"
+        }
+      ],
+      "side_stat_cards": [
+        {
+          "big": "benchmark 확보",
+          "label": "episode generation"
+        },
+        {
+          "big": "binary 검증",
+          "label": "validation 완료"
         }
       ],
       "ba": {
@@ -537,7 +567,7 @@
       "kicker": "P3 | robustness check",
       "title": "Robustness and input sensitivity checks",
       "bullets": [
-        "성능 과장이 아니라 입력 표현과 checkpoint 선택 민감도를 확인한 검증 장입니다. main claim은 synthetic binary-F1 0.9967로 유지합니다"
+        "입력 표현·checkpoint 선택 민감도 확인 장입니다. main claim은 binary-F1 0.9967입니다"
       ],
       "body_h": 0.46,
       "images": [

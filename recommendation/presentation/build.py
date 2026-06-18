@@ -54,6 +54,8 @@ def _is_dark(c):
     return (0.2126 * r + 0.7152 * g + 0.0722 * b) < 165
 
 
+MIN_FONT = 10.5  # 발표 덱 최소 폰트 floor — 보이는 글자는 절대 이 아래로 안 내려감 (빈 spacer 제외)
+
 def _set_font(run, size=None, bold=None, color=None, italic=None, name=FONT):
     f = run.font
     f.name = name
@@ -63,7 +65,10 @@ def _set_font(run, size=None, bold=None, color=None, italic=None, name=FONT):
     if ea is None:
         ea = rPr.makeelement(qn('a:ea'), {}); rPr.append(ea)
     ea.set('typeface', name)
-    if size is not None: f.size = Pt(size)
+    if size is not None:
+        if run.text and run.text.strip():
+            size = max(size, MIN_FONT)   # 빈 spacer(" ")는 그대로 두어 레이아웃 보존
+        f.size = Pt(size)
     if bold is not None: f.bold = bold
     if italic is not None: f.italic = italic
     if color is not None: f.color.rgb = _col(color)
@@ -405,7 +410,7 @@ def s_section(slide, d, idx):
     # 미니 요약 카드로 채워 '미완성' 인상을 제거(우측 본문 블록과 별개로 사이드바 자체를 완결).
     # stat_cards 의 big/label 을 작은 카드 2개로 쌓아 P 마커 아래 빈 띠(5.1~6.95")를 흡수.
     if d.get("stat_cards"):
-        sc = d["stat_cards"][:2]
+        sc = d.get("side_stat_cards", d["stat_cards"])[:2]
         sy0 = int(Inches(5.48)); sch = int(Inches(0.68)); sgp = int(Inches(0.12))
         for si, st in enumerate(sc):
             sy = Emu(sy0 + si * (sch + sgp))
@@ -739,7 +744,7 @@ def _twotrack_diagram(slide, x, y, w, h):
     # 운영 트랙(가동 중) — teal 채움 + '양산 중' 단계들
     _text(slide, Emu(x), Emu(ty1), Emu(lblw - int(Inches(0.1))), Emu(th),
           [[("Production operation", dict(size=11, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
-    ops = ["Processing flow", "Production viewer", "20K wafer/day"]
+    ops = ["Processing flow", "Production viewer", "Bulk wafer review"]
     n = len(ops); sg = int(Inches(0.14))
     bw = (track_w - sg * (n - 1)) // n
     for k, t in enumerate(ops):
@@ -754,7 +759,7 @@ def _twotrack_diagram(slide, x, y, w, h):
     # 모델 트랙(검증·배포 대기) — 회색 점선 외곽 + 마지막 단계 'GPU 대기'
     _text(slide, Emu(x), Emu(ty2), Emu(lblw - int(Inches(0.1))), Emu(th),
           [[("Model validation / deploy waiting", dict(size=11, bold=True, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
-    mds = ["Validation F1 0.95", "Unknown 후보 13→7", "GPU server → 2026.9"]
+    mds = ["Known validation", "Unknown review", "GPU server → 2026.9"]
     for k, t in enumerate(mds):
         bx = track_x + k * (bw + sg)
         last = (k == len(mds) - 1)
@@ -1133,9 +1138,9 @@ def _episode_trend_diagram(slide, x, y, w, h):
     bands = [
         ("Dense", 74, RGBColor(0xEA, 0xF0, 0xF8)),
         ("Sparse", 24, RGBColor(0xFB, 0xF4, 0xE5)),
+        ("Very sparse", 11, RGBColor(0xF7, 0xF0, 0xE6)),
+        ("Thin", 7, RGBColor(0xF2, 0xF4, 0xF7)),
         ("Missing", 0, RGBColor(0xFB, 0xEC, 0xEA)),
-        ("Sparse", 22, RGBColor(0xFB, 0xF4, 0xE5)),
-        ("Dense", 70, RGBColor(0xEA, 0xF0, 0xF8)),
     ]
     band_w = plot_w // len(bands)
     for bi, (name, active_n, fill) in enumerate(bands):
@@ -1157,7 +1162,7 @@ def _episode_trend_diagram(slide, x, y, w, h):
                   align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
             continue
         center = plot_y + int(plot_h * (0.47 + 0.06 * (bi % 2)))
-        spread = 0.22 if name == "Dense" else 0.12
+        spread = 0.22 if name == "Dense" else (0.08 if name in {"Very sparse", "Thin"} else 0.12)
         for _ in range(active_n):
             tx = bx + I(0.10) + rnd.random() * max(1, bw - I(0.20))
             ty = center + int(rnd.uniform(-spread, spread) * plot_h)
@@ -1171,7 +1176,7 @@ def _episode_trend_diagram(slide, x, y, w, h):
           [[("gray = fleet     color = sampled εₜ", dict(size=9.1, bold=True, color=MU))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
 
-    titles = ["Gaussian iid", "Equipment-correlated", "Laplacian / heavy-tail"]
+    titles = ["Gaussian iid", "Equip. correlated", "Laplacian"]
     formulas = ["εₜ ~ N(0, σ²)", "εₜ = ρεₜ₋₁ + ηₜ", "εₜ ~ Laplace(0, b)"]
     pcol = [BLUE, TL, NV]
     panel_gap = I(0.10)
@@ -1180,9 +1185,9 @@ def _episode_trend_diagram(slide, x, y, w, h):
         py = body_y + pi * (panel_h + panel_gap)
         _rect(slide, Emu(right_x), Emu(py), Emu(right_w), Emu(panel_h), RGBColor(0xFC, 0xFD, 0xFE),
               line=RGBColor(0xD7, 0xDE, 0xEA), line_w=Pt(1))
-        _text(slide, Emu(right_x + I(0.10)), Emu(py + I(0.03)), Emu(int(right_w * 0.48)), Emu(I(0.20)),
+        _text(slide, Emu(right_x + I(0.10)), Emu(py + I(0.03)), Emu(int(right_w * 0.58)), Emu(I(0.20)),
               [[(title, dict(size=10.5, bold=True, color=NV))]], anchor=MSO_ANCHOR.MIDDLE, wrap=False)
-        _text(slide, Emu(right_x + int(right_w * 0.46)), Emu(py + I(0.03)), Emu(right_w - int(right_w * 0.50) - I(0.08)), Emu(I(0.20)),
+        _text(slide, Emu(right_x + int(right_w * 0.60)), Emu(py + I(0.03)), Emu(right_w - int(right_w * 0.64) - I(0.08)), Emu(I(0.20)),
               [[(formulas[pi], dict(size=9.0, bold=True, color=MU, name="Cambria Math"))]],
               align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
         px0 = right_x + I(0.22); px1 = right_x + right_w - I(0.22)
@@ -1275,7 +1280,7 @@ def _p3_quad_diagram(slide, x, y, w, h):
 
     # Q1 claim boundary / verified run only
     qx, qy = quads[0]
-    barchart(qx, qy, "Claim boundary — binary F1",
+    barchart(qx, qy, "Validation option ablation — binary F1",
              ["Main claim", "Base run", "5-seed best"],
              [0.9967, 0.9971, 0.9987],
              [1, 1, 0], [4, 3, 2],
@@ -1286,9 +1291,9 @@ def _p3_quad_diagram(slide, x, y, w, h):
     txt(qx + I(0.1), qy + I(0.06), qw - I(0.2), I(0.30),
         [[("5-seed robustness — summary", dict(size=13, bold=True, color=NV))]])
     summary_cards = [
-        ("Mean F1", "0.9967", "main claim boundary"),
-        ("Best F1", "0.9987", "best seed"),
-        ("Test split", "1,500", "750 normal / 750 abnormal"),
+        ("Mean boundary", "main", "not best seed"),
+        ("Best seed", "reference", "not main claim"),
+        ("Test split", "1,500", "750/750 split"),
     ]
     card_w = (qw - I(0.56)) // 3
     card_y = qy + I(0.62)
@@ -1298,15 +1303,12 @@ def _p3_quad_diagram(slide, x, y, w, h):
              line=RGBColor(0xD7, 0xDE, 0xEA), lw=Pt(1.0))
         txt(cx + I(0.08), card_y + I(0.14), card_w - I(0.16), I(0.22),
             [[(head, dict(size=11.5, bold=True, color=MU))]])
+        value_size = 15.8 if i < 2 else 19
         txt(cx + I(0.08), card_y + I(0.42), card_w - I(0.16), I(0.38),
-            [[(value, dict(size=19, bold=True, color=NV))]])
-        sub_size = 9.0 if i == 2 else 10.4
+            [[(value, dict(size=value_size, bold=True, color=NV))]])
+        sub_size = 9.2 if i == 2 else 10.4
         txt(cx + I(0.08), card_y + I(0.83), card_w - I(0.16), I(0.28),
             [[(sub, dict(size=sub_size, color=MU))]])
-    rect(qx + I(0.28), qy + I(1.98), qw - I(0.56), I(0.24),
-         RGBColor(0xF4, 0xF7, 0xFB), line=RGBColor(0xD7, 0xDE, 0xEA), lw=Pt(1.0))
-    txt(qx + I(0.38), qy + I(2.00), qw - I(0.76), I(0.18),
-        [[("main claim uses mean boundary, not best seed", dict(size=9.4, bold=True, color=NV))]])
 
     # Q3 smoothing window (native) — 단일 epoch 최고는 hunting spike(학습 덜 됨),
     # 후속 3-epoch median 이 더 높은 후속 plateau 를 best 로 선택
@@ -1350,7 +1352,7 @@ def _p3_quad_diagram(slide, x, y, w, h):
     txt(qx + I(0.1), qy + I(0.05), qw - I(0.2), I(0.26),
         [[("Rendering sensitivity check", dict(size=13, bold=True, color=NV))]])
     txt(qx + I(0.1), qy + I(0.31), qw - I(0.2), I(0.24),
-        [[("color sensitivity check; not used as main claim", dict(size=10.8, bold=True, color=NV))]])
+        [[("same train/val/test color policy; label-independent", dict(size=10.8, bold=True, color=NV))]])
     imgs = [("p3r_color_baseline.png", "Before (파랑)"), ("p3r_color_c01.png", "After (빨강)")]
     isz = min(I(1.3), qh - I(0.86)); igap = I(0.46)
     total = isz * 2 + igap; ix0 = qx + (qw - total) // 2; iy = qy + I(0.58)
@@ -3030,7 +3032,7 @@ def s_unknown_ablation(slide, d, idx):
     _bg(slide, WHITE)
     _title_block_compact(slide, "P1 | Unknown evidence", "Contrastive recipe ablation on generated evaluation set")
     _text(slide, Inches(0.80), Inches(1.40), Inches(11.8), Inches(0.34),
-          [[("[생성 데이터 개발 지표] 실전 운영 review 결과(2,000장, 13 후보 group 중 7건 확인)와 분리해 제시합니다.",
+          [[("[생성 데이터 개발 지표] 실전 현업 review와 분리한 모델 개발용 ablation입니다.",
              dict(size=12.6, bold=True, color=NAVY))]])
 
     headers = ["#", "Recipe (per class 500, normal 2000)", "M1 capture", "M2 noise", "M3 Completeness", "Sil"]
@@ -3144,9 +3146,9 @@ def s_p2_fcmpm(slide, d, idx):
     _text(slide, Inches(0.85), Inches(1.52), Inches(11.75), Inches(0.34),
           [[("2-combo GT가 부족한 조건에서 FCM은 failure coverage를 보존하고, Pair Mask는 합성 배경 loss를 분리해 FAR tail을 낮춥니다.",
              dict(size=13.2, color=INK))]])
-    _text(slide, Inches(0.85), Inches(1.78), Inches(11.75), Inches(0.18),
+    _text(slide, Inches(0.85), Inches(1.76), Inches(11.75), Inches(0.24),
           [[("Mixup은 0~7 grade 의미를 흐리고, diffusion은 label·compute 부담이 큽니다. 원값을 보존하는 CutMix 계열을 채택했습니다. (자문: 연세대학교 인공지능학과 박은병 교수)",
-             dict(size=9.8, color=MUTED))]])
+             dict(size=10.8, color=MUTED))]])
 
     fig_x, fig_y, fig_w, fig_h = Inches(0.78), Inches(1.98), Inches(11.78), Inches(2.30)
     _rect(slide, fig_x, fig_y, fig_w, fig_h, WHITE, line=LINE)
@@ -3170,7 +3172,7 @@ def s_p2_fcmpm(slide, d, idx):
     cards = [
         ("Normal baseline", "2-combo pos. prob 낮음\nFAR 낮지만 recall 약함"),
         ("FCM", "pos. prob 상승\nFAR tail 동반 상승 가능"),
-        ("FCM-PM + val-margin", "pos. prob 유지\ncontrolled eval FAR 0.00%"),
+        ("FCM-PM", "2-combo signal 유지\npseudo-background loss 차단"),
     ]
     for i, (head, body) in enumerate(cards):
         x = Emu(int(x0) + i*(int(card_w)+int(gap)))
@@ -3200,7 +3202,7 @@ def s_p2_fcmpm(slide, d, idx):
              dict(size=10.4, bold=True, color=NAVY, name="Cambria Math"))],
            [("Pair Mask views: y_masked ∈ {y_A,y_B}; L_total = L_BCE(mixed)+w·L_BCE(masked)",
              dict(size=10.4, bold=True, color=NAVY, name="Cambria Math"))],
-           [("Pair Mask reduces synthetic-background FAR; final selected setting reaches 0.00%",
+           [("Pair Mask reduces synthetic-background FAR; final result is reported on the validation slide",
              dict(size=10.4, bold=True, color=NAVY, name="Cambria Math"))]],
           anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
@@ -3225,17 +3227,17 @@ def s_p2_validation(slide, d, idx):
         ("8", "vote_majority_bits Ensemble", "0.9956", "1.0000", "0.9921", "0.00%", "champion\ncost 5x"),
         ("9", "Knowledge Distillation", "0.9799", "1.0000", "0.9638", "0.00%", "1x candidate"),
     ]
-    _native_evidence_table(slide, Inches(0.70), Inches(1.82), Inches(7.88), Inches(4.62),
+    _native_evidence_table(slide, Inches(0.70), Inches(1.82), Inches(7.88), Inches(4.84),
                            main_headers, main_rows,
                            [0.33, 2.58, 0.68, 0.60, 0.68, 0.58, 1.22],
-                           font_size=8.4, header_size=8.7, left_cols={1, 6},
+                           font_size=8.9, header_size=9.2, left_cols={1, 6},
                            bold_rows={6, 7})
 
-    side_headers = ["Candidate", "NI-FAR", "OOD-FAR", "Cost", "Interp."]
+    side_headers = ["Candidate", "NI-FAR", "OOD-FAR", "Cost\n(L/T/P)", "Interp."]
     side_rows = [
-        ("FCM-PM + val_margin", "0.00%", "0.00%", "1x / 1x / 1x", "selected\nsingle model"),
-        ("vote_majority_bits", "0.00%", "0.00%", "5x / 1/5x / 5x", "best F1\ncost 5x"),
-        ("Knowledge Distillation", "0.00%", "0.00%", "1x / 1x / 1x", "deploy\ncandidate"),
+        ("FCM-PM", "0.00%", "0.00%", "1x / 1x / 1x", "selected\nsingle model"),
+        ("Ensemble", "0.00%", "0.00%", "5x / 1/5x / 5x", "best F1\ncost 5x"),
+        ("KD student", "0.00%", "0.00%", "1x / 1x / 1x", "deploy\ncandidate"),
     ]
     _rect(slide, Inches(8.74), Inches(1.82), Inches(4.08), Inches(0.34), PANEL, line=LINE)
     _text(slide, Inches(8.84), Inches(1.82), Inches(3.88), Inches(0.34),
@@ -3244,7 +3246,7 @@ def s_p2_validation(slide, d, idx):
     _native_evidence_table(slide, Inches(8.74), Inches(2.26), Inches(4.08), Inches(1.86),
                            side_headers, side_rows,
                            [1.25, 0.55, 0.62, 0.92, 0.92],
-                           font_size=7.2, header_size=7.4, left_cols={0, 4},
+                           font_size=8.0, header_size=8.2, left_cols={0, 4},
                            bold_rows={0, 1})
 
     _rect(slide, Inches(8.74), Inches(4.30), Inches(4.08), Inches(1.58), PANEL, line=LINE)
@@ -3252,24 +3254,19 @@ def s_p2_validation(slide, d, idx):
     _text(slide, Inches(8.96), Inches(4.48), Inches(3.62), Inches(0.28),
           [[("Selected model", dict(size=12.0, bold=True, color=NAVY))]])
     lines = [
-        [("FCM-PM + val_margin", dict(size=10.3, bold=True, color=NAVY))],
-        [("대표 single model: bit_F1 0.9927 / FAR 0.00% / 1x cost", dict(size=9.8, color=INK))],
-        [("Ensemble은 최고 bit_F1 0.9956이지만 cost 5x", dict(size=9.8, color=INK))],
+        [("Representative setting", dict(size=10.8, bold=True, color=NAVY))],
+        [("대표 claim은 1x cost single model", dict(size=10.4, color=INK))],
+        [("Ensemble은 upper-bound reference", dict(size=10.4, color=INK))],
+        [("KD는 single-student 배포 후보", dict(size=10.4, color=INK))],
     ]
-    _text(slide, Inches(8.96), Inches(4.82), Inches(3.62), Inches(0.82), lines)
+    _text(slide, Inches(8.96), Inches(4.76), Inches(3.62), Inches(0.98), lines)
 
-    strip_y = Inches(6.52); strip_h = Inches(0.46); strip_x = Inches(0.64); strip_w = Inches(12.05)
-    _rect(slide, strip_x, strip_y, strip_w, strip_h, PANEL, line=LINE)
-    _rect(slide, strip_x, strip_y, Inches(0.10), strip_h, COVER_BAR)
-    _text(slide, strip_x+Inches(0.18), strip_y, strip_w-Inches(0.36), strip_h,
-          [[("대표 single model: bit_F1 0.9927 / Total FAR 0.00%. Champion ensemble: bit_F1 0.9956 / Total FAR 0.00%지만 cost는 5x / 1/5x / 5x.",
-             dict(size=10.6, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx, size=d.get("footer_size", 9))
 
 
 def s_p2_selection(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P2 | NB reject", "val-margin selection and negative-tail control")
+    _title_block_compact(slide, "P2 | selection + NB reject", "val-margin selection and negative-tail control")
 
     # Left: val-margin selection
     lx = Inches(0.75); ly = Inches(1.78); lw = Inches(5.70); lh = Inches(4.95)
@@ -3312,8 +3309,8 @@ def s_p2_selection(slide, d, idx):
           [[("val-F1 max", dict(size=10.2, bold=True, color=SEL_F1))]], align=PP_ALIGN.CENTER)
     _text(slide, Emu(margin_max_cx-int(Inches(0.48))), ly+Inches(1.26), Inches(0.96), Inches(0.22),
           [[("margin max", dict(size=10.2, bold=True, color=SEL_MARGIN))]], align=PP_ALIGN.CENTER)
-    _text(slide, Emu(eval_gain_cx-int(Inches(0.95))), ly+Inches(1.52), Inches(1.90), Inches(0.22),
-          [[("example: eval-F1 0.57 → 0.84", dict(size=10.2, bold=True, color=NAVY))]],
+    _text(slide, Emu(eval_gain_cx-int(Inches(0.82))), ly+Inches(1.52), Inches(1.64), Inches(0.22),
+          [[("dev series: 0.57 → 0.84", dict(size=10.8, bold=True, color=NAVY))]],
           align=PP_ALIGN.CENTER)
     _text(slide, lx+Inches(0.34), ly+Inches(3.72), lw-Inches(0.68), Inches(0.20),
           [[("post-hoc check: correlation with held-out eval bit_F1", dict(size=9.6, bold=True, color=MUTED))]],
@@ -3358,8 +3355,8 @@ def s_p2_selection(slide, d, idx):
     def profile_card(x, y, w, h, title, means, vals, status, note):
         ok = status == "ACCEPT"
         _rect(slide, x, y, w, h, RGBColor(0xF7,0xF9,0xFC), line=RGBColor(0xD7,0xDE,0xE8))
-        _text(slide, x+Inches(0.08), y+Inches(0.07), w-Inches(0.16), Inches(0.18),
-              [[(title, dict(size=8.8, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
+        _text(slide, x+Inches(0.08), y+Inches(0.06), w-Inches(0.16), Inches(0.20),
+              [[(title, dict(size=9.4, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
         ax_x = x + Inches(0.42)
         ax_w = w - Inches(0.58)
         row_y = y + Inches(0.43)
@@ -3367,8 +3364,8 @@ def s_p2_selection(slide, d, idx):
         band_h = Inches(0.07)
         for j, (lab, col) in enumerate(zip(bit_labels, bit_colors)):
             yy = row_y + row_gap * j
-            _text(slide, x+Inches(0.08), yy-Inches(0.05), Inches(0.28), Inches(0.14),
-                  [[(lab, dict(size=7.6, bold=True, color=col))]], align=PP_ALIGN.RIGHT)
+            _text(slide, x+Inches(0.08), yy-Inches(0.05), Inches(0.28), Inches(0.15),
+                  [[(lab, dict(size=8.2, bold=True, color=col))]], align=PP_ALIGN.RIGHT)
             _rect(slide, ax_x, yy, ax_w, Pt(1.0), RGBColor(0xC7,0xCF,0xDB))
             half = 0.22
             lo = max(0.03, means[j] - half)
@@ -3392,8 +3389,8 @@ def s_p2_selection(slide, d, idx):
               tag_fill, line=RGBColor(0xD7,0xDE,0xE8))
         _text(slide, x+Inches(0.20), y+h-Inches(0.45), w-Inches(0.40), Inches(0.14),
               [[(status, dict(size=9.2, bold=True, color=tag_col))]], align=PP_ALIGN.CENTER)
-        _text(slide, x+Inches(0.12), y+h-Inches(0.20), w-Inches(0.24), Inches(0.12),
-              [[(note, dict(size=7.0, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
+        _text(slide, x+Inches(0.12), y+h-Inches(0.21), w-Inches(0.24), Inches(0.14),
+              [[(note, dict(size=8.0, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
 
     panels = [
         ("known single bb", [0.82, 0.12, 0.12, 0.12], [0.84, 0.12, 0.13, 0.11], "ACCEPT", "4 bit profile match"),
@@ -3413,10 +3410,7 @@ def s_p2_selection(slide, d, idx):
     _text(slide, rx+Inches(0.44), ry+Inches(4.14), rw-Inches(0.88), Inches(0.14),
           [[("tail/OOD is not learned as a class; reject by known-profile mismatch",
              dict(size=9.4, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
-    _text(slide, rx+Inches(0.44), ry+Inches(4.29), rw-Inches(0.88), Inches(0.14),
-          [[("separate safeguard; recipe table reports FCM-PM + val-margin only",
-             dict(size=8.2, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
-    card_y = ry+Inches(4.52); card_h = Inches(0.42); card_w = Inches(2.42)
+    card_y = ry+Inches(4.50); card_h = Inches(0.44); card_w = Inches(2.42)
     impacts = [
         ("NB profile", "10 known classes", "4 single + 6 combo"),
         ("reject rule", "no profile passes", "reject"),
@@ -3425,12 +3419,12 @@ def s_p2_selection(slide, d, idx):
         cx = Emu(int(rx)+int(Inches(0.30))+ii*(int(card_w)+int(Inches(0.25))))
         _rect(slide, cx, card_y, card_w, card_h, RGBColor(0xF4,0xF7,0xFB), line=RGBColor(0xD7,0xDE,0xE8))
         _rect(slide, cx, card_y, Inches(0.07), card_h, green)
-        _text(slide, cx+Inches(0.14), card_y+Inches(0.04), Inches(1.02), Inches(0.14),
-              [[(head, dict(size=8.6, bold=True, color=MUTED))]])
-        _text(slide, cx+Inches(0.14), card_y+Inches(0.18), Inches(1.30), Inches(0.16),
-              [[(val, dict(size=9.0, bold=True, color=NAVY))]])
-        _text(slide, cx+Inches(1.48), card_y+Inches(0.12), Inches(0.78), Inches(0.18),
-              [[(delta, dict(size=8.2, bold=True, color=green if delta != "reject" else red))]],
+        _text(slide, cx+Inches(0.14), card_y+Inches(0.04), Inches(1.05), Inches(0.16),
+              [[(head, dict(size=9.4, bold=True, color=MUTED))]])
+        _text(slide, cx+Inches(0.14), card_y+Inches(0.20), Inches(1.32), Inches(0.18),
+              [[(val, dict(size=9.8, bold=True, color=NAVY))]])
+        _text(slide, cx+Inches(1.48), card_y+Inches(0.13), Inches(0.78), Inches(0.19),
+              [[(delta, dict(size=9.0, bold=True, color=green if delta != "reject" else red))]],
               align=PP_ALIGN.RIGHT)
 
     _footer(slide, idx)
@@ -3465,9 +3459,9 @@ def s_p3_intro(slide, d, idx):
 
     # right metrics + image
     rx = Inches(6.85); ry = Inches(2.05)
-    _metric_card_compact(slide, rx, ry, Inches(1.75), Inches(1.05), "7,000", "trend samples", "3,500+3,500")
-    _metric_card_compact(slide, rx+Inches(1.95), ry, Inches(1.75), Inches(1.05), "5×3×5", "rule space", "region/noise/anomaly")
-    _metric_card_compact(slide, rx+Inches(3.90), ry, Inches(1.75), Inches(1.05), "0.9967", "Binary F1", "PoC")
+    _metric_card_compact(slide, rx, ry, Inches(1.75), Inches(1.05), "Rule", "domain coding", "region/noise/anomaly")
+    _metric_card_compact(slide, rx+Inches(1.95), ry, Inches(1.75), Inches(1.05), "Normal", "baseline control", "fleet-bound stats")
+    _metric_card_compact(slide, rx+Inches(3.90), ry, Inches(1.75), Inches(1.05), "Robust", "shortcut check", "color/median/threshold")
     _rect(slide, rx, Inches(3.34), Inches(5.65), Inches(3.18), WHITE, line=LINE)
     _rect(slide, rx, Inches(3.34), Inches(5.65), Inches(0.40), NAVY)
     _text(slide, rx+Inches(0.18), Inches(3.40), Inches(5.30), Inches(0.28),
@@ -3482,8 +3476,8 @@ def s_p3_intro(slide, d, idx):
         ("Color + median + NT", "color/smoothing check\nval-F1 median, NT 0.9"),
     ]
     tx0, ty0 = int(rx) + int(Inches(0.22)), int(Inches(3.88))
-    tw, th = int(Inches(2.54)), int(Inches(0.62))
-    hgap, vgap = int(Inches(0.16)), int(Inches(0.13))
+    tw, th = int(Inches(2.54)), int(Inches(0.70))
+    hgap, vgap = int(Inches(0.16)), int(Inches(0.10))
     for i, (head, body) in enumerate(tune_cards):
         cx = tx0 + (i % 2) * (tw + hgap)
         cy = ty0 + (i // 2) * (th + vgap)
@@ -3491,14 +3485,10 @@ def s_p3_intro(slide, d, idx):
         _rect(slide, Emu(cx), Emu(cy), Emu(int(Inches(0.06))), Emu(th), COVER_BAR)
         _text(slide, Emu(cx+int(Inches(0.13))), Emu(cy+int(Inches(0.07))),
               Emu(tw-int(Inches(0.20))), Emu(int(Inches(0.17))),
-              [[(head, dict(size=10.4, bold=True, color=NAVY))]])
+              [[(head, dict(size=10.8, bold=True, color=NAVY))]])
         _text(slide, Emu(cx+int(Inches(0.13))), Emu(cy+int(Inches(0.26))),
-              Emu(tw-int(Inches(0.20))), Emu(int(Inches(0.29))),
-              [[(body, dict(size=8.8, color=MUTED))]])
-    _text(slide, rx+Inches(0.15), Inches(6.24), Inches(5.35), Inches(0.22),
-          [[("Interpretation: generator validity, training stability, and shortcut checks are evaluated together.",
-             dict(size=9.6, bold=True, color=NAVY))]],
-          align=PP_ALIGN.CENTER)
+              Emu(tw-int(Inches(0.20))), Emu(int(Inches(0.36))),
+              [[(body, dict(size=9.8, color=MUTED))]])
     _footer(slide, idx)
 
 
@@ -3587,31 +3577,26 @@ def s_p3_result(slide, d, idx):
           eq_lines, anchor=MSO_ANCHOR.MIDDLE)
 
     # result strip
-    strip_x, strip_y, strip_w, strip_h = Inches(0.90), Inches(5.90), Inches(11.55), Inches(0.50)
+    strip_x, strip_y, strip_w, strip_h = Inches(0.90), Inches(5.82), Inches(11.55), Inches(0.70)
     _rect(slide, strip_x, strip_y, strip_w, strip_h, PANEL, line=LINE)
     vals = [
-        ("Test 1,500", "normal 750 / abnormal 5종×150"),
-        ("F1 0.9967", "TN=746 / FP=4 / FN=1 / TP=749"),
+        ("Test 1,500", "normal 750 / abnormal 750"),
+        ("F1 0.9967", "TN746 / FP4 / FN1 / TP749"),
         ("Recall 0.9987", "abnormal class"),
-        ("5-seed best 0.9987", "TN=748 / FP=2 / FN=0 / TP=750"),
-        ("threshold 0.9", "p(normal) ≥ 0.9 → Normal"),
+        ("5-seed best 0.9987", "TN748 / FP2 / FN0 / TP750"),
+        ("threshold 0.9", "p(normal) ≥ 0.9"),
     ]
     cell_w = Emu(int(strip_w) // len(vals))
     for i, (big, sub) in enumerate(vals):
         x = Emu(int(strip_x) + i*int(cell_w))
         if i > 0:
             _rect(slide, x, strip_y+Inches(0.09), Pt(1), strip_h-Inches(0.18), LINE)
-        _text(slide, x+Inches(0.08), strip_y+Inches(0.08), cell_w-Inches(0.16), Inches(0.22),
+        _text(slide, x+Inches(0.08), strip_y+Inches(0.12), cell_w-Inches(0.16), Inches(0.24),
               [[(big, dict(size=11.5, bold=True, color=NAVY if i not in (2, 3) else RGBColor(0x2B,0xA6,0x6B)))]],
               align=PP_ALIGN.CENTER)
-        _text(slide, x+Inches(0.08), strip_y+Inches(0.32), cell_w-Inches(0.16), Inches(0.20),
-              [[(sub, dict(size=9.4, color=MUTED))]], align=PP_ALIGN.CENTER)
+        _text(slide, x+Inches(0.08), strip_y+Inches(0.40), cell_w-Inches(0.16), Inches(0.22),
+              [[(sub, dict(size=10.0, color=MUTED))]], align=PP_ALIGN.CENTER)
 
-    _rect(slide, Inches(0.90), Inches(6.46), Inches(11.5), Inches(0.30), WHITE, line=LINE)
-    _rect(slide, Inches(0.90), Inches(6.46), Inches(0.10), Inches(0.30), COVER_BAR)
-    _text(slide, Inches(1.08), Inches(6.46), Inches(11.10), Inches(0.30),
-          [[("Validation controls: LR sweep, color/smoothing, label smoothing, stochastic depth, focal+EMA, val-F1 median, normal threshold 0.9; red marks are explanation overlay",
-             dict(size=12.0, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
 
