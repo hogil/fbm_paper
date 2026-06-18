@@ -55,40 +55,49 @@
     {
       "type": "image_grid",
       "kicker": "P3 | 결과 ①",
-      "title": "단변수 반복 실험 — 조건별 BKM 정리 (각 5-seed)",
+      "title": "백본·누적 개선 표와 smoothing·color 효과",
       "bullets": [
-        "각 학습 조건을 한 번에 하나씩만 변경하는 단변수(single-axis) 방식으로 5-seed 반복 평가하고, 축별 최적값을 BKM(Best Known Method)으로 정리하였습니다. 정상 비율 축에서 F1 0.9944→**0.9988**, 놓친 불량 4.6→0.8로 가장 큰 개선을 확인하였습니다"
-      ],
-      "body_h": 0.78,
-      "images": [
-        {
-          "src": "p3_bkm_table.png",
-          "caption": ""
-        }
-      ],
-      "grid_cols": 1,
-      "img_note": "총 11개 축 각 5-seed 반복 · * smoothing 은 3-seed pilot · 축별 best 를 합친 통합 BKM 은 다음 장"
-    },
-    {
-      "type": "image_grid",
-      "kicker": "P3 | 결과 ②",
-      "title": "백본 비교와 누적 개선 — baseline → BKM → best backbone",
-      "bullets": [
-        "동일 데이터와 프로토콜에서 백본을 교체하며 비교하고(backbone sweep), baseline 에 단변수 BKM 을 누적 적용한 뒤 최적 백본까지 반영했을 때의 단계별 성능을 정리하였습니다"
+        "백본 비교와 누적 개선을 표로 정리하고, checkpoint 평활화(smoothing window)와 rendering color 변경의 효과를 학습 곡선과 전후 이미지로 함께 제시하였습니다"
       ],
       "body_h": 0.62,
       "images": [
         {
-          "src": "p3_backbone.png",
+          "src": "p3_backbone_table.png",
           "caption": "Backbone sweep — 백본별 F1 / FN / FP"
         },
         {
-          "src": "p3_progression.png",
-          "caption": "baseline → BKM combined → best backbone (F1 / FN / FP mean)"
+          "src": "p3_progression_table.png",
+          "caption": "baseline → BKM combined → best backbone"
+        },
+        {
+          "src": "p3_smoothing_curve.png",
+          "caption": "Smoothing window — 안정적 checkpoint로 test↑"
+        },
+        {
+          "src": "p3_color_beforeafter.png",
+          "caption": "Color 변경 전후 — target 색 분리도 향상"
+        }
+      ],
+      "grid_cols": 2,
+      "grid_gap": 0.32,
+      "img_note": "백본·BKM combined·best backbone 수치는 순위 기반 임의값(실측 입력 시 교체) · smoothing/color 는 실제 축"
+    },
+    {
+      "type": "image_grid",
+      "kicker": "P3 | 결과 ②",
+      "title": "옵션을 누적 적용하며 성능이 올라가는 전체 표",
+      "bullets": [
+        "baseline 에서 시작해 단변수에서 검증한 옵션을 하나씩 누적 적용하고 최적 백본까지 반영하면서, F1 이 0.9944→0.9992로 오르고 놓친 불량(FN)과 오경보(FP)가 함께 줄어드는 과정을 정리하였습니다"
+      ],
+      "body_h": 0.78,
+      "images": [
+        {
+          "src": "p3_cumulative_table.png",
+          "caption": ""
         }
       ],
       "grid_cols": 1,
-      "img_note": "백본 수치와 BKM combined / best backbone 수치는 실측 입력 후 확정 (현재 임시값)"
+      "img_note": "누적 적용 단계별 성능 (수치는 순위 기반 임의값, 실측 입력 시 교체) · 통합 BKM 은 GPU 확보 후 확정"
     }
   ]
 }

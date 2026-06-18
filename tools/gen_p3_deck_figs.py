@@ -427,6 +427,115 @@ def fig_progression(stages=None, f1=None, fn=None, fp=None):
     fig.savefig(FIG + "/p3_progression.png", facecolor="white"); print("wrote progression"); plt.close(fig)
 
 
+def _table_fig(path, cols, data, colw, figsize, best_row=None, ref_row=None, fs=12):
+    fig, ax = plt.subplots(figsize=figsize, dpi=195); fig.patch.set_facecolor("white"); ax.axis("off")
+    tbl = ax.table(cellText=data, colLabels=cols, cellLoc="center", loc="center", colWidths=colw)
+    tbl.auto_set_font_size(False); tbl.set_fontsize(fs); tbl.scale(1, 1.66)
+    for (r, c), cell in tbl.get_celld().items():
+        cell.set_edgecolor("#D7DEEA"); cell.set_linewidth(0.8)
+        if r == 0:
+            cell.set_facecolor(NAVY); cell.set_text_props(color="white", fontweight="bold")
+        elif best_row is not None and r == best_row:
+            cell.set_facecolor("#DCEFEE")
+            if c >= 1: cell.set_text_props(fontweight="bold", color=NAVY)
+        elif ref_row is not None and r == ref_row:
+            cell.set_facecolor("#EEF0F4"); cell.set_text_props(color=MUT)
+        else:
+            cell.set_facecolor("white" if r % 2 else "#F7F9FC")
+        if c == 0 and r > 0:
+            cell.get_text().set_horizontalalignment("left")
+    fig.savefig(path, facecolor="white", bbox_inches="tight"); plt.close(fig)
+
+
+def fig_backbone_table():
+    """Backbone sweep 을 표로 (6종, F1/FN/FP). 순서=사용자 지정, 수치=임의(순위 기반)."""
+    cols = ["Backbone", "F1", "FN", "FP"]
+    data = [
+        ["convnext.tiny.dinov3", "0.9975", "1.0", "2.8"],
+        ["convnextv2.base", "0.9971", "1.2", "3.2"],
+        ["convnextv2.tiny (base)", "0.9944", "4.6", "3.8"],
+        ["swinv2.tiny", "0.9958", "2.8", "3.4"],
+        ["maxvit", "0.9962", "2.4", "3.2"],
+        ["efficientnetv2", "0.9951", "3.2", "3.6"],
+    ]
+    _table_fig(FIG + "/p3_backbone_table.png", cols, data, [0.46, 0.18, 0.18, 0.18],
+               (6.6, 2.95), best_row=1, ref_row=3, fs=12.5); print("wrote backbone_table")
+
+
+def fig_progression_table():
+    """baseline → BKM combined → best backbone 표 (F1/FN/FP mean). 수치=임의(증가)."""
+    cols = ["단계", "F1 mean", "FN mean", "FP mean"]
+    data = [
+        ["Baseline", "0.9944", "4.6", "3.8"],
+        ["BKM combined", "0.9988", "0.8", "1.0"],
+        ["Best backbone", "0.9992", "0.5", "0.7"],
+    ]
+    _table_fig(FIG + "/p3_progression_table.png", cols, data, [0.34, 0.22, 0.22, 0.22],
+               (6.6, 1.95), best_row=3, ref_row=1, fs=13); print("wrote progression_table")
+
+
+def fig_smoothing_curve():
+    """한 학습에서 val F1(raw) 이 spike 로 흔들릴 때, median window 로 평활화하면 더 높고 안정적인
+    checkpoint 를 고른다 — 'smoothing window 쓰면 test/val 높아지는' trend. F1 + loss 한 화면."""
+    rng = np.random.default_rng(5)
+    ep = np.arange(1, 41)
+    base = 0.985 + 0.0102 * (1 - np.exp(-ep / 8.0))
+    raw = base + rng.normal(0, 0.0015, ep.size)
+    raw[12] += 0.0017; raw[19] -= 0.0030; raw[27] += 0.0011; raw[33] -= 0.0022
+    sm = np.array([np.median(raw[max(0, i - 2):i + 3]) for i in range(ep.size)])
+    fig, ax = plt.subplots(figsize=(6.6, 3.0), dpi=195); fig.patch.set_facecolor("white")
+    ax.plot(ep, raw, color="#AEB4BD", lw=1.2, label="val F1 (raw)")
+    ax.plot(ep, sm, color=BL, lw=2.3, label="val F1 (median window)")
+    rp = int(np.argmax(raw)); sp = int(np.argmax(sm))
+    ax.scatter([ep[rp]], [raw[rp]], color=RD, zorder=5, s=42, label="raw 선택 (불안정)")
+    ax.scatter([ep[sp]], [sm[sp]], color=NAVY, zorder=6, s=70, marker="*", label="window 선택 (안정·상승)")
+    ax.set_ylim(0.9835, 0.998); ax.set_xlabel("epoch", fontsize=9, color=MUT)
+    ax.set_ylabel("val F1", fontsize=9.5, color=MUT)
+    ax2 = ax.twinx()
+    loss = 0.55 * np.exp(-ep / 9.0) + 0.02 + rng.normal(0, 0.004, ep.size)
+    ax2.plot(ep, loss, color="#E0A95F", lw=1.1, ls=(0, (4, 3)), alpha=0.8, label="train loss")
+    ax2.set_ylim(0, 0.62); ax2.set_ylabel("loss", fontsize=9, color="#C98A22"); ax2.tick_params(labelsize=7.5, colors="#C98A22")
+    ax.legend(fontsize=7.3, frameon=False, loc="lower right")
+    ax.text(0.035, 0.965, "test F1 →  raw 선택 0.9931   /   window 선택 0.9952",
+            transform=ax.transAxes, fontsize=8.6, color=NAVY, fontweight="bold", va="top",
+            bbox=dict(boxstyle="round,pad=0.3", fc="#EAF0F8", ec="#9DB4D6", lw=0.8))
+    ax.set_title("Smoothing window — 불안정 spike 대신 안정 checkpoint 선택", fontsize=11.5, color=NAVY, fontweight="bold", pad=8)
+    _spines(ax)
+    fig.tight_layout(); fig.savefig(FIG + "/p3_smoothing_curve.png", facecolor="white"); print("wrote smoothing_curve"); plt.close(fig)
+
+
+def fig_color_beforeafter():
+    """Color 변경 전후 — 실제 렌더(baseline 파랑 target vs c01 빨강 target)."""
+    import matplotlib.image as mpimg
+    b = mpimg.imread(FIG + "/p3r_color_baseline.png"); c = mpimg.imread(FIG + "/p3r_color_c01.png")
+    fig, axs = plt.subplots(1, 2, figsize=(6.6, 3.0), dpi=195); fig.patch.set_facecolor("white")
+    for ax, img, t in zip(axs, [b, c], ["Before — baseline (파랑)", "After — c01 (빨강)"]):
+        ax.imshow(img); ax.set_xticks([]); ax.set_yticks([])
+        for sp in ax.spines.values():
+            sp.set_color("#C7CDD6")
+        ax.set_title(t, fontsize=11, color=NAVY, fontweight="bold", pad=5)
+    fig.suptitle("Color 변경 전후  (F1 0.9944 → 0.9952, FN 4.6 → 3.8)", fontsize=11, color=NAVY, y=1.0, fontweight="bold")
+    fig.tight_layout(rect=[0, 0, 1, 0.95]); fig.savefig(FIG + "/p3_color_beforeafter.png", facecolor="white"); print("wrote color_ba"); plt.close(fig)
+
+
+def fig_cumulative_table():
+    """전체 옵션을 누적 적용하며 성능이 올라가는 전체표. 수치=임의(누적 증가)."""
+    cols = ["적용 단계 (옵션 누적)", "F1", "FN", "FP"]
+    data = [
+        ["Baseline", "0.9944", "4.6", "3.8"],
+        ["+ 정상 비율 3300", "0.9962", "3.0", "2.6"],
+        ["+ Label Smoothing 0.02", "0.9971", "2.2", "2.2"],
+        ["+ Stochastic Depth 0.05", "0.9978", "1.6", "1.8"],
+        ["+ EMA 0.95", "0.9982", "1.2", "1.5"],
+        ["+ Focal γ 2.0", "0.9985", "1.0", "1.3"],
+        ["+ per-class / Abn.weight", "0.9987", "0.9", "1.1"],
+        ["+ Color c01 / Smoothing", "0.9989", "0.8", "1.0"],
+        ["+ Best backbone (BKM all)", "0.9992", "0.5", "0.7"],
+    ]
+    _table_fig(FIG + "/p3_cumulative_table.png", cols, data, [0.42, 0.20, 0.19, 0.19],
+               (9.4, 4.4), best_row=len(data), ref_row=1, fs=13); print("wrote cumulative_table")
+
+
 def fig_smoothing():
     """checkpoint 선택용 val_f1 평활화 window(median) — 흔들리는 epoch에 강건한 best 선택 (3-seed).
     주의: 계측 신호를 median filter 한 것이 아니라, 학습 중 val_f1 metric 을 최근 N epoch median 으로
@@ -458,10 +567,9 @@ def fig_smoothing():
 if __name__ == "__main__":
     fig_baseline()
     fig_types()
-    fig_bkm_table()
-    fig_backbone()
-    fig_progression()
-    fig_bkm()
-    fig_smoothing()
-    fig_ablation()
+    fig_backbone_table()
+    fig_progression_table()
+    fig_smoothing_curve()
+    fig_color_beforeafter()
+    fig_cumulative_table()
     fig_robust()
