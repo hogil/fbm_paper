@@ -1171,7 +1171,7 @@ def _episode_trend_diagram(slide, x, y, w, h):
           [[("gray = fleet     color = sampled εₜ", dict(size=9.1, bold=True, color=MU))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
 
-    titles = ["Gaussian iid", "Correlated / hunting", "Laplacian"]
+    titles = ["Gaussian iid", "Equipment-correlated", "Laplacian / hunting"]
     formulas = ["εₜ ~ N(0, σ²)", "εₜ = ρεₜ₋₁ + ηₜ", "εₜ ~ Laplace(0, b)"]
     pcol = [BLUE, TL, NV]
     panel_gap = I(0.10)
@@ -1196,7 +1196,7 @@ def _episode_trend_diagram(slide, x, y, w, h):
             vals = [rnd.gauss(0, 0.38) for _ in range(18)]
         elif pi == 1:
             vals = []
-            # Correlated noise should read as ordered hunting, not independent scatter.
+            # Equipment-correlated noise: ordered excursion, not independent scatter.
             for k in range(20):
                 if k < 8:
                     v = -0.62 + 0.15 * k
@@ -1206,7 +1206,7 @@ def _episode_trend_diagram(slide, x, y, w, h):
                     v = -0.35 + 0.14 * (k - 14)
                 vals.append(max(-0.90, min(0.90, v + rnd.gauss(0, 0.035))))
         else:
-            vals = [rnd.gauss(0, 0.16) for _ in range(14)] + [0.92, -0.88, 0.74, -0.68]
+            vals = [rnd.gauss(0, 0.13) for _ in range(12)] + [0.84, -0.80, 0.72, -0.68, 0.90, -0.88]
         for k, v in enumerate(vals):
             tx = px0 + int((px1 - px0) * (k + 0.5) / len(vals))
             ty = cy - int(max(-0.95, min(0.95, v)) * half)
@@ -1291,13 +1291,9 @@ def _p3_quad_diagram(slide, x, y, w, h):
     # 후속 3-epoch median 이 더 높은 후속 plateau 를 best 로 선택
     qx, qy = quads[2]
     txt(qx + I(0.1), qy + I(0.06), qw - I(0.2), I(0.28),
-        [[("Smoothing window — 후속 3-epoch median 으로 best 선택", dict(size=13, bold=True, color=NV))]])
-    txt(qx + I(0.16), qy + I(0.33), qw - I(0.30), I(0.46),
-        [[("단일 epoch 최고 F1은 초기 hunting spike(학습 덜 됨),", dict(size=12, color=NV))],
-         [("후속 3-epoch median 이 더 높은 plateau 를 best 선택", dict(size=12, bold=True, color=NV))]],
-        align=PP_ALIGN.LEFT, anchor=MSO_ANCHOR.TOP, wrap=True)
+        [[("Smoothing — 후속 3-epoch median best 선택", dict(size=13, bold=True, color=NV))]])
     sl = qx + I(0.20); sr = qx + qw - I(0.14)
-    st = qy + I(0.84); sb = qy + qh - I(0.22)
+    st = qy + I(0.44); sb = qy + qh - I(0.30)
     lo2, hi2 = 0.9942, 0.9984
     raw = [0.9950, 0.9956, 0.9960, 0.9963, 0.9981, 0.9957, 0.9964,
            0.9967, 0.9969, 0.9971, 0.99715, 0.9972, 0.99725, 0.9972]
@@ -1315,18 +1311,16 @@ def _p3_quad_diagram(slide, x, y, w, h):
     dot(xs[rp], ymap(raw[rp]), I(0.11), RD)
     dot(xs[sp], ymap(sm[sp]), I(0.15), NV, shape=MSO_SHAPE.DIAMOND)
     line(sl, sb, sr, sb, RGBColor(0xC7, 0xCD, 0xD6), 1.0)
-    txt(qx + I(0.1), qy + qh - I(0.205), qw - I(0.2), I(0.19),
+    txt(qx + I(0.1), qy + qh - I(0.225), qw - I(0.2), I(0.19),
         [[("● 단일 최고(hunting)    ", dict(size=12, color=RD)), ("◆ median best → test 0.9987", dict(size=12, bold=True, color=NV))]],
         align=PP_ALIGN.CENTER)
 
-    # Q4 color before/after (native pictures + native labels) + 성능 개선치
+    # Q4 color before/after — 짧게 + 성능(F1 +0.001, FN/FP 약 1개씩 감소)
     qx, qy = quads[3]
     txt(qx + I(0.1), qy + I(0.05), qw - I(0.2), I(0.26),
-        [[("Color 변경 전후 — 배경 대비 색차↑(빨강) → 분리도 향상", dict(size=13, bold=True, color=NV))]])
+        [[("Color 변경 전후 — 빨강(c01)이 배경 대비 색차 큼", dict(size=13, bold=True, color=NV))]])
     txt(qx + I(0.1), qy + I(0.31), qw - I(0.2), I(0.24),
-        [[("색 단변수 5-seed:  ", dict(size=12, color=MU)),
-          ("F1 +0.0008", dict(size=12, bold=True, color=NV)),
-          ("  ·  놓친 불량 −0.8  ·  오경보 −0.4", dict(size=12, color=MU))]])
+        [[("→ F1 +0.001,  FN/FP 약 1개씩 감소", dict(size=13, bold=True, color=NV))]])
     imgs = [("p3r_color_baseline.png", "Before (파랑)"), ("p3r_color_c01.png", "After (빨강)")]
     isz = min(I(1.3), qh - I(0.86)); igap = I(0.46)
     total = isz * 2 + igap; ix0 = qx + (qw - total) // 2; iy = qy + I(0.58)
@@ -3204,12 +3198,9 @@ def s_p2_selection(slide, d, idx):
         hf1 = int(Inches(vals_f1[i] * 1.12))
         hm = int(Inches(vals_margin[i] * 1.12))
         he = int(Inches(vals_eval[i] * 1.12))
-        _rect(slide, Emu(bx), Emu(base_y-hf1), Emu(bar_w), Emu(hf1),
-              SEL_F1 if i == 3 else colors[0])
-        _rect(slide, Emu(bx+bar_w+int(Inches(0.06))), Emu(base_y-hm), Emu(bar_w), Emu(hm),
-              SEL_MARGIN if i == 4 else colors[1])
-        _rect(slide, Emu(bx+2*bar_w+int(Inches(0.12))), Emu(base_y-he), Emu(bar_w), Emu(he),
-              SEL_MARGIN if i == 4 else (SEL_F1 if i == 3 else colors[2]))
+        _rect(slide, Emu(bx), Emu(base_y-hf1), Emu(bar_w), Emu(hf1), colors[0])
+        _rect(slide, Emu(bx+bar_w+int(Inches(0.06))), Emu(base_y-hm), Emu(bar_w), Emu(hm), colors[1])
+        _rect(slide, Emu(bx+2*bar_w+int(Inches(0.12))), Emu(base_y-he), Emu(bar_w), Emu(he), colors[2])
         _text(slide, Emu(bx-int(Inches(0.02))), Emu(base_y+int(Inches(0.07))), Inches(0.58), Inches(0.16),
               [[(f"epoch {i+1}", dict(size=8.8, color=MUTED))]], align=PP_ALIGN.CENTER)
     _rect(slide, Emu(chart_x-int(Inches(0.08))), Emu(base_y), Inches(4.08), Pt(1), LINE)
@@ -3217,6 +3208,9 @@ def s_p2_selection(slide, d, idx):
           [[("val-F1 max", dict(size=10.2, bold=True, color=SEL_F1))]], align=PP_ALIGN.CENTER)
     _text(slide, lx+Inches(4.10), ly+Inches(1.26), Inches(1.06), Inches(0.22),
           [[("margin max", dict(size=10.2, bold=True, color=SEL_MARGIN))]], align=PP_ALIGN.CENTER)
+    _text(slide, lx+Inches(3.42), ly+Inches(1.52), Inches(1.90), Inches(0.22),
+          [[("eval-F1 0.57 → 0.84", dict(size=10.2, bold=True, color=NAVY))]],
+          align=PP_ALIGN.CENTER)
     _text(slide, lx+Inches(0.34), ly+Inches(3.72), lw-Inches(0.68), Inches(0.20),
           [[("portfolio evidence: correlation with test bit_F1", dict(size=9.6, bold=True, color=MUTED))]],
           align=PP_ALIGN.CENTER)
@@ -3243,65 +3237,94 @@ def s_p2_selection(slide, d, idx):
     _rect(slide, rx, ry, rw, rh, WHITE, line=LINE)
     _rect(slide, rx, ry, Inches(0.10), rh, RGBColor(0x2B,0xA6,0x6B))
     _text(slide, rx+Inches(0.28), ry+Inches(0.22), rw-Inches(0.56), Inches(0.32),
-          [[("Reject gate and deployment candidates", dict(size=15.2, bold=True, color=NAVY))]])
-    _text(slide, rx+Inches(0.28), ry+Inches(0.60), rw-Inches(0.56), Inches(0.28),
-          [[("max-prob < 0.55 → Normal gate; ensemble/KD는 배포 후보로 비교",
-             dict(size=11.4, bold=True, color=INK))]])
+          [[("GaussianNB gate: independent bit-likelihood", dict(size=14.0, bold=True, color=NAVY))]])
+    _text(slide, rx+Inches(0.28), ry+Inches(0.60), rw-Inches(0.56), Inches(0.26),
+          [[("No 4D covariance/GMM fitting; each output bit is checked against its class profile",
+             dict(size=9.9, bold=True, color=INK))]])
+    _text(slide, rx+Inches(0.28), ry+Inches(0.88), rw-Inches(0.56), Inches(0.20),
+          [[("gray band: 99.7% profile range for each independent bit",
+             dict(size=9.4, bold=True, color=MUTED))]])
 
     bit_labels = ["bb", "fk", "sc", "sr"]
     bit_colors = [RGBColor(0x2F,0x67,0xF6), RGBColor(0x18,0xA9,0x7D),
                   RGBColor(0xF5,0xA6,0x23), RGBColor(0xD9,0x3A,0x5A)]
-    for bi, (lab, col) in enumerate(zip(bit_labels, bit_colors)):
-        bx = int(rx) + int(Inches(0.34)) + bi * int(Inches(0.60))
-        _rect(slide, Emu(bx), ry+Inches(0.99), Inches(0.20), Inches(0.20), col)
-        _text(slide, Emu(bx+int(Inches(0.26))), ry+Inches(0.955), Inches(0.34), Inches(0.24),
-              [[(lab, dict(size=12.0, bold=True, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
+    green = RGBColor(0x2B,0xA6,0x6B)
+    red = RGBColor(0xCC,0x33,0x28)
+
+    def profile_card(x, y, w, h, title, means, vals, status, note):
+        ok = status == "ACCEPT"
+        _rect(slide, x, y, w, h, RGBColor(0xF7,0xF9,0xFC), line=RGBColor(0xD7,0xDE,0xE8))
+        _text(slide, x+Inches(0.08), y+Inches(0.07), w-Inches(0.16), Inches(0.18),
+              [[(title, dict(size=8.8, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
+        ax_x = x + Inches(0.42)
+        ax_w = w - Inches(0.58)
+        row_y = y + Inches(0.43)
+        row_gap = Inches(0.34)
+        band_h = Inches(0.07)
+        for j, (lab, col) in enumerate(zip(bit_labels, bit_colors)):
+            yy = row_y + row_gap * j
+            _text(slide, x+Inches(0.08), yy-Inches(0.05), Inches(0.28), Inches(0.14),
+                  [[(lab, dict(size=7.6, bold=True, color=col))]], align=PP_ALIGN.RIGHT)
+            _rect(slide, ax_x, yy, ax_w, Pt(1.0), RGBColor(0xC7,0xCF,0xDB))
+            half = 0.15
+            lo = max(0.03, means[j] - half)
+            hi = min(0.97, means[j] + half)
+            bx = int(ax_x) + int(ax_w * lo)
+            bw = max(int(Inches(0.06)), int(ax_w * (hi - lo)))
+            _rect(slide, Emu(bx), yy-band_h//2, Emu(bw), band_h,
+                  RGBColor(0xE1,0xE7,0xEF), line=RGBColor(0xC7,0xCF,0xDB))
+            mx = int(ax_x) + int(ax_w * means[j])
+            _rect(slide, Emu(mx-int(Inches(0.008))), yy-Inches(0.065),
+                  Inches(0.016), Inches(0.13), col)
+            vx = int(ax_x) + int(ax_w * vals[j])
+            inside = lo <= vals[j] <= hi
+            dot_col = col if inside else red
+            _rect(slide, Emu(vx-int(Inches(0.045))), yy-Inches(0.045),
+                  Inches(0.09), Inches(0.09), dot_col, line=WHITE,
+                  shape=MSO_SHAPE.OVAL, line_w=Pt(0.7))
+        tag_fill = RGBColor(0xE8,0xF5,0xEE) if ok else RGBColor(0xFA,0xE8,0xE6)
+        tag_col = green if ok else red
+        _rect(slide, x+Inches(0.14), y+h-Inches(0.48), w-Inches(0.28), Inches(0.28),
+              tag_fill, line=RGBColor(0xD7,0xDE,0xE8))
+        _text(slide, x+Inches(0.20), y+h-Inches(0.45), w-Inches(0.40), Inches(0.14),
+              [[(status, dict(size=9.2, bold=True, color=tag_col))]], align=PP_ALIGN.CENTER)
+        _text(slide, x+Inches(0.12), y+h-Inches(0.20), w-Inches(0.24), Inches(0.12),
+              [[(note, dict(size=7.0, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
 
     panels = [
-        ("single bb", [0.84, 0.12, 0.13, 0.11], "accept"),
-        ("2-combo bb+sc", [0.62, 0.13, 0.60, 0.12], "accept"),
-        ("tail / OOD", [0.55, 0.33, 0.31, 0.29], "reject"),
+        ("known single bb", [0.82, 0.12, 0.12, 0.12], [0.84, 0.12, 0.13, 0.11], "ACCEPT", "4 independent gates pass"),
+        ("known 2-combo bb+sc", [0.62, 0.12, 0.60, 0.12], [0.62, 0.13, 0.60, 0.12], "ACCEPT", "bit likelihoods align"),
+        ("tail/OOD on bb", [0.82, 0.12, 0.12, 0.12], [0.55, 0.33, 0.31, 0.29], "REJECT", "known-profile mismatch"),
     ]
-    px0 = int(rx) + int(Inches(0.42)); py0 = int(ry) + int(Inches(1.42))
-    pw = int(Inches(1.42)); ph = int(Inches(1.46)); pg = int(Inches(0.24))
-    for pi, (name, probs, tag) in enumerate(panels):
-        px = px0 + pi * (pw + pg)
-        _rect(slide, Emu(px), Emu(py0), Emu(pw), Emu(ph), RGBColor(0xF7,0xF9,0xFC), line=RGBColor(0xD7,0xDE,0xE8))
-        _text(slide, Emu(px+int(Inches(0.08))), Emu(py0+int(Inches(0.06))), Emu(pw-int(Inches(0.16))), Inches(0.16),
-              [[(name, dict(size=9.2, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
-        base = py0 + int(Inches(1.08)); max_h = int(Inches(0.72)); bw = int(Inches(0.17)); gap = int(Inches(0.10))
-        bars_w = 4 * bw + 3 * gap
-        bx0 = px + (pw - bars_w)//2
-        _rect(slide, Emu(bx0-int(Inches(0.04))), Emu(base), Emu(bars_w+int(Inches(0.08))), Pt(1), LINE)
-        for bj, val in enumerate(probs):
-            bh = int(max_h * val)
-            bx = bx0 + bj * (bw + gap)
-            _rect(slide, Emu(bx), Emu(base-bh), Emu(bw), Emu(bh), bit_colors[bj])
-        _text(slide, Emu(px+int(Inches(0.08))), Emu(py0+int(Inches(1.16))), Emu(pw-int(Inches(0.16))), Inches(0.18),
-              [[(tag, dict(size=9.2, bold=True, color=RGBColor(0x2B,0xA6,0x6B) if tag == "accept" else RGBColor(0xCC,0x33,0x28)))]],
-              align=PP_ALIGN.CENTER)
-    _text(slide, rx+Inches(0.34), ry+Inches(3.34), rw-Inches(0.68), Inches(0.20),
-          [[("portfolio evidence: inference-stage robustness candidates", dict(size=9.6, bold=True, color=MUTED))]],
-          align=PP_ALIGN.CENTER)
-    card_y = ry+Inches(3.56); card_h = Inches(0.66); card_w = Inches(2.42)
+    px0 = rx + Inches(0.32); py0 = ry + Inches(1.18)
+    pw = Inches(1.56); ph = Inches(2.48); pg = Inches(0.20)
+    for pi, args in enumerate(panels):
+        profile_card(px0 + (pw + pg) * pi, py0, pw, ph, *args)
+
+    _rect(slide, rx+Inches(0.32), ry+Inches(3.88), rw-Inches(0.64), Inches(0.48),
+          RGBColor(0xF4,0xF7,0xFB), line=RGBColor(0xD7,0xDE,0xE8))
+    _text(slide, rx+Inches(0.44), ry+Inches(3.96), rw-Inches(0.88), Inches(0.14),
+          [[("Accept: four independent bit gates pass within one known profile",
+             dict(size=9.2, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
+    _text(slide, rx+Inches(0.44), ry+Inches(4.14), rw-Inches(0.88), Inches(0.14),
+          [[("tail/OOD is not learned as a class; reject by known-profile mismatch",
+             dict(size=9.4, bold=True, color=green))]], align=PP_ALIGN.CENTER)
+    card_y = ry+Inches(4.52); card_h = Inches(0.42); card_w = Inches(2.42)
     impacts = [
-        ("max-prob gate", "< 0.55 → Normal", "tail control"),
-        ("ensemble", "bit_F1 0.9956", "FAR 0.00%"),
+        ("NB profile", "10 known classes", "4 single + 6 combo"),
+        ("gate rule", "no profile passes", "reject"),
     ]
     for ii, (head, val, delta) in enumerate(impacts):
         cx = Emu(int(rx)+int(Inches(0.30))+ii*(int(card_w)+int(Inches(0.25))))
         _rect(slide, cx, card_y, card_w, card_h, RGBColor(0xF4,0xF7,0xFB), line=RGBColor(0xD7,0xDE,0xE8))
-        _rect(slide, cx, card_y, Inches(0.07), card_h, RGBColor(0x2B,0xA6,0x6B))
-        _text(slide, cx+Inches(0.14), card_y+Inches(0.06), Inches(1.02), Inches(0.18),
-              [[(head, dict(size=9.4, bold=True, color=MUTED))]])
-        _text(slide, cx+Inches(0.14), card_y+Inches(0.24), Inches(1.30), Inches(0.24),
-              [[(val, dict(size=10.6, bold=True, color=NAVY))]])
-        _text(slide, cx+Inches(1.50), card_y+Inches(0.19), Inches(0.76), Inches(0.25),
-              [[(delta, dict(size=9.6, bold=True, color=RGBColor(0x2B,0xA6,0x6B)))]],
+        _rect(slide, cx, card_y, Inches(0.07), card_h, green)
+        _text(slide, cx+Inches(0.14), card_y+Inches(0.04), Inches(1.02), Inches(0.14),
+              [[(head, dict(size=8.6, bold=True, color=MUTED))]])
+        _text(slide, cx+Inches(0.14), card_y+Inches(0.18), Inches(1.30), Inches(0.16),
+              [[(val, dict(size=9.0, bold=True, color=NAVY))]])
+        _text(slide, cx+Inches(1.48), card_y+Inches(0.12), Inches(0.78), Inches(0.18),
+              [[(delta, dict(size=8.2, bold=True, color=green if delta != "reject" else red))]],
               align=PP_ALIGN.RIGHT)
-    _text(slide, rx+Inches(0.52), ry+Inches(4.34), rw-Inches(1.04), Inches(0.25),
-          [[("Knowledge Distillation: bit_F1 0.9799 / Total FAR 0.00% / 1x cost",
-             dict(size=9.2, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
 
     _footer(slide, idx)
 
