@@ -32,11 +32,11 @@
         },
         {
           "no": "P3",
-          "task": "Trend anomaly generator",
+          "task": "Trend anomaly",
           "thumb": "trend_spike.png",
           "problem": "real anomaly label scarcity, validation bottleneck",
-          "approach": "10년 판정 rule → 5×3×5 generator",
-          "result": "7,000 trend, F1 0.9967"
+          "approach": "episode generation + binary validation",
+          "result": "7,000 trend benchmark, F1 0.9967"
         }
       ]
     },
@@ -492,14 +492,14 @@
     {
       "type": "section",
       "no": "P3",
-      "title": "Trend Anomaly\nGenerator benchmark",
-      "subtitle": "real abnormal label scarcity를 synthetic validation benchmark로 정식화한 과제",
+      "title": "Trend Anomaly",
+      "subtitle": "episode generation과 binary validation으로 real abnormal label 부족을 보완한 과제",
       "prog": [
         3,
         3
       ],
-      "rail_sub": "Rule formalization | Synthetic benchmark",
-      "desc": "현장 판정 기준을 baseline generation과 anomaly synthesis rule로 정식화해 검증 가능한 benchmark를 구축했습니다",
+      "rail_sub": "Episode generation | Binary validation",
+      "desc": "현장 trend 판정 기준을 episode 생성 규칙으로 옮기고, normal/abnormal binary validation으로 검증했습니다",
       "kpi": "Synthetic benchmark 7,000 series, binary-F1 0.9967",
       "stat_cards": [
         {
@@ -513,23 +513,23 @@
       ],
       "ba": {
         "before": "real abnormal label 부족",
-        "after": "generator benchmark 확보"
+        "after": "episode benchmark 확보"
       }
     },
     {
       "type": "p3_intro",
-      "kicker": "P3 | Trend anomaly generator",
-      "title": "Real-label scarcity addressed by generator benchmark"
+      "kicker": "P3 | Trend anomaly",
+      "title": "Episode generation and binary validation"
     },
     {
       "type": "p3_generator",
-      "kicker": "P3 | generator rule",
-      "title": "Field decision rules formalized as equations and sampling rules"
+      "kicker": "P3 | episode generation",
+      "title": "Baseline episodes and measurement-noise sampling"
     },
     {
       "type": "p3_result",
-      "kicker": "P3 | PoC validation",
-      "title": "Representative trend classes and synthetic gate validation"
+      "kicker": "P3 | binary validation",
+      "title": "Anomaly injection rules and binary validation"
     },
     {
       "type": "image_grid",
@@ -573,8 +573,8 @@
         },
         {
           "date": "2026.01",
-          "label": "P3 Trend 검증 PoC",
-          "sub": "Trend gate 검증 환경",
+          "label": "P3 Trend anomaly PoC",
+          "sub": "episode generation, binary validation",
           "done": true
         },
         {
@@ -585,12 +585,12 @@
         },
         {
           "date": "2026.12",
-          "label": "P3 완료",
-          "sub": "Trend gate 현업 검증",
+          "label": "P3 Trend anomaly 완료",
+          "sub": "real trend 현업 검증",
           "done": false
         }
       ],
-      "caption": "P1/P2=2026.9 완료(GPU) / P3=2026.12 완료 / 후속=image+measure multimodal"
+      "caption": "P1/P2=2026.9 완료(GPU) / P3=2026.12 현업 검증 완료 / 향후=현업 확대 적용, chip classifier 대체, image+measure-value multimodal"
     }
   ]
 }

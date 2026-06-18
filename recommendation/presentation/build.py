@@ -307,7 +307,7 @@ def s_title(slide, d, idx):
     tasks = d.get("tasks", [
         {"no": "P1", "t": "Failbit Map 불량 분석"},
         {"no": "P2", "t": "Chip multi-label"},
-        {"no": "P3", "t": "Trend anomaly generator"}])
+        {"no": "P3", "t": "Trend anomaly"}])
     if tasks:
         # P 카드 3개의 우측 끝선을 하단 footer 라인 우측 끝(12.33")과 정확히 맞춰 좌우 균형을
         # 맞춘다(slide1 low — 콘텐츠가 좌측에 쏠리고 우측 공백이 남던 인상 제거). 폭=(11.36-2*0.28)/3.
@@ -372,7 +372,7 @@ def s_section(slide, d, idx):
     # 각 과제를 작은 점+라벨로 쌓아 현재 과제를 강조 → 공백 흡수 + 발표 위치감 제공.
     if d.get("prog"):
         cur, tot = d["prog"]
-        seg_labels = ["P1  Failbit Map", "P2  Chip multi-label", "P3  Trend generator"]
+        seg_labels = ["P1  Failbit Map", "P2  Chip multi-label", "P3  Trend anomaly"]
         # P 번호 아래·하단 라벨 위 공백에 3행으로 배치(겹침 방지). 번호 블록을 위로 올린 만큼
         # 진행 라벨은 큰 P 번호/세로 바가 끝난 뒤에 시작시켜 서로 덮이지 않게 한다.
         sy0 = int(Inches(4.18)); srow = int(Inches(0.31))
@@ -3320,7 +3320,7 @@ def s_p2_selection(slide, d, idx):
              dict(size=9.2, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
     _text(slide, rx+Inches(0.44), ry+Inches(4.14), rw-Inches(0.88), Inches(0.14),
           [[("tail/OOD is not learned as a class; reject by known-profile mismatch",
-             dict(size=9.4, bold=True, color=green))]], align=PP_ALIGN.CENTER)
+             dict(size=9.4, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
     card_y = ry+Inches(4.52); card_h = Inches(0.42); card_w = Inches(2.42)
     impacts = [
         ("NB profile", "10 known classes", "4 single + 6 combo"),
@@ -3343,16 +3343,16 @@ def s_p2_selection(slide, d, idx):
 
 def s_p3_intro(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P3 | Trend anomaly generator", "Real-label scarcity addressed by generator benchmark")
-    _text(slide, Inches(0.85), Inches(1.86), Inches(6.2), Inches(0.52),
-          [[("Core contribution — 10년 trend 판정 기준을 generator rule로 정식화해 validation benchmark를 구축했습니다.",
+    _title_block_compact(slide, "P3 | Trend anomaly", "Episode generation and binary validation")
+    _text(slide, Inches(0.85), Inches(1.86), Inches(5.82), Inches(0.62),
+          [[("Core contribution — 판정 경험을 episode generation rule로 코드화하고, binary validation으로 검증했습니다.",
              dict(size=16, bold=True, color=NAVY))]])
     # left flow
     steps = [
         ("현장 기준", "BBD / Overlay / CD 10년 trend 판정 경험"),
-        ("Generator rule", "Region 5종 + Noise 3종 + Anomaly 5종"),
+        ("Episode generation", "Region 5종 + Noise 3종 + Anomaly 5종"),
         ("Synthetic benchmark", "normal 3,500 + abnormal 3,500 = 7,000개"),
-        ("Gate validation", "Binary F1 0.9967 / abnormal recall 0.9987"),
+        ("Binary validation", "F1 0.9967 / abnormal recall 0.9987"),
     ]
     x = Inches(0.90); y = Inches(2.75); w = Inches(5.45); bh = Inches(0.68); gap = Inches(0.18)
     for i, (head, body) in enumerate(steps):
@@ -3409,7 +3409,7 @@ def s_p3_intro(slide, d, idx):
 
 def s_p3_generator(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P3 | generator rule", "Baseline generator: episode + noise sampling")
+    _title_block_compact(slide, "P3 | episode generation", "Baseline episodes and measurement-noise sampling")
     _text(slide, Inches(0.85), Inches(1.47), Inches(11.6), Inches(0.32),
           [[("정상 trend는 region별 baseline 위에 episode density와 noise family를 분리해 샘플링합니다. anomaly injection은 다음 장에서 분리합니다.",
              dict(size=12.8, color=INK))]])
@@ -3446,9 +3446,9 @@ def s_p3_generator(slide, d, idx):
 
 def s_p3_result(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P3 | PoC validation", "Representative anomaly rules and synthetic gate validation")
+    _title_block_compact(slide, "P3 | binary validation", "Anomaly injection rules and binary validation")
     _text(slide, Inches(0.85), Inches(1.50), Inches(11.5), Inches(0.34),
-          [[("Normal baseline에 5가지 anomaly injection rule을 더해 normal/abnormal 1차 gate를 검증했습니다.",
+          [[("Normal baseline에 5가지 anomaly injection rule을 더해 normal/abnormal binary validation을 수행했습니다.",
              dict(size=14.2, color=INK))]])
 
     # 5 anomaly types in a 2-row figure grid. Keep trend panels image-dominant:
@@ -3494,7 +3494,7 @@ def s_p3_result(slide, d, idx):
         ("F1 0.9967", "TN/FN/FP/TP 746/1/4/749"),
         ("Recall 0.9987", "abnormal class"),
         ("5-seed best 0.9987", "TN/FN/FP/TP 748/0/2/750"),
-        ("threshold 0.9", "normal gate"),
+        ("threshold 0.9", "normal decision"),
     ]
     cell_w = Emu(int(strip_w) // len(vals))
     for i, (big, sub) in enumerate(vals):
