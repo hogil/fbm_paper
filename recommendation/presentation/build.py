@@ -1292,8 +1292,9 @@ def _p3_quad_diagram(slide, x, y, w, h):
     qx, qy = quads[2]
     txt(qx + I(0.1), qy + I(0.06), qw - I(0.2), I(0.28),
         [[("Smoothing — 후속 3-epoch median best 선택", dict(size=13, bold=True, color=NV))]])
-    sl = qx + I(0.20); sr = qx + qw - I(0.14)
-    st = qy + I(0.44); sb = qy + qh - I(0.30)
+    txt(qx + I(0.10), qy + I(0.32), I(1.2), I(0.18), [[("val F1", dict(size=11, color=MU))]], align=PP_ALIGN.LEFT)
+    sl = qx + I(0.45); sr = qx + qw - I(0.40)
+    st = qy + I(0.52); sb = qy + qh - I(0.48)
     lo2, hi2 = 0.9942, 0.9984
     raw = [0.9950, 0.9956, 0.9960, 0.9963, 0.9981, 0.9957, 0.9964,
            0.9967, 0.9969, 0.9971, 0.99715, 0.9972, 0.99725, 0.9972]
@@ -1311,7 +1312,9 @@ def _p3_quad_diagram(slide, x, y, w, h):
     dot(xs[rp], ymap(raw[rp]), I(0.11), RD)
     dot(xs[sp], ymap(sm[sp]), I(0.15), NV, shape=MSO_SHAPE.DIAMOND)
     line(sl, sb, sr, sb, RGBColor(0xC7, 0xCD, 0xD6), 1.0)
-    txt(qx + I(0.1), qy + qh - I(0.225), qw - I(0.2), I(0.19),
+    line(sl, st - I(0.04), sl, sb, RGBColor(0xC7, 0xCD, 0xD6), 1.0)
+    txt(sl - I(0.25), sb + I(0.02), (sr - sl) + I(0.5), I(0.17), [[("epoch", dict(size=11, color=MU))]], align=PP_ALIGN.CENTER)
+    txt(qx + I(0.1), qy + qh - I(0.205), qw - I(0.2), I(0.19),
         [[("● 단일 최고(hunting)    ", dict(size=12, color=RD)), ("◆ median best → test 0.9987", dict(size=12, bold=True, color=NV))]],
         align=PP_ALIGN.CENTER)
 
@@ -3239,11 +3242,11 @@ def s_p2_selection(slide, d, idx):
     _text(slide, rx+Inches(0.28), ry+Inches(0.22), rw-Inches(0.56), Inches(0.32),
           [[("GaussianNB gate: independent bit-likelihood", dict(size=14.0, bold=True, color=NAVY))]])
     _text(slide, rx+Inches(0.28), ry+Inches(0.60), rw-Inches(0.56), Inches(0.26),
-          [[("No 4D covariance/GMM fitting; each output bit is checked against its class profile",
-             dict(size=9.9, bold=True, color=INK))]])
+          [[("No 4D/GMM fitting; four bit gates are independent",
+             dict(size=10.2, bold=True, color=INK))]])
     _text(slide, rx+Inches(0.28), ry+Inches(0.88), rw-Inches(0.56), Inches(0.20),
-          [[("gray band: 99.7% profile range for each independent bit",
-             dict(size=9.4, bold=True, color=MUTED))]])
+          [[("gray band = 99.7% range per bit",
+             dict(size=9.6, bold=True, color=MUTED))]])
 
     bit_labels = ["bb", "fk", "sc", "sr"]
     bit_colors = [RGBColor(0x2F,0x67,0xF6), RGBColor(0x18,0xA9,0x7D),
@@ -3266,7 +3269,7 @@ def s_p2_selection(slide, d, idx):
             _text(slide, x+Inches(0.08), yy-Inches(0.05), Inches(0.28), Inches(0.14),
                   [[(lab, dict(size=7.6, bold=True, color=col))]], align=PP_ALIGN.RIGHT)
             _rect(slide, ax_x, yy, ax_w, Pt(1.0), RGBColor(0xC7,0xCF,0xDB))
-            half = 0.15
+            half = 0.22
             lo = max(0.03, means[j] - half)
             hi = min(0.97, means[j] + half)
             bx = int(ax_x) + int(ax_w * lo)
@@ -3294,7 +3297,7 @@ def s_p2_selection(slide, d, idx):
     panels = [
         ("known single bb", [0.82, 0.12, 0.12, 0.12], [0.84, 0.12, 0.13, 0.11], "ACCEPT", "4 independent gates pass"),
         ("known 2-combo bb+sc", [0.62, 0.12, 0.60, 0.12], [0.62, 0.13, 0.60, 0.12], "ACCEPT", "bit likelihoods align"),
-        ("tail/OOD on bb", [0.82, 0.12, 0.12, 0.12], [0.55, 0.33, 0.31, 0.29], "REJECT", "known-profile mismatch"),
+        ("tail/OOD on bb", [0.82, 0.12, 0.12, 0.12], [0.20, 0.42, 0.40, 0.38], "REJECT", "known-profile mismatch"),
     ]
     px0 = rx + Inches(0.32); py0 = ry + Inches(1.18)
     pw = Inches(1.56); ph = Inches(2.48); pg = Inches(0.20)
@@ -3499,7 +3502,7 @@ def s_p3_result(slide, d, idx):
     _rect(slide, Inches(0.90), Inches(6.46), Inches(0.10), Inches(0.30), COVER_BAR)
     _text(slide, Inches(1.08), Inches(6.46), Inches(11.10), Inches(0.30),
           [[("Validation controls: LR sweep, color/smoothing, label smoothing, stochastic depth, focal+EMA, val-F1 median, normal threshold 0.9",
-             dict(size=10.2, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+             dict(size=12.0, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
 
