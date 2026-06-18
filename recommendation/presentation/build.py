@@ -1104,8 +1104,8 @@ def _episode_trend_diagram(slide, x, y, w, h):
         _rect(slide, Emu(ax), Emu(ay + ah - I(0.015)), Emu(aw), Emu(I(0.015)), RGBColor(0xD4, 0xDA, 0xE3))
         _rect(slide, Emu(ax), Emu(ay), Emu(I(0.015)), Emu(ah), RGBColor(0xD4, 0xDA, 0xE3))
 
-    gap = I(0.26)
-    left_w = int((w - gap) * 0.64)
+    gap = I(0.24)
+    left_w = int((w - gap) * 0.72)
     right_w = w - gap - left_w
     left_x = x
     right_x = x + left_w + gap
@@ -1149,7 +1149,7 @@ def _episode_trend_diagram(slide, x, y, w, h):
         for _ in range(42):
             tx = bx + I(0.08) + rnd.random() * max(1, bw - I(0.16))
             ty = plot_y + I(0.34) + rnd.random() * max(1, plot_h - I(0.50))
-            dot(tx, ty, I(0.030), GRAY)
+            dot(tx, ty, I(0.036), GRAY)
         if active_n == 0:
             _text(slide, Emu(bx), Emu(plot_y + plot_h // 2 - I(0.10)), Emu(bw), Emu(I(0.22)),
                   [[("missing", dict(size=10.2, bold=True, color=RED))]],
@@ -1160,14 +1160,14 @@ def _episode_trend_diagram(slide, x, y, w, h):
         for _ in range(active_n):
             tx = bx + I(0.10) + rnd.random() * max(1, bw - I(0.20))
             ty = center + int(rnd.uniform(-spread, spread) * plot_h)
-            dot(tx, ty, I(0.040), BLUE)
+            dot(tx, ty, I(0.052), BLUE)
 
     # -- (b) measurement noise: separate scatter panels, one noise type per chart --
     _text(slide, Emu(right_x), Emu(y), Emu(right_w), Emu(head_h),
           [[("(b) Measurement noise", dict(size=12.0, bold=True, color=NV))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
     _text(slide, Emu(right_x), Emu(y + head_h), Emu(right_w), Emu(legend_h),
-          [[("gray = fleet/reference     color = sampled εₜ", dict(size=9.3, bold=True, color=MU))]],
+          [[("gray = fleet     color = sampled εₜ", dict(size=9.1, bold=True, color=MU))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
 
     titles = ["Gaussian iid", "Correlated AR(1)", "Laplacian"]
@@ -1179,32 +1179,32 @@ def _episode_trend_diagram(slide, x, y, w, h):
         py = body_y + pi * (panel_h + panel_gap)
         _rect(slide, Emu(right_x), Emu(py), Emu(right_w), Emu(panel_h), RGBColor(0xFC, 0xFD, 0xFE),
               line=RGBColor(0xD7, 0xDE, 0xEA), line_w=Pt(1))
-        _text(slide, Emu(right_x + I(0.12)), Emu(py + I(0.03)), Emu(right_w * 0.40), Emu(I(0.20)),
-              [[(title, dict(size=10.8, bold=True, color=NV))]], anchor=MSO_ANCHOR.MIDDLE, wrap=False)
-        _text(slide, Emu(right_x + int(right_w * 0.44)), Emu(py + I(0.03)), Emu(right_w * 0.50), Emu(I(0.20)),
-              [[(formulas[pi], dict(size=9.6, bold=True, color=MU, name="Cambria Math"))]],
-              align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+        _text(slide, Emu(right_x + I(0.12)), Emu(py + I(0.03)), Emu(right_w - I(0.24)), Emu(I(0.18)),
+              [[(title, dict(size=10.5, bold=True, color=NV))]], anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+        _text(slide, Emu(right_x + I(0.12)), Emu(py + I(0.22)), Emu(right_w - I(0.24)), Emu(I(0.18)),
+              [[(formulas[pi], dict(size=9.0, bold=True, color=MU, name="Cambria Math"))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
         px0 = right_x + I(0.22); px1 = right_x + right_w - I(0.22)
-        cy = py + int(panel_h * 0.58); half = int(panel_h * 0.28)
-        axes(px0, py + I(0.27), px1 - px0, panel_h - I(0.42))
-        for _ in range(58):
+        cy = py + int(panel_h * 0.66); half = int(panel_h * 0.22)
+        axes(px0, py + I(0.45), px1 - px0, panel_h - I(0.58))
+        for _ in range(32):
             tx = px0 + rnd.random() * max(1, px1 - px0)
             ty = cy + int(rnd.uniform(-0.80, 0.80) * half)
-            dot(tx, ty, I(0.026), GRAY)
+            dot(tx, ty, I(0.036), GRAY)
         if pi == 0:
-            vals = [rnd.gauss(0, 0.38) for _ in range(30)]
+            vals = [rnd.gauss(0, 0.38) for _ in range(18)]
         elif pi == 1:
             vals = []
             v = 0.0
-            for _ in range(30):
+            for _ in range(18):
                 v = 0.82 * v + rnd.gauss(0, 0.18)
                 vals.append(max(-0.85, min(0.85, v)))
         else:
-            vals = [rnd.gauss(0, 0.16) for _ in range(26)] + [0.92, -0.88, 0.74, -0.68]
+            vals = [rnd.gauss(0, 0.16) for _ in range(14)] + [0.92, -0.88, 0.74, -0.68]
         for k, v in enumerate(vals):
             tx = px0 + int((px1 - px0) * (k + 0.5) / len(vals))
             ty = cy - int(max(-0.95, min(0.95, v)) * half)
-            dot(tx, ty, I(0.044), RED if (pi == 2 and abs(v) > 0.60) else pcol[pi])
+            dot(tx, ty, I(0.058), RED if (pi == 2 and abs(v) > 0.60) else pcol[pi])
 
 def _p3_quad_diagram(slide, x, y, w, h):
     """P3 결과 4분할 네이티브 — 백본 bar / progression bar / smoothing 곡선 / color 전후.
@@ -1236,6 +1236,8 @@ def _p3_quad_diagram(slide, x, y, w, h):
         for i in range(len(pts) - 1):
             line(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], color, wpt)
 
+    margin = int(w * 0.08)
+    x += margin; w -= 2 * margin
     gap = I(0.30)
     qw = (w - gap) // 2; qh = (h - gap) // 2
     quads = [(x, y), (x + qw + gap, y), (x, y + qh + gap), (x + qw + gap, y + qh + gap)]
@@ -1274,29 +1276,39 @@ def _p3_quad_diagram(slide, x, y, w, h):
              [0.9967, 0.9981, 0.9987], [1, 1, 0], [4, 3, 2],
              ["base", "imp", "best"])
 
-    # Q3 smoothing curve (native)
+    # Q3 smoothing window (native) — 단일 epoch 최고는 hunting spike(학습 덜 됨),
+    # 후속 3-epoch median 이 더 높은 후속 plateau 를 best 로 선택
     qx, qy = quads[2]
-    txt(qx + I(0.1), qy + I(0.06), qw - I(0.2), I(0.28), [[("Smoothing window — 안정 checkpoint 선택", dict(size=13, bold=True, color=NV))]])
-    sl = qx + I(0.18); sr = qx + qw - I(0.16)
-    st = qy + I(0.66); sb = qy + qh - I(0.20)
-    lo2, hi2 = 0.9835, 0.9985
+    txt(qx + I(0.1), qy + I(0.06), qw - I(0.2), I(0.28),
+        [[("Smoothing window — 후속 3-epoch median 으로 best 선택", dict(size=13, bold=True, color=NV))]])
+    txt(qx + I(0.16), qy + I(0.33), qw - I(0.30), I(0.46),
+        [[("단일 epoch 최고 F1은 초기 hunting spike(학습 덜 됨),", dict(size=12, color=NV))],
+         [("후속 3-epoch median 이 더 높은 plateau 를 best 선택", dict(size=12, bold=True, color=NV))]],
+        align=PP_ALIGN.LEFT, anchor=MSO_ANCHOR.TOP, wrap=True)
+    sl = qx + I(0.20); sr = qx + qw - I(0.14)
+    st = qy + I(0.84); sb = qy + qh - I(0.22)
+    lo2, hi2 = 0.9930, 0.9983
     N = 22
     xs = [sl + (sr - sl) * k / (N - 1) for k in range(N)]
-    base = [0.985 + 0.0102 * (1 - _math.exp(-(k + 1) / 7.5)) for k in range(N)]
-    raw = [base[k] + rnd.uniform(-0.0016, 0.0016) for k in range(N)]
-    raw[7] += 0.0018; raw[12] -= 0.0028; raw[17] += 0.0012
-    sm = [sum(raw[max(0, k - 1):k + 2]) / len(raw[max(0, k - 1):k + 2]) for k in range(N)]
-    def ymap(v): return sb - (v - lo2) / (hi2 - lo2) * (sb - st)
-    polyline([(xs[k], ymap(raw[k])) for k in range(N)], GR, 1.4)
-    polyline([(xs[k], ymap(sm[k])) for k in range(N)], BL, 2.6)
-    rp = max(range(N), key=lambda k: raw[k]); sp = max(range(N), key=lambda k: sm[k])
-    dot(xs[rp], ymap(raw[rp]), I(0.10), RD)
-    dot(xs[sp], ymap(sm[sp]), I(0.14), NV, shape=MSO_SHAPE.DIAMOND)
+    raw = [0.9940 + 0.0030 * min(1.0, k / 13.0) + rnd.uniform(-0.0004, 0.0004) for k in range(N)]
+    raw[6] = 0.99795; raw[5] = 0.9946; raw[7] = 0.9944
+    for k in range(14, N):
+        raw[k] = 0.99720 + rnd.uniform(-0.0003, 0.0003)
+    def med3(a):
+        b = sorted(a); m = len(b)
+        return b[m // 2] if m % 2 else (b[m // 2 - 1] + b[m // 2]) / 2.0
+    sm = [med3(raw[k:min(N, k + 3)]) for k in range(N - 2)]
+    def ymap(v): return sb - (max(lo2, min(hi2, v)) - lo2) / (hi2 - lo2) * (sb - st)
+    polyline([(xs[k], ymap(raw[k])) for k in range(N)], GR, 1.5)
+    polyline([(xs[k], ymap(sm[k])) for k in range(N - 2)], BL, 2.8)
+    rp = max(range(N), key=lambda k: raw[k])
+    sp = max(range(N - 2), key=lambda k: sm[k])
+    dot(xs[rp], ymap(raw[rp]), I(0.11), RD)
+    dot(xs[sp], ymap(sm[sp]), I(0.15), NV, shape=MSO_SHAPE.DIAMOND)
     line(sl, sb, sr, sb, RGBColor(0xC7, 0xCD, 0xD6), 1.0)
-    txt(qx + I(0.18), qy + I(0.36), qw - I(0.34), I(0.26),
-        [[("test F1 →  raw 0.9971  /  window 0.9987", dict(size=12, bold=True, color=NV))]], align=PP_ALIGN.LEFT)
-    txt(qx + I(0.1), qy + qh - I(0.20), qw - I(0.2), I(0.18),
-        [[("— median window (안정)   ", dict(size=12, color=BL)), ("● raw (불안정)", dict(size=12, color=GR))]], align=PP_ALIGN.CENTER)
+    txt(qx + I(0.1), qy + qh - I(0.205), qw - I(0.2), I(0.19),
+        [[("● 단일 최고(hunting)    ", dict(size=12, color=RD)), ("◆ median best → test 0.9987", dict(size=12, bold=True, color=NV))]],
+        align=PP_ALIGN.CENTER)
 
     # Q4 color before/after (native pictures + native labels)
     qx, qy = quads[3]
@@ -3350,7 +3362,7 @@ def s_p3_generator(slide, d, idx):
     _bg(slide, WHITE)
     _title_block_compact(slide, "P3 | generator rule", "Baseline generator: episode + noise sampling")
     _text(slide, Inches(0.85), Inches(1.47), Inches(11.6), Inches(0.32),
-          [[("정상 trend는 region별 baseline에 episode density와 noise family를 샘플링해 구성합니다. anomaly injection은 다음 장에서 분리합니다.",
+          [[("정상 trend는 region별 baseline 위에 episode density와 noise family를 분리해 샘플링합니다. anomaly injection은 다음 장에서 분리합니다.",
              dict(size=12.8, color=INK))]])
 
     # Normal baseline only: episode/density/noise sampling.
@@ -3360,22 +3372,25 @@ def s_p3_generator(slide, d, idx):
                            fig_w-Inches(0.20), fig_h-Inches(0.16))
 
     # Bottom rule cards: equations for how one synthetic normal trend is assembled.
-    card_y = Inches(5.82); card_h = Inches(0.60); card_w = Inches(2.88); gap = Inches(0.18); x0 = Inches(0.78)
+    card_y = Inches(5.72); card_h = Inches(0.92); card_w = Inches(2.88); gap = Inches(0.18); x0 = Inches(0.78)
     cards = [
-        ("Episode", "sample count and length"),
-        ("Density", "dense / sparse / missing / thin"),
-        ("Noise mixture", "Gaussian + AR(1) + Laplacian"),
-        ("Trend output", "baseline + noise with episode mask"),
+        ("Episode", "K ~ U(Kmin,Kmax),  L_k ~ U(Lmin,Lmax)", "구간 개수와 길이를 먼저 결정"),
+        ("Density", "m_k ~ Cat(dense,sparse,missing,thin)", "구간별 관측 point 수를 결정"),
+        ("Noise", "ε_t ∈ {N(0,σ²), AR(1), Laplace(0,b)}", "측정 산포 family를 episode별 부여"),
+        ("Output", "y_t = μ_region(t) + ε_t  if active", "missing 구간 제외 후 normal trend 생성"),
     ]
-    for i, (head, rows) in enumerate(cards):
+    for i, (head, formula, desc) in enumerate(cards):
         x = Emu(int(x0) + i*(int(card_w)+int(gap)))
         _rect(slide, x, card_y, card_w, card_h, WHITE, line=LINE)
-        _rect(slide, x, card_y, card_w, Inches(0.22), NAVY)
-        _text(slide, x+Inches(0.10), card_y, card_w-Inches(0.20), Inches(0.24),
-              [[(head, dict(size=9.8, bold=True, color=WHITE))]],
+        _rect(slide, x, card_y, card_w, Inches(0.26), NAVY)
+        _text(slide, x+Inches(0.10), card_y, card_w-Inches(0.20), Inches(0.27),
+              [[(head, dict(size=10.4, bold=True, color=WHITE))]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, x+Inches(0.14), card_y+Inches(0.26), card_w-Inches(0.28), Inches(0.28),
-              [[(rows, dict(size=8.9, color=INK, name=FONT))]],
+        _text(slide, x+Inches(0.10), card_y+Inches(0.34), card_w-Inches(0.20), Inches(0.24),
+              [[(formula, dict(size=9.1, bold=True, color=NAVY, name="Cambria Math"))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, x+Inches(0.14), card_y+Inches(0.62), card_w-Inches(0.28), Inches(0.22),
+              [[(desc, dict(size=9.2, color=INK, name=FONT))]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
@@ -3971,6 +3986,67 @@ def s_unknown_moco_explain(slide, d, idx):
     _footer(slide, idx)
 
 
+def s_unknown_moco_neco(slide, d, idx):
+    _bg(slide, WHITE)
+    _title_block(slide, d.get("kicker"), d["title"])
+    _text(slide, Inches(0.85), Inches(1.58), Inches(11.55), Inches(0.40),
+          [[("MoCo expands the negative dictionary; NeCo regularizes patch-neighbor order to preserve local failure-pattern structure.",
+             dict(size=13.8, bold=True, color=NAVY))]],
+          anchor=MSO_ANCHOR.MIDDLE)
+
+    y = Inches(2.12)
+    h = Inches(4.42)
+    x0 = Inches(0.78)
+    gap = Inches(0.28)
+    left_w = Inches(3.58)
+    right_w = Inches(7.89)
+    right_x = Emu(int(x0) + int(left_w) + int(gap))
+
+    # 1:2 visual weight: MoCo is the supporting queue mechanism, NeCo is the main patch-level figure.
+    _rect(slide, x0, y, left_w, h, WHITE, line=LINE)
+    _rect(slide, x0, y, left_w, Inches(0.38), NAVY)
+    _text(slide, x0, y, left_w, Inches(0.38),
+          [[("MoCo queue", dict(size=13.2, bold=True, color=WHITE))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _img_fit(slide, "ref_moco_fig1.png", x0+Inches(0.16), y+Inches(0.56),
+             left_w-Inches(0.32), Inches(2.22), frame=False)
+    _rect(slide, x0+Inches(0.18), y+Inches(3.03), left_w-Inches(0.36), Inches(1.10),
+          PANEL, line=LINE)
+    _text(slide, x0+Inches(0.30), y+Inches(3.13), left_w-Inches(0.60), Inches(0.28),
+          [[("Role in loss", dict(size=11.2, bold=True, color=NAVY))]])
+    _text(slide, x0+Inches(0.30), y+Inches(3.44), left_w-Inches(0.60), Inches(0.54),
+          [[("maintains queue negatives beyond the current minibatch",
+             dict(size=10.6, color=INK))]],
+          anchor=MSO_ANCHOR.MIDDLE)
+
+    _rect(slide, right_x, y, right_w, h, WHITE, line=LINE)
+    _rect(slide, right_x, y, right_w, Inches(0.38), NAVY)
+    _text(slide, right_x, y, right_w, Inches(0.38),
+          [[("NeCo patch consistency", dict(size=13.2, bold=True, color=WHITE))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _img_fit(slide, "ref_neco_method.png", right_x+Inches(0.14), y+Inches(0.50),
+             right_w-Inches(0.28), Inches(3.08), frame=False)
+
+    chips = [
+        ("ROI-aligned patches", "same original region"),
+        ("neighbor ordering", "patch-level similarity"),
+        ("consistency loss", "compact local structure"),
+    ]
+    chip_y = y + Inches(3.74)
+    chip_gap = Inches(0.12)
+    chip_w = Emu((int(right_w) - int(chip_gap) * 2 - int(Inches(0.36))) // 3)
+    for i, (head, sub) in enumerate(chips):
+        cx = Emu(int(right_x) + int(Inches(0.18)) + i*(int(chip_w)+int(chip_gap)))
+        _rect(slide, cx, chip_y, chip_w, Inches(0.52), PANEL, line=LINE)
+        _text(slide, cx+Inches(0.08), chip_y+Inches(0.06), chip_w-Inches(0.16), Inches(0.18),
+              [[(head, dict(size=9.9, bold=True, color=NAVY))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, cx+Inches(0.08), chip_y+Inches(0.27), chip_w-Inches(0.16), Inches(0.18),
+              [[(sub, dict(size=8.9, color=MUTED))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _footer(slide, idx)
+
+
 def s_unknown_neco_explain(slide, d, idx):
     _bg(slide, WHITE)
     _title_block(slide, "P1 | Unknown 대조 학습 ③", "NeCo patch consistency: 같은 위치의 patch-neighbor order를 맞춤")
@@ -4022,6 +4098,7 @@ DISPATCH = {"title": s_title, "section": s_section, "stats": s_stats, "bullets":
             "papertext": s_papertext, "archflow": s_archflow,
             "p1_known_perf": s_p1_known_perf, "unknown_ablation": s_unknown_ablation,
             "unknown_simclr_hardneg": s_unknown_simclr_hardneg,
+            "unknown_moco_neco": s_unknown_moco_neco,
             "unknown_moco_explain": s_unknown_moco_explain,
             "unknown_neco_explain": s_unknown_neco_explain,
             "p2_intro": s_p2_intro, "p2_fcmpm": s_p2_fcmpm, "p2_validation": s_p2_validation,
