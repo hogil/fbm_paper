@@ -1171,7 +1171,7 @@ def _episode_trend_diagram(slide, x, y, w, h):
           [[("gray = fleet     color = sampled εₜ", dict(size=9.1, bold=True, color=MU))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
 
-    titles = ["Gaussian iid", "Equipment-correlated", "Laplacian / hunting"]
+    titles = ["Gaussian iid", "Equipment-correlated", "Laplacian / heavy-tail"]
     formulas = ["εₜ ~ N(0, σ²)", "εₜ = ρεₜ₋₁ + ηₜ", "εₜ ~ Laplace(0, b)"]
     pcol = [BLUE, TL, NV]
     panel_gap = I(0.10)
@@ -1282,8 +1282,8 @@ def _p3_quad_diagram(slide, x, y, w, h):
              ["base", "imp", "best"])
     # Q2 progression
     qx, qy = quads[1]
-    barchart(qx, qy, "Validation stack — controlled checks",
-             ["Baseline", "BKM rules", "5-seed best"],
+    barchart(qx, qy, "5-seed robustness — boundary",
+             ["Mean claim", "Base run", "Best seed"],
              [0.9967, 0.9971, 0.9987], [1, 1, 0], [4, 3, 2],
              ["base", "imp", "best"])
 
@@ -1329,7 +1329,7 @@ def _p3_quad_diagram(slide, x, y, w, h):
     txt(qx + I(0.1), qy + I(0.05), qw - I(0.2), I(0.26),
         [[("Rendering sensitivity check", dict(size=13, bold=True, color=NV))]])
     txt(qx + I(0.1), qy + I(0.31), qw - I(0.2), I(0.24),
-        [[("color contrast affects CNN features; not a main performance claim", dict(size=11.5, bold=True, color=NV))]])
+        [[("rendering color sensitivity check; not used as main claim", dict(size=11.5, bold=True, color=NV))]])
     imgs = [("p3r_color_baseline.png", "Before (파랑)"), ("p3r_color_c01.png", "After (빨강)")]
     isz = min(I(1.3), qh - I(0.86)); igap = I(0.46)
     total = isz * 2 + igap; ix0 = qx + (qw - total) // 2; iy = qy + I(0.58)
@@ -3124,13 +3124,26 @@ def s_p2_fcmpm(slide, d, idx):
           [[("2-combo GT가 부족한 조건에서 FCM은 failure coverage를 보존하고, Pair Mask는 합성 배경 loss를 분리해 FAR tail을 낮춥니다.",
              dict(size=13.2, color=INK))]])
     _text(slide, Inches(0.85), Inches(1.78), Inches(11.75), Inches(0.18),
-          [[("Mixup은 0~7 grade 의미를 흐리고, diffusion은 라벨·컴퓨팅 부담이 큽니다. 원값을 보존하는 CutMix 계열을 채택했습니다. (박은병 교수 자문)",
+          [[("Mixup은 0~7 grade 의미를 흐리고, diffusion은 label·compute 부담이 큽니다. 원값을 보존하는 CutMix 계열을 채택했습니다. (자문: 연세대학교 인공지능학과 박은병 교수)",
              dict(size=9.8, color=MUTED))]])
 
     fig_x, fig_y, fig_w, fig_h = Inches(0.78), Inches(1.98), Inches(11.78), Inches(2.30)
     _rect(slide, fig_x, fig_y, fig_w, fig_h, WHITE, line=LINE)
     _img_fit(slide, "fcm_pm_panel.png", fig_x+Inches(0.10), fig_y+Inches(0.12),
              fig_w-Inches(0.20), fig_h-Inches(0.24), frame=False)
+    # Correct the embedded figure captions for the mixed views: the FCM mixed
+    # samples use the union target, while Pair Mask samples use single targets.
+    inner_x = int(fig_x) + int(Inches(0.10))
+    inner_w = int(fig_w) - int(Inches(0.20))
+    col_w = inner_w / 6.0
+    label_y = fig_y + Inches(0.16)
+    for ci, txt in [(2, "FCM mixed view 1  (A∪B)"), (3, "FCM mixed view 2  (A∪B)")]:
+        lx = Emu(int(inner_x + ci * col_w + col_w * 0.02))
+        lw = Emu(int(col_w * 0.96))
+        _rect(slide, lx, label_y, lw, Inches(0.42), WHITE)
+        _text(slide, lx, label_y+Inches(0.09), lw, Inches(0.26),
+              [[(txt, dict(size=10.2, bold=True, color=NAVY))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
     card_y = Inches(4.52); card_h = Inches(1.05); card_w = Inches(3.70); gap = Inches(0.22); x0 = Inches(0.78)
     cards = [
@@ -3162,11 +3175,11 @@ def s_p2_fcmpm(slide, d, idx):
           [[("Formula + ablation", dict(size=9.8, bold=True, color=MUTED))]],
           anchor=MSO_ANCHOR.MIDDLE)
     _text(slide, Inches(2.78), Inches(5.82), Inches(9.20), Inches(0.60),
-          [[("Full-Cover CutMix: x_mixed = paste B grid cells onto A,   y_mixed = y_A ∪ y_B",
+          [[("FCM mixed views: y_mixed = y_A ∪ y_B  (multi-label target)",
              dict(size=10.4, bold=True, color=NAVY, name="Cambria Math"))],
-           [("Pair Mask: x_masked = mask pasted cells, y_masked ∈ {y_A,y_B}; L_total = L_BCE(mixed)+w·L_BCE(masked)",
+           [("Pair Mask views: y_masked ∈ {y_A,y_B}; L_total = L_BCE(mixed)+w·L_BCE(masked)",
              dict(size=10.4, bold=True, color=NAVY, name="Cambria Math"))],
-           [("Pair Mask ablation: removed FAR 100% → applied 0.00%",
+           [("Pair Mask reduces synthetic-background FAR; final selected setting reaches 0.00%",
              dict(size=10.4, bold=True, color=NAVY, name="Cambria Math"))]],
           anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
@@ -3174,7 +3187,7 @@ def s_p2_fcmpm(slide, d, idx):
 
 def s_p2_validation(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P2 | 검증 결과", "Multi-label recipe performance table (per class 2000)")
+    _title_block_compact(slide, "P2 | 검증 결과", "Multi-label recipe performance on controlled benchmark")
     _text(slide, Inches(0.72), Inches(1.40), Inches(12.0), Inches(0.32),
           [[("[controlled synthetic validation] 현업 single-failure 원천에서 생성한 평가셋입니다. 단일 대표 모델은 FCM-PM + val_margin selection입니다.",
              dict(size=12.4, bold=True, color=NAVY))]])
@@ -3197,7 +3210,7 @@ def s_p2_validation(slide, d, idx):
                            font_size=8.4, header_size=8.7, left_cols={1, 6},
                            bold_rows={6, 7})
 
-    side_headers = ["Candidate", "NI-FAR", "OOD-FAR", "Cost", "Interpretation"]
+    side_headers = ["Candidate", "NI-FAR", "OOD-FAR", "Cost", "Interp."]
     side_rows = [
         ("FCM-PM + val_margin", "0.00%", "0.00%", "1x / 1x / 1x", "selected\nsingle model"),
         ("vote_majority_bits", "0.00%", "0.00%", "5x / 1/5x / 5x", "best F1\ncost 5x"),
@@ -3282,7 +3295,7 @@ def s_p2_selection(slide, d, idx):
           [[("eval-F1 0.57 → 0.84", dict(size=10.2, bold=True, color=NAVY))]],
           align=PP_ALIGN.CENTER)
     _text(slide, lx+Inches(0.34), ly+Inches(3.72), lw-Inches(0.68), Inches(0.20),
-          [[("portfolio evidence: correlation with test bit_F1", dict(size=9.6, bold=True, color=MUTED))]],
+          [[("post-hoc check: correlation with held-out eval bit_F1", dict(size=9.6, bold=True, color=MUTED))]],
           align=PP_ALIGN.CENTER)
     card_y = ly+Inches(3.92); card_h = Inches(0.66); card_w = Inches(2.42)
     impacts = [
@@ -3482,7 +3495,7 @@ def s_p3_generator(slide, d, idx):
     card_y = Inches(5.72); card_h = Inches(0.92); card_w = Inches(2.88); gap = Inches(0.18); x0 = Inches(0.78)
     cards = [
         ("Episode", "K ~ U(Kmin,Kmax),  L_k ~ U(Lmin,Lmax)", "구간 개수와 길이를 먼저 결정"),
-        ("Density", "m_k ~ Cat(dense,sparse,missing,thin)", "구간별 관측 point 수를 결정"),
+        ("Density", "m_k ~ Cat(dense,sparse,very_sparse,thin,missing)", "구간별 관측 point 수를 결정"),
         ("Noise", "ε_t ∈ {N(0,σ²), AR(1), Laplace(0,b)}", "측정 산포 family를 episode별 부여"),
         ("Output", "y_t = μ_region(t) + ε_t  if active", "missing 구간 제외 후 normal trend 생성"),
     ]
@@ -3527,6 +3540,11 @@ def s_p3_result(slide, d, idx):
         _rect(slide, x, y, cw, ch, WHITE, line=LINE)
         _img_cover(slide, src, x+Inches(0.06), y+Inches(0.06),
                    cw-Inches(0.12), ch-Inches(0.12), focus_y=0.50)
+        _rect(slide, x+Inches(0.12), y+Inches(0.12), Inches(1.18), Inches(0.25), WHITE,
+              line=RGBColor(0xD7, 0xDE, 0xEA))
+        _text(slide, x+Inches(0.16), y+Inches(0.13), Inches(1.10), Inches(0.22),
+              [[(head, dict(size=10.2, bold=True, color=NAVY))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
     fx = Emu(int(x0)+2*(int(cw)+int(gapx)))
     fy = Emu(int(y0)+1*(int(ch)+int(gapy)))
@@ -3549,10 +3567,10 @@ def s_p3_result(slide, d, idx):
     _rect(slide, strip_x, strip_y, strip_w, strip_h, PANEL, line=LINE)
     vals = [
         ("Test 1,500", "normal 750 / abnormal 5종×150"),
-        ("F1 0.9967", "TN/FN/FP/TP 746/1/4/749"),
+        ("F1 0.9967", "TN=746 / FP=4 / FN=1 / TP=749"),
         ("Recall 0.9987", "abnormal class"),
-        ("5-seed best 0.9987", "TN/FN/FP/TP 748/0/2/750"),
-        ("threshold 0.9", "normal decision"),
+        ("5-seed best 0.9987", "TN=748 / FP=2 / FN=0 / TP=750"),
+        ("threshold 0.9", "p(normal) ≥ 0.9 → Normal"),
     ]
     cell_w = Emu(int(strip_w) // len(vals))
     for i, (big, sub) in enumerate(vals):
@@ -3568,7 +3586,7 @@ def s_p3_result(slide, d, idx):
     _rect(slide, Inches(0.90), Inches(6.46), Inches(11.5), Inches(0.30), WHITE, line=LINE)
     _rect(slide, Inches(0.90), Inches(6.46), Inches(0.10), Inches(0.30), COVER_BAR)
     _text(slide, Inches(1.08), Inches(6.46), Inches(11.10), Inches(0.30),
-          [[("Validation controls: LR sweep, color/smoothing, label smoothing, stochastic depth, focal+EMA, val-F1 median, normal threshold 0.9",
+          [[("Validation controls: LR sweep, color/smoothing, label smoothing, stochastic depth, focal+EMA, val-F1 median, normal threshold 0.9; red marks are explanation overlay",
              dict(size=12.0, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
@@ -3647,7 +3665,7 @@ def _draw_pos_neg_hard_old(slide, x, y, w, h):
     cols = [
         ("Positive", "NUMERATOR", "sim ↑", "pull\ncompact"),
         ("Negative", "DENOMINATOR", "sim low", "weak push"),
-        ("Hard negative", "DENOMINATOR", "sim high", "boundary"),
+        ("False-negative risk", "EXCLUDED", "sim too high", "protect\ncluster"),
     ]
     col_x = [0.030, 0.350, 0.670]
     col_w = 0.300
@@ -3745,7 +3763,7 @@ def _draw_pos_neg_hard(slide, x, y, w, h):
     cols = [
         ("Positive", "PULL TERM", "similar", "pull closer", 0.035),
         ("Negative", "PUSH TERM", "far away", "weak push", 0.365),
-        ("Hard negative", "PUSH TERM", "very similar", "strong push", 0.695),
+        ("False negative risk", "EXCLUDED", "too close", "protect cluster", 0.695),
     ]
     col_w = 0.270
     for i, (head, role, loss_txt, emb_txt, cx) in enumerate(cols):
@@ -4039,7 +4057,7 @@ def s_unknown_simclr_hardneg(slide, d, idx):
     _number_chip(slide, lx+Inches(3.90), ly+Inches(2.94), 3, "InfoNCE",
                  "positive는 가깝게, 나머지는 멀게", w=Inches(1.55), h=Inches(0.58))
 
-    # Hard negative panel
+    # False-negative risk panel
     rx, ry, rw, rh = Inches(6.78), Inches(2.38), Inches(5.82), Inches(3.82)
     _rect(slide, rx, ry, rw, rh, WHITE, line=LINE)
     _draw_hardneg_half(slide, rx, ry, rw, rh)
