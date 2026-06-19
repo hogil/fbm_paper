@@ -2269,7 +2269,10 @@ def s_cards(slide, d, idx):
         labels = [("Problem", "problem"), ("Approach", "approach"), ("Impact", "result")]
         rgap = int(Inches(0.10))
         bottom_pad = int(Inches(0.18))
-        rh = min(int(Inches(0.52)), (rows_h - bottom_pad - rgap * (len(labels) - 1)) // len(labels))
+        # stack 한 줄이 있으면 결과 줄 아래에 2줄(10pt)까지 들어갈 공간을 미리 예약해 세 줄을 위로 조인다.
+        stack_reserve = int(Inches(0.38)) if cd.get("stack") else 0
+        rh = min(int(Inches(0.52)),
+                 (rows_h - bottom_pad - stack_reserve - rgap * (len(labels) - 1)) // len(labels))
         rx = x + int(Inches(0.2)); rw = cw - int(Inches(0.4))
         for k, (lab, key) in enumerate(labels):
             ry = rows_top + k * (rh + rgap)
@@ -2291,6 +2294,15 @@ def s_cards(slide, d, idx):
                   Emu(rw - label_w - int(Inches(0.04))), Emu(rh - 2 * row_pad),
                   [[(cd[key], dict(size=11.5, bold=is_result, color=body_col))]],
                   anchor=MSO_ANCHOR.TOP, wrap=True)
+        # ── 기술 stack 한 줄(있을 때만, additive) — 결과 줄 아래 카드 하단에 작은 글씨로 ──
+        if cd.get("stack"):
+            stack_y = rows_top + len(labels) * (rh + rgap)
+            sh = (cy0 + ch) - stack_y - int(Inches(0.04))
+            if sh > int(Inches(0.18)):
+                _text(slide, Emu(rx), Emu(stack_y), Emu(rw), Emu(sh),
+                      [[(cd["stack"], dict(size=10.0, bold=False,
+                                           color=RGBColor(0x55, 0x60, 0x75)))]],
+                      anchor=MSO_ANCHOR.MIDDLE, wrap=True)
     if d.get("note"):
         _text(slide, Inches(0.7), Emu(int(Inches(6.52))), Inches(12.0), Inches(0.5),
               [[(d["note"], dict(size=11.5, color=RGBColor(0x3A, 0x48, 0x5C)))]],
