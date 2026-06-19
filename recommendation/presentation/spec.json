@@ -49,7 +49,7 @@
         1,
         3
       ],
-      "desc": "48매 단위 수작업 검토를 대량 Failbit Map 변환, 검색, 검토 체계로 확장했습니다",
+      "desc": "48매 단위 수작업 검토를 대량 Failbit Map 변환, 검색, 검토 체계로 확장",
       "kpi": "P1은 양산 운영, P2/P3은 validation/PoC 단계",
       "stat_cards": [
         {
@@ -79,7 +79,7 @@
     {
       "type": "archflow",
       "kicker": "P1 | 전체 아키텍처",
-      "title": "Coordinate-preserving Failbit Map operating pipeline",
+      "title": "좌표 보존 Failbit Map 운영 pipeline",
       "stages": [
         {
           "text": "EDS Test  (raw fail-map log)",
@@ -124,11 +124,11 @@
     {
       "type": "bullets",
       "kicker": "P1 | Concept + field constraint",
-      "title": "Failbit Map as discrete spatial-grade representation",
+      "title": "이산 grade 공간 데이터 표현으로서의 Failbit Map",
       "bullets": [
-        "**Data** — EDS Failbit Map은 Memory Cell Block 단위 불량 정도를 Grade 0~7로 표현한 wafer-level data입니다",
-        "**Scale** — wafer 1장은 약 1,000만 block 규모입니다. chip당 1개, wafer 내 약 800개 수준의 Measure 값만으로는 불량 위치와 형상 분석이 부족합니다",
-        "**Storage** — palette PNG는 grade index를 저장하고, positions JSON은 chip/block 좌표를 보존해 viewer overlay와 모델 입력을 같은 좌표계로 맞춥니다"
+        "**Data** — EDS Failbit Map은 Memory Cell Block 단위 불량 정도를 Grade 0~7로 표현한 wafer-level data",
+        "**Scale** — wafer 1장은 약 1,000만 block 규모이며, chip당 1개, wafer 내 약 800개 수준의 Measure 값만으로는 불량 위치와 형상 분석에 한계",
+        "**Storage** — palette PNG는 grade index를 저장하고, positions JSON은 chip/block 좌표를 보존해 viewer overlay와 모델 입력을 같은 좌표계로 정렬"
       ],
       "size": 16.2,
       "gap": 22,
@@ -145,7 +145,7 @@
       "kicker": "P1 | 데이터 생성 (fail-map)",
       "title": "8단계 grade → palette PNG 무손실 저장",
       "bullets": [
-        "**Motivation** — 병목은 변환 속도와 저장 공간입니다. wafer 한 장은 약 1,000만 test result를 포함하고 하루 약 2만 장이 누적되므로, raw log 그대로는 대량 조회와 분석이 어렵습니다. Cython으로 hex-to-grade 변환을 가속하고, EDS 값이 8단계 이산 grade라는 특성을 이용해 32-color palette PNG로 저장 용량을 약 75% 줄였습니다"
+        "**Motivation** — wafer 한 장 약 1,000만 test value, 하루 약 2만 장 누적. raw log는 대량 조회와 AI 입력에 부적합 → hex-to-grade는 Cython 가속, 8단계 grade 특성으로 palette PNG 저장량 약 75% 절감"
       ],
       "body_h": 0.72,
       "img_frame": false,
@@ -220,16 +220,16 @@
     {
       "type": "papertext",
       "kicker": "P1 | viewer 처리 구조",
-      "title": "Numba and pyvips for large-scale Failbit Map viewer",
+      "title": "대용량 Failbit Map viewer를 위한 Numba와 pyvips",
       "grayscale": true,
       "hide_fig_captions": true,
       "footer_size": 12,
       "bullets": [
-        "Numba는 메모리에 올라온 grade array의 composite 루프를 native code로 JIT 컴파일하고, pyvips는 대형 PNG를 필요한 stripe/tile만 decode해 viewer peak memory를 낮춥니다."
+        "Numba는 메모리에 올라온 grade array의 composite 루프를 native code로 JIT 컴파일하고, pyvips는 대형 PNG를 필요한 stripe/tile만 decode해 viewer peak memory를 절감"
       ],
       "body_h": 0.38,
       "bullet_size": 14.5,
-      "img_note": "모델 추론 속도 지표가 아니라, 운영 viewer가 대량 Failbit Map을 다루기 위한 image-processing architecture입니다",
+      "img_note": "모델 추론 속도 지표가 아니라, 운영 viewer가 대량 Failbit Map을 다루기 위한 image-processing architecture",
       "cols": 2,
       "figs": [
         {
@@ -245,10 +245,10 @@
     {
       "type": "image_grid",
       "kicker": "P1 | Known 2단계 상세",
-      "title": "Known validation: CNN tuning and ROI cascade",
+      "title": "Known 검증: CNN tuning과 ROI cascade",
       "bullets": [
-        "**1-stage CNN** — 위치·국소 pattern 중심 특성에서는 CNN의 locality inductive bias가 더 sample-efficient하다고 판단했습니다. ConvNeXtV2는 MaxViT와 F1 0.87 동급이면서 더 가벼웠습니다",
-        "**Tuning** — Optuna로 schedule, focal loss, class-imbalance, augmentation strength를 조정해 F1 0.92까지 올렸습니다"
+        "**1-stage CNN (백본 선정)** — 불량이 국소 영역에 몰려 있어 그 외 배경까지 보는 Transformer보다 locality에 강한 CNN이 유리하다고 판단 (연세대 인공지능학과 전해곤 교수 자문). ConvNeXtV2는 MaxViT와 F1 0.87 동급이면서 더 가벼움",
+        "**Tuning** — Optuna로 schedule, focal loss, class-imbalance, augmentation strength를 조정해 F1 0.92로 향상"
       ],
       "body_h": 0.82,
       "bullet_size": 14.8,
@@ -256,20 +256,24 @@
       "images": [
         {
           "src": "wafer_center_scratch.png",
-          "caption": "① Before / raw wafer-level image"
+          "caption": "불량 A — center scratch"
+        },
+        {
+          "src": "wafer_center_bank_boundary.png",
+          "caption": "불량 B — center bank-boundary"
         },
         {
           "src": "p1_roi_crop_real.png",
-          "caption": "② ROI crop (low-confidence region)"
+          "caption": "low-confidence → ROI-YOLO"
         },
         {
           "src": "p1_chip_yolo_box_real.png",
-          "caption": "③ After / chip-level fail pattern",
+          "caption": "chip 분류 + ROI 내 배치 확인",
           "result_frame": "Detection result"
         }
       ],
-      "grid_cols": 3,
-      "img_note": "ConvNeXtV2 1차 분류 후 low-confidence image만 2-stage ROI-YOLO로 보내 chip-level failure pattern을 2차 분류합니다. Optuna 0.92 → 2-stage 0.95. (자문: 연세대학교 인공지능학과 전해곤 교수)"
+      "grid_cols": 4,
+      "img_note": "불량 A와 B는 wafer-level에서 비슷해 1-stage 신뢰도가 낮음. 이 경우만 ROI-YOLO로 chip class와 배치까지 확인해 구분. Optuna 0.92 → 2-stage 0.95."
     },
     {
       "type": "p1_known_perf",
@@ -281,8 +285,8 @@
       "kicker": "P1 | 칩 식별 지도 (후속 개발)",
       "title": "차세대 Stage-2: ROI detection → chip identity map",
       "bullets": [
-        "**Current Stage-2** — ROI-YOLO는 field-validated 구조지만, 선택된 ROI 안에서 box regression, classification, NMS를 수행하므로 class 확장과 detector annotation cost가 남습니다",
-        "**Object-id map** — 제품별 chip coordinate를 재사용해 fixed crop classification으로 바꾸고, chip별 class id를 32×32 wafer grid에 되돌려 배치합니다",
+        "**Current Stage-2** — ROI-YOLO는 field-validated 구조지만, 선택된 ROI 안에서 box regression, classification, NMS를 수행하므로 class 확장과 detector annotation cost 부담이 남음",
+        "**Object-id map** — 제품별 chip coordinate를 재사용해 fixed crop classification으로 바꾸고, chip별 class id를 32×32 wafer grid에 재배치",
         "**Metric** — selected obj-only: val F1 0.9946 / hold-out F1 0.9872. 별도 raw+obj-id 5-seed val F1 0.9838 ± 0.0092"
       ],
       "body_h": 1.36,
@@ -312,15 +316,15 @@
         }
       ],
       "grid_cols": 4,
-      "img_note": "Field-validated 대표 성과는 ROI-YOLO 2-stage F1 0.95이고, object-id map은 detector cost와 class 확장 부담을 줄이기 위한 차세대 Stage-2 구조입니다."
+      "img_note": "Field-validated 대표 성과는 ROI-YOLO 2-stage F1 0.95이고, object-id map은 detector cost와 class 확장 부담을 줄이기 위한 차세대 Stage-2 구조"
     },
     {
       "type": "image_grid",
       "kicker": "P1 | Unknown 탐색",
-      "title": "Contrastive clustering for Unknown candidates",
+      "title": "Unknown 후보 발견 contrastive clustering",
       "bullets": [
-        "**Embedding** — same-wafer views를 alignment target으로 두고, other wafers를 contrastive reference로 사용합니다",
-        "**Review output** — HDBSCAN 결과는 자동 판정이 아니라 엔지니어가 검토할 신규 failure 후보 group입니다"
+        "**Embedding** — same-wafer views를 alignment target으로 두고, other wafers를 contrastive reference로 사용",
+        "**Review output** — HDBSCAN 결과는 자동 판정이 아니라 엔지니어가 검토할 신규 failure 후보 group"
       ],
       "images": [
         {
@@ -338,15 +342,15 @@
       ],
       "grid_cols": 3,
       "body_h": 0.72,
-      "img_note": "실제 현업 데이터 2,000장 review: 13개 후보 중 7개 신규 failure 확인. 화면 이미지는 후속 튜닝용 생성/개발 예시입니다."
+      "img_note": "실제 현업 데이터 2,000장 review: 13개 후보 중 7개 신규 failure 확인. 화면 이미지는 후속 튜닝용 생성/개발 예시"
     },
     {
       "type": "papertext",
       "kicker": "P1 | Unknown 대조 학습: contrastive loss",
-      "title": "False-negative-aware contrastive embedding",
+      "title": "false negative 억제 contrastive embedding",
       "bullets": [
-        "**SimCLR** — positive-pair alignment와 in-batch negative contrast로 wafer pattern embedding을 학습합니다",
-        "**Negative similarity filter** — cosine similarity가 높은 near-positive candidate를 negative set에서 제외해 false-negative push를 방지합니다"
+        "**SimCLR** — positive-pair alignment와 in-batch negative contrast로 wafer pattern embedding을 학습",
+        "**Negative similarity filter** — cosine similarity가 높은 near-positive candidate를 negative set에서 제외해 false-negative push를 방지"
       ],
       "body_h": 0.7,
       "bullet_size": 14.0,
@@ -365,11 +369,11 @@
     },
     {
       "type": "unknown_moco_neco",
-      "kicker": "P1 | Unknown 대조 학습: queue와 patch",
-      "title": "MoCo queue와 NeCo patch consistency",
+      "kicker": "P1 | Unknown 대조 학습: NeCo",
+      "title": "NeCo: 결함 위치에 민감한 patch-neighbor 유사도",
       "bullets": [
-        "**MoCo** — queue로 minibatch 밖 negative dictionary를 확장해 contrastive reference set을 넓힙니다",
-        "**NeCo** — patch-neighbor consistency로 같은 failure pattern의 local structure가 view마다 흔들리지 않게 정규화합니다"
+        "**핵심** — patch 간 유사도 matrix는 결함의 공간 구조를 인코딩 → 결함 위치가 다르면 matrix가 완전히 다름 (CE 큼)",
+        "**대비** — 단순 local 평균(grid)은 둔감, NeCo는 이 민감한 matrix를 같은 wafer 두 view에서 일치시켜 국소 구조 보존"
       ],
       "body_h": 0.62,
       "bullet_size": 13.8,
@@ -402,12 +406,8 @@
           "color": "#0F1E3D",
           "bullets": [
             "DRAM D1a/b/c/d 전제품 분석 파트에서 **매일 사용 중**, 일 2만 wafer 처리",
-            "분석 공수 **90% 이상 절감**과 **P3WN 수율 +0.02%p 개선 1건**의 정량 산정 기여를 창출",
-            "조회 48매 한계를 **대량 조회 viewer**로 확장하고, 검토 방식을 **Failbit Map 변환과 검색** 중심으로 재구성",
-            {
-              "t": "공수 절감과 P3WN 수율 개선 1건을 합산한 정량 산정 기준",
-              "lvl": 1
-            }
+            "분석 공수 절감과 P3WN 수율 개선 1건을 합산해 **정량 산정 기여**를 창출",
+            "조회 48매 한계를 **대량 조회 viewer**로 확장하고, 검토 방식을 **Failbit Map 변환과 검색** 중심으로 재구성"
           ],
           "chips": [
             {
@@ -432,7 +432,7 @@
             "classification model은 **2026년 9월 GPU 서버 배포 검증 예정**이며, 서버 성능은 배포 환경에서 별도 검증",
             "사내 인정: **'25 AI 센터 DS BP Good Challenger 수상**, **'26 MTC 제안 1등급 확정**, **'26 삼성 논문상 초록 통과**",
             {
-              "t": "Unknown 13→7은 분류 성능 지표가 아니라 현업 후보 검토 결과입니다",
+              "t": "Unknown 13→7은 분류 성능 지표가 아니라 현업 후보 검토 결과",
               "lvl": 1
             }
           ],
@@ -463,7 +463,7 @@
         3
       ],
       "rail_sub": "라벨 부족 대응 | Multi-label learning",
-      "desc": "실제 2-combo GT가 부족한 조건에서 single-failure source를 조합해 학습 신호와 평가 구조를 구성했습니다",
+      "desc": "실제 2-combo GT가 부족한 조건에서 single-failure source를 조합해 학습 신호와 평가 구조를 구성",
       "kpi": "Synthetic PoC, 2-combo learning signal + negative-tail control",
       "stat_cards": [
         {
@@ -520,7 +520,7 @@
         3
       ],
       "rail_sub": "Episode generation | Binary validation",
-      "desc": "현장 trend 판정 기준을 episode 생성 규칙으로 옮기고, normal/abnormal binary validation으로 검증했습니다",
+      "desc": "현장 trend 판정 기준을 episode 생성 규칙으로 옮기고, normal/abnormal binary validation으로 검증",
       "kpi": "Synthetic benchmark 기반 episode generation + binary validation",
       "stat_cards": [
         {
@@ -565,9 +565,9 @@
     {
       "type": "image_grid",
       "kicker": "P3 | robustness check",
-      "title": "Robustness and input sensitivity checks",
+      "title": "robustness와 입력 민감도 점검",
       "bullets": [
-        "입력 표현·checkpoint 선택 민감도 확인 장입니다. main claim은 binary-F1 0.9967입니다"
+        "입력 표현과 checkpoint 선택 민감도 확인 장. main claim은 binary-F1 0.9967"
       ],
       "body_h": 0.46,
       "images": [
@@ -627,34 +627,39 @@
       "type": "closing",
       "kicker": "결론 | AI Specialist",
       "title": "제조품질 데이터를 운영형 AI 자산으로 전환",
-      "bullets": [
-        "**P1** — 좌표 보존 Failbit Map과 viewer를 운영 자산으로 만들고, Known 및 Unknown 검토 flow까지 연결했습니다",
-        "**P2/P3** — 2-combo GT와 real abnormal label 부족을 synthetic validation 구조로 보완했습니다",
-        "**조직 확산** — 현업 시연, 모델 개발 자문, 코드·기술 공유로 제조품질 AI 활용을 확산했습니다",
-        "**핵심** — 데이터 생성 → 모델 → viewer → human review → label/retrain으로 이어지는 제조품질 AI 개발 체계를 구축했습니다"
-      ],
-      "kpis": [
+      "projects": [
         {
-          "big": "일 2만",
-          "label": "wafer viewer",
-          "sub": "양산 운영"
+          "tag": "P1",
+          "name": "Failbit Map Known & Unknown",
+          "brief": "raw fail log을 좌표 보존 Failbit Map으로 바꾸고 viewer와 Known/Unknown 분석을 연결",
+          "novelty": [
+            "Failbit Map을 좌표 보존 표현으로 재정의",
+            "CNN → 선택적 ROI-YOLO 2-stage",
+            "self-supervised contrastive + HDBSCAN 무라벨 신규 결함 grouping"
+          ]
         },
         {
-          "big": "F1 0.95",
-          "label": "Known validation",
-          "sub": "실전 데이터"
+          "tag": "P2",
+          "name": "Chip Multi-label (FCM-PM)",
+          "brief": "single-failure 원천에서 2-combo 멀티라벨 학습과 검증 구조를 구성",
+          "novelty": [
+            "Full-Cover CutMix + Pair Mask 합성",
+            "val-margin checkpoint selection",
+            "NB reject + ensemble → KD 경량화"
+          ]
         },
         {
-          "big": "13→7",
-          "label": "Unknown review",
-          "sub": "현업 후보 확인"
-        },
-        {
-          "big": "P2/P3",
-          "label": "label scarcity",
-          "sub": "synthetic validation"
+          "tag": "P3",
+          "name": "Trend Anomaly (episode generation)",
+          "brief": "현장 trend 판정 경험을 생성 규칙으로 옮겨 anomaly 검증 PoC를 구축",
+          "novelty": [
+            "episode generation 규칙화 (Region 5 + Noise 3 + Anomaly 5)",
+            "noise를 실제 설비 거동에 매칭",
+            "정상 산포 보정 + binary gate"
+          ]
         }
-      ]
+      ],
+      "common": "기성 AI 기법을 그대로 쓰지 않고, 각 기법의 작동 가정과 반도체 데이터의 제약(공간성, 이산성, 라벨 부족, 운영 비용)을 비교해 선택, 수정, 배제하고 현업에 맞게 재설계, 검증"
     }
   ]
 }
