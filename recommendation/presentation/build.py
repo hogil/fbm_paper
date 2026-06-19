@@ -1926,6 +1926,40 @@ def _closing_projects(slide, projects, common):
               anchor=MSO_ANCHOR.MIDDLE)
 
 
+def _closing_score_summary(slide, axes, bottom):
+    """AI Specialist scoring summary — official evaluation-axis evidence."""
+    x0 = Inches(0.78); y0 = Inches(2.02)
+    gap = Inches(0.24)
+    cw = Emu(int((int(Inches(11.78)) - int(gap) * 2) / 3))
+    ch = Inches(4.36)
+    pad = Inches(0.24)
+    colors = [ACCENT, RGBColor(0x4B, 0x63, 0x88), RGBColor(0x2E, 0x7D, 0x66)]
+    for i, axis in enumerate(axes[:3]):
+        x = Emu(int(x0) + i * (int(cw) + int(gap)))
+        accent = colors[i % len(colors)]
+        _rect(slide, x, y0, cw, ch, PANEL, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        _rect(slide, x, y0, cw, Inches(0.12), accent)
+        _text(slide, x + pad, y0 + Inches(0.26), Emu(int(cw) - int(pad)*2), Inches(0.38),
+              [[(axis.get("axis", ""), dict(size=16.0, bold=True, color=NAVY))]],
+              anchor=MSO_ANCHOR.MIDDLE)
+        if axis.get("question"):
+            _text(slide, x + pad, y0 + Inches(0.70), Emu(int(cw) - int(pad)*2), Inches(0.44),
+                  [[(axis["question"], dict(size=10.8, bold=True, color=accent))]],
+                  anchor=MSO_ANCHOR.MIDDLE)
+        _rect(slide, x + pad, y0 + Inches(1.25), Emu(int(cw) - int(pad)*2), Pt(1.0), LINE)
+        _bullets_tf(slide, x + pad, y0 + Inches(1.44), Emu(int(cw) - int(pad)*2),
+                    Inches(2.68), axis.get("evidence", []), size=11.6, gap=7, line_spacing=1.07)
+
+    if bottom:
+        by = Inches(6.54)
+        _rect(slide, x0, by, Inches(11.78), Inches(0.48), RGBColor(0xEC, 0xF1, 0xF7),
+              line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        _rect(slide, x0, by, Inches(0.10), Inches(0.48), ACCENT)
+        _text(slide, x0 + Inches(0.28), by, Inches(11.28), Inches(0.48),
+              [[(bottom, dict(size=12.2, bold=True, color=NAVY))]],
+              anchor=MSO_ANCHOR.MIDDLE, align=PP_ALIGN.CENTER)
+
+
 def s_closing(slide, d, idx):
     _bg(slide, WHITE)
     has_kpi = bool(d.get("kpis"))
@@ -1942,6 +1976,10 @@ def s_closing(slide, d, idx):
     _rect(slide, Inches(0.7), ty, Inches(0.135), Inches(0.84), ACCENT)
     _text(slide, Inches(1.02), Emu(int(ty)+int(Inches(0.04))), Inches(11.5), Inches(1.0),
           [[(d["title"], dict(size=31, bold=True, color=NAVY))]])
+    if d.get("score_axes"):
+        _closing_score_summary(slide, d["score_axes"], d.get("bottom"))
+        _footer(slide, idx)
+        return
     if d.get("projects"):
         _closing_projects(slide, d["projects"], d.get("common"))
         _footer(slide, idx)

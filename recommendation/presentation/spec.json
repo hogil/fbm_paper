@@ -5,7 +5,7 @@
       "anchor_metrics": "",
       "kicker": "'26 AI Specialist 면접 심사 자료",
       "title": "AI Specialist 인증 발표",
-      "subtitle": "반도체 공정 이해를 바탕으로 데이터 처리 구조, viewer backend/frontend, AI model까지 직접 설계한 3개 과제",
+      "subtitle": "10년 제조품질 현장 경험을 바탕으로 데이터 처리 구조, viewer backend/frontend, AI model까지 직접 설계한 3개 과제",
       "author": "최호길  |  메모리제조센터 QIE그룹 Data Science 파트",
       "affil": "제조품질 AI / Data Science"
     },
@@ -626,41 +626,41 @@
     },
     {
       "type": "closing",
-      "kicker": "결론 | AI Specialist",
-      "title": "제조품질 데이터를 운영형 AI 자산으로 전환",
-      "projects": [
+      "kicker": "결론 | 평가 항목 대응 summary",
+      "title": "기술 전문성, 리더십, 성과를 증거로 정리",
+      "score_axes": [
         {
-          "tag": "P1",
-          "name": "Failbit Map Known & Unknown",
-          "brief": "raw fail log을 좌표 보존 Failbit Map으로 바꾸고 viewer와 Known/Unknown 분석을 연결",
-          "novelty": [
-            "Failbit Map을 좌표 보존 표현으로 재정의",
-            "CNN → 선택적 ROI-YOLO 2-stage",
-            "self-supervised contrastive + HDBSCAN 무라벨 신규 결함 grouping"
+          "axis": "기술 전문성",
+          "question": "AI 문제정의 · 모델/실험 · 데이터 pipeline",
+          "evidence": [
+            "P1: wafer 약 1,000만 value, 일 2만 wafer 조건에서 Cython 100배 가속, palette PNG 75% 절감, viewer 설계",
+            "P1 Known/Unknown: CNN+ROI cascade F1 0.78→0.95, contrastive+MoCo+NeCo noise 15.78%→0.00%",
+            "P2: FCM-PM, val-margin, NB reject로 single source에서 bit_F1 0.9927 / FAR 0.00%",
+            "P3: 10년 trend 판정 경험을 Region 5, Noise 3, Anomaly 5 generator로 구현"
           ]
         },
         {
-          "tag": "P2",
-          "name": "Chip Multi-label (FCM-PM)",
-          "brief": "single-failure 원천에서 2-combo 멀티라벨 학습과 검증 구조를 구성",
-          "novelty": [
-            "Full-Cover CutMix + Pair Mask 합성",
-            "val-margin checkpoint selection",
-            "NB reject + ensemble → KD 경량화"
+          "axis": "기술 리더십",
+          "question": "협업 · 기술 의사결정 · 조직 확산",
+          "evidence": [
+            "현업 엔지니어, 관리자, AI 센터와 협업하며 P1/P2/P3 데이터, 모델, 검증 구조를 직접 주도",
+            "ConvNeXtV2, ROI-YOLO, object-id map, FCM-PM, NeCo 선택 이유를 반도체 데이터 특성과 연결",
+            "DRAM YE, MI 기술팀, PA/Defect 제어팀 대상 발표와 시연으로 현업 활용을 확산",
+            "Confluence, GitHub, 사내 세미나, 동료 코드 교육으로 모델 선택, fine-tuning, 학습 안정화 노하우 공유"
           ]
         },
         {
-          "tag": "P3",
-          "name": "Trend Anomaly (episode generation)",
-          "brief": "현장 trend 판정 경험을 생성 규칙으로 옮겨 anomaly 검증 PoC를 구축",
-          "novelty": [
-            "episode generation 규칙화 (Region 5 + Noise 3 + Anomaly 5)",
-            "noise를 실제 설비 거동에 매칭",
-            "정상 산포 보정 + binary gate"
+          "axis": "기술성과",
+          "question": "양산 적용 · KPI 개선 · 확장 가능성",
+          "evidence": [
+            "P1 viewer는 DRAM D1a/b/c/d 분석 파트에서 매일 사용 중, 48매 조회 한계를 대량 조회/검토 구조로 확장",
+            "공수 90% 절감과 수율 +0.02%p 개선 1건을 정량 산정 기여로 인정, Good Challenger 및 MTC 1등급 채택",
+            "Known/Unknown 모델은 GPU 배포 대기, object-id map은 detector cost를 줄이는 차세대 Stage-2",
+            "P2/P3는 label 부족 문제를 synthetic validation으로 확장해 타 제품/공정 적용 기반 확보"
           ]
         }
       ],
-      "common": "기성 AI 기법을 그대로 쓰지 않고, 각 기법의 작동 가정과 반도체 데이터의 제약(공간성, 이산성, 라벨 부족, 운영 비용)을 비교해 선택, 수정, 배제하고 현업에 맞게 재설계, 검증"
+      "bottom": "핵심 기여: 제조품질 문제를 AI 관점으로 재정의하고, 데이터 처리·모델 설계·검증·현업 확산까지 직접 연결"
     }
   ]
 }

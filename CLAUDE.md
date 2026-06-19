@@ -254,6 +254,7 @@
 **자료조사 에이전트 기준**:
 - 각 project마다 `개발 배경`, `해결 문제`, `AI 적용 필요성`, `기술 stack`, `architecture/model/data pipeline`, `KPI/성능 개선`, `현업 활용`, `확장 계획`, `본인 직접 기여` 근거를 찾아 정리한다.
 - P1은 양산 운영 viewer / Known validation / Unknown review / object-id map 후속 개발을 구분해 조사한다.
+- P1의 출발점은 Failbit Map의 필요성이다. 확정 문구: "Failbit Map은 공정개발 결과를 확인하는 최종 map입니다. 불량 정도, 위치, 형태를 확인해 현 개발 수준을 파악하고 공정 개선 방향을 결정합니다."
 - P2는 single-failure 원천, FCM-PM, Pair Mask, val-margin, NB reject, ensemble/KD가 각각 무엇을 해결하는지 조사한다.
 - P3는 episode generator, Region/Noise/Anomaly rule, binary validation, robustness check가 현업 trend 판정 경험과 어떻게 연결되는지 조사한다.
 - NeCo / MoCo / contrastive / FCM-PM / NB reject 등 기법은 단순 정의가 아니라 `왜 반도체 failure data에 맞는지`까지 조사한다.
@@ -265,6 +266,7 @@
 - 각 핵심 기법 설명은 한 화면 안에서 최소한 `왜 필요했는지`, `기존 문제`, `해결 방식`, `개선 수치` 중 3개 이상이 보이게 쓴다. 공간이 부족하면 문장을 줄이고 diagram/table로 보인다.
 - 비기술 임원이 이해할 수 있도록 기술을 쉽게 풀어 설명하되, 기술 임원이 봐도 기법 이해와 의사결정 근거가 보이게 쓴다.
 - NeCo, FCM-PM, val-margin, NB reject, object-id map, episode generator는 핵심 기법이므로 삭제하지 말고 설명력과 반도체 적용 이유를 강화한다.
+- P1 초반 Failbit Map 설명에는 위 확정 문구를 우선 사용한다. 필요 시 `공정개발 결과 확인`, `최종 map`, `불량 정도/위치/형태 확인`, `현 개발 수준 파악`, `공정 개선 방향 결정` 의미를 유지한 채 줄인다. 단, 문장은 자연스럽게 쓰고 과장된 홍보 문구처럼 쓰지 않는다.
 - 폰트가 작아지는 방향의 텍스트 추가는 금지한다. 문장을 줄이고 시각화/표/그림의 의미를 선명하게 만든다.
 - 마지막 slide는 `심사위원 점수표 대응 summary` 역할을 한다. `기술 전문성`, `기술 리더십`, `기술성과`를 카드/행으로 나누고, 각 축에 해당하는 대표 evidence를 1~2개씩 배치한다.
 
