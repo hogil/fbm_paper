@@ -356,6 +356,7 @@ def s_section(slide, d, idx):
     # 표지·마무리와 톤을 통일하고 휑함을 줄임(높이 0.12").
     _rect(slide, 0, 0, EMU_W, Inches(0.12), RGBColor(0xCF, 0xD4, 0xDB))
     # 우측 본문 영역 상단(스탯카드 띠 위)에 과제 진행 eyebrow 라벨을 얹어 좌상단 공백 흡수.
+    # (평가축·발표구조 리마인더는 사용자가 desc/kpi/side_stat_cards 로 본문에 직접 배치 — 중복 방지)
     _text(slide, Inches(4.0), Inches(0.42), Inches(8.6), Inches(0.32),
           [[("AI Specialist 인증 | 3개 과제", dict(size=12, bold=True, color=RGBColor(0x8A, 0x92, 0x9E)))]],
           anchor=MSO_ANCHOR.MIDDLE)
@@ -2206,12 +2207,31 @@ def s_timeline(slide, d, idx):
         # 카드 안쪽에 맞춰 라벨을 수직 중앙 정렬(카드 영역에 균형 있게)
         _text(slide, Emu(bx + int(Inches(0.1))), Emu(cy), Emu(box_w - int(Inches(0.2))),
               Emu(card_h), lines, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    _text(slide, Inches(0.6), Inches(6.55), Inches(8), Inches(0.34),
-          [[("● 완료 / 진행 중", dict(size=10.5, bold=True, color=ACCENT)),
-            ("       ○ 예정", dict(size=10.5, bold=True, color=MUTED))]])
-    if d.get("caption"):
-        _text(slide, Inches(7.0), Inches(6.55), Inches(5.7), Inches(0.34),
-              [[(d["caption"], dict(size=10.5, color=MUTED))]], align=PP_ALIGN.RIGHT)
+    # ── 확장 가능성 / 운영 유지보수 mini-panel (additive; d["panels"] 있을 때만) ──
+    # 과밀하던 한 줄 caption을 구조화된 2블록으로 승격해 양식 항목5(확장성+운영유지보수)를
+    # 타임라인 아래 좁은 띠에 작게 렌더한다. panels 없으면 기존 동작(legend+caption 6.55") 유지.
+    panels = d.get("panels")
+    if panels:
+        # 타임라인 하단 빈 띠(lower 카드 아래 y5.95~)에 확장/운영유지보수를 풀폭 라벨 라인으로 배치.
+        # 박스 없이 패널당 1줄(head 굵게 + 본문), 하단 카드와 미겹침. 상단 완료/예정 chip이 legend를
+        # 대신하므로 하단 legend는 생략하고 caption(일정 요약)만 우측에 둔다.
+        rowy = int(Inches(5.95)); rowh = int(Inches(0.36))
+        for j, pn_d in enumerate(panels):
+            ry = rowy + j * rowh
+            runs = [(pn_d.get("head", "") + " — ", dict(size=11, bold=True, color=NAVY)),
+                    (", ".join(pn_d.get("lines", [])), dict(size=10.5, color=RGBColor(0x3A, 0x48, 0x5C)))]
+            _text(slide, Inches(0.6), Emu(ry), Inches(12.13), Emu(rowh), [runs],
+                  anchor=MSO_ANCHOR.MIDDLE)
+        if d.get("caption"):
+            _text(slide, Inches(0.6), Emu(int(Inches(6.72))), Inches(12.13), Inches(0.28),
+                  [[(d["caption"], dict(size=10.5, color=MUTED))]], align=PP_ALIGN.RIGHT)
+    else:
+        _text(slide, Inches(0.6), Emu(int(Inches(6.55))), Inches(8), Inches(0.34),
+              [[("● 완료 / 진행 중", dict(size=10.5, bold=True, color=ACCENT)),
+                ("       ○ 예정", dict(size=10.5, bold=True, color=MUTED))]])
+        if d.get("caption"):
+            _text(slide, Inches(7.0), Emu(int(Inches(6.55))), Inches(5.7), Inches(0.34),
+                  [[(d["caption"], dict(size=10.5, color=MUTED))]], align=PP_ALIGN.RIGHT)
     _footer(slide, idx)
 
 
