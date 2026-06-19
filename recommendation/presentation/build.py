@@ -3182,7 +3182,7 @@ def s_unknown_ablation(slide, d, idx):
 
 def s_p2_intro(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P2 | Chip multi-label", "single-failure 원천 기반 2-combo 평가셋 구성")
+    _title_block_compact(slide, "P2 | Chip multi-label", "measure-value 한계에서 image multi-label supervision으로")
 
     # Problem definition only: source와 eval을 분리해서 보여준다.
     x = Inches(0.65); y = Inches(1.82); w = Inches(3.45); h = Inches(4.88)
@@ -3190,13 +3190,13 @@ def s_p2_intro(slide, d, idx):
     _rect(slide, x, y, Inches(0.10), h, COVER_BAR)
     lines = [
         [("Problem", dict(size=15, bold=True, color=NAVY))],
-        [("real 2-combo GT 부족\nlimited supervision / validation", dict(size=13.8, bold=True, color=NAVY))],
+        [("measure value만으로\n중복 failure 확인 한계", dict(size=13.8, bold=True, color=NAVY))],
         [(" ", dict(size=4, color=WHITE))],
         [("Source", dict(size=15, bold=True, color=NAVY))],
-        [("single-failure source만 보유\n직접적인 2-combo supervision 없음", dict(size=12.8, color=INK))],
+        [("2-combo label 확보는\n현실적으로 불가능", dict(size=12.8, color=INK))],
         [(" ", dict(size=4, color=WHITE))],
         [("Eval", dict(size=15, bold=True, color=NAVY))],
-        [("3,850-chip benchmark\n2-combo/negative tail 포함", dict(size=12.8, color=INK))],
+        [("single source 기반\n2-combo eval 구성", dict(size=12.8, color=INK))],
     ]
     _text(slide, x+Inches(0.28), y+Inches(0.28), w-Inches(0.55), h-Inches(0.45), lines)
 
@@ -3215,7 +3215,7 @@ def s_p2_intro(slide, d, idx):
     _text(slide, rx+Inches(0.24), src_y+Inches(0.16), rw-Inches(0.48), Inches(0.28),
           [[("Source bank: single-failure samples", dict(size=14.4, bold=True, color=NAVY))]])
     _text(slide, rx+Inches(0.24), src_y+Inches(0.48), rw-Inches(0.48), Inches(0.20),
-          [[("train split 이후 train source 안에서만 synthetic combination을 생성",
+          [[("2-combo label 없이 train source 안에서 synthetic combination을 생성",
              dict(size=10.4, color=MUTED))]])
     source_imgs = [
         ("chip_eval_bank_boundary_selected.png", "bb"),
@@ -3231,7 +3231,7 @@ def s_p2_intro(slide, d, idx):
     _rect(slide, rx+Inches(2.95), Inches(3.96), Inches(1.60), Inches(0.28),
           COVER_BAR, shape=MSO_SHAPE.DOWN_ARROW)
     _text(slide, rx+Inches(4.72), Inches(3.95), Inches(2.7), Inches(0.28),
-          [[("evaluation requires combo classes and negative tail", dict(size=10.0, bold=True, color=MUTED))]],
+          [[("image multi-label eval", dict(size=10.0, bold=True, color=MUTED))]],
           align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
 
     _rect(slide, rx, eval_y, rw, eval_h, WHITE, line=LINE)
@@ -3256,7 +3256,7 @@ def s_p2_intro(slide, d, idx):
     _rect(slide, x+Inches(0.28), y+h-Inches(0.88), w-Inches(0.56), Inches(0.58),
           WHITE, line=RGBColor(0xD6,0xDE,0xEA))
     _text(slide, x+Inches(0.45), y+h-Inches(0.82), w-Inches(0.90), Inches(0.46),
-          [[("Design implication: distribution gap requires probability modeling and reject logic.",
+          [[("Design implication: FCM-PM creates 2-combo supervision from single source.",
              dict(size=10.2, bold=True, color=NAVY))]],
           anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx, size=d.get("footer_size", 9))
@@ -3266,10 +3266,10 @@ def s_p2_fcmpm(slide, d, idx):
     _bg(slide, WHITE)
     _title_block_compact(slide, "P2 | FCM-PM 원리", "FCM-PM: coverage 보존과 loss masking")
     _text(slide, Inches(0.85), Inches(1.52), Inches(11.75), Inches(0.34),
-          [[("2-combo GT가 부족한 조건에서 FCM은 failure coverage를 보존하고, Pair Mask는 합성 배경 loss를 분리해 FAR tail을 낮춤",
+          [[("Measure value로 중복 failure 확인이 어려워 image multi-label이 필요합니다",
              dict(size=13.2, color=INK))]])
     _text(slide, Inches(0.85), Inches(1.76), Inches(11.75), Inches(0.24),
-          [[("Mixup은 0~7 grade 의미를 흐리고, diffusion은 label 및 compute 부담이 큼. 그래서 원값을 보존하는 CutMix 계열에서 FCM-PM을 설계 (자문: 연세대학교 인공지능학과 박은병 교수)",
+          [[("2-combo label 확보가 현실적으로 어려워 single-failure source에서 FCM-PM supervision을 구성 (자문: 연세대학교 인공지능학과 박은병 교수)",
              dict(size=10.8, color=MUTED))]])
 
     fig_x, fig_y, fig_w, fig_h = Inches(0.78), Inches(1.98), Inches(11.78), Inches(2.30)
