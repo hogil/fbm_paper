@@ -399,7 +399,20 @@ def s_section(slide, d, idx):
     # 요약(desc) 배지로 채워 세 디바이더 공통의 허전한 인상을 제거. 좌측 'WHY' eyebrow + 본문.
     # 박스 높이를 키우고(0.66→0.82) 아래 KPI/before-after 블록과의 간격을 균등 분배해 본문 하단
     # 빈 띠를 흡수(세 디바이더 공통의 하단 공백 과다 제거).
-    if d.get("desc"):
+    if d.get("field_problem") and d.get("tech_problem"):
+        # item 2 핵심: 현업 문제 / 기술 문제 2행 (있으면 desc roadmap 대신 실제 문제 내용 표시)
+        rows = [("현업 문제", d["field_problem"], ACCENT),
+                ("기술 문제", d["tech_problem"], RGBColor(0x55, 0x60, 0x75))]
+        ry0 = int(Inches(4.50)); rh = int(Inches(0.45)); rgp = int(Inches(0.06))
+        for ri, (lab, txt, col) in enumerate(rows):
+            ry = Emu(ry0 + ri * (rh + rgp))
+            _rect(slide, Inches(4.0), ry, Inches(8.6), Emu(rh), RGBColor(0xF2, 0xF5, 0xFA))
+            _rect(slide, Inches(4.0), ry, Inches(0.09), Emu(rh), col)
+            _text(slide, Inches(4.2), ry, Inches(1.25), Emu(rh),
+                  [[(lab, dict(size=11, bold=True, color=col))]], anchor=MSO_ANCHOR.MIDDLE)
+            _text(slide, Inches(5.5), ry, Inches(6.95), Emu(rh),
+                  [[(txt, dict(size=11.5, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
+    elif d.get("desc"):
         wy = Inches(4.58); wh = Inches(0.82)
         _rect(slide, Inches(4.0), wy, Inches(8.6), wh, RGBColor(0xF2,0xF5,0xFA))
         _rect(slide, Inches(4.0), wy, Inches(0.09), wh, ACCENT)
@@ -1927,14 +1940,17 @@ def _closing_projects(slide, projects, common):
               anchor=MSO_ANCHOR.MIDDLE)
 
 
-def _closing_score_summary(slide, axes, bottom):
+def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
     """AI Specialist scoring summary — official evaluation-axis evidence."""
     x0 = Inches(0.78); y0 = Inches(2.02)
     gap = Inches(0.24)
     cw = Emu(int((int(Inches(11.78)) - int(gap) * 2) / 3))
-    ch = Inches(4.36)
+    # bottom_lines(과제별 본인 기여 3줄)이 있으면 하단 밴드를 키워야 하므로 축 카드 높이를
+    # 그만큼 줄여 footer 위 안전선을 유지한다(폰트 축소 없이 영역만 재배분 — additive 가드).
+    ch = Inches(3.92) if bottom_lines else Inches(4.36)
     pad = Inches(0.24)
     colors = [ACCENT, RGBColor(0x4B, 0x63, 0x88), RGBColor(0x2E, 0x7D, 0x66)]
+    ev_h = Inches(2.24) if bottom_lines else Inches(2.68)
     for i, axis in enumerate(axes[:3]):
         x = Emu(int(x0) + i * (int(cw) + int(gap)))
         accent = colors[i % len(colors)]
@@ -1949,9 +1965,20 @@ def _closing_score_summary(slide, axes, bottom):
                   anchor=MSO_ANCHOR.MIDDLE)
         _rect(slide, x + pad, y0 + Inches(1.25), Emu(int(cw) - int(pad)*2), Pt(1.0), LINE)
         _bullets_tf(slide, x + pad, y0 + Inches(1.44), Emu(int(cw) - int(pad)*2),
-                    Inches(2.68), axis.get("evidence", []), size=11.6, gap=7, line_spacing=1.07)
+                    ev_h, axis.get("evidence", []), size=11.6, gap=7, line_spacing=1.07)
 
-    if bottom:
+    # 본인 기여 — 과제별 3줄(bottom_lines)을 우선 렌더. 없으면 기존 1줄(bottom) 동작 유지.
+    if bottom_lines:
+        by = Inches(6.10); bh = Inches(0.92)
+        _rect(slide, x0, by, Inches(11.78), bh, RGBColor(0xEC, 0xF1, 0xF7),
+              line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        _rect(slide, x0, by, Inches(0.10), bh, ACCENT)
+        rows = [[("본인 기여 — 과제별 직접 설계/구현 범위", dict(size=11.0, bold=True, color=ACCENT))]]
+        for ln in bottom_lines:
+            rows.append([(ln, dict(size=11.4, bold=True, color=NAVY))])
+        _text(slide, x0 + Inches(0.28), by, Inches(11.28), bh, rows,
+              anchor=MSO_ANCHOR.MIDDLE, align=PP_ALIGN.LEFT)
+    elif bottom:
         by = Inches(6.54)
         _rect(slide, x0, by, Inches(11.78), Inches(0.48), RGBColor(0xEC, 0xF1, 0xF7),
               line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
@@ -1978,7 +2005,7 @@ def s_closing(slide, d, idx):
     _text(slide, Inches(1.02), Emu(int(ty)+int(Inches(0.04))), Inches(11.5), Inches(1.0),
           [[(d["title"], dict(size=31, bold=True, color=NAVY))]])
     if d.get("score_axes"):
-        _closing_score_summary(slide, d["score_axes"], d.get("bottom"))
+        _closing_score_summary(slide, d["score_axes"], d.get("bottom"), d.get("bottom_lines"))
         _footer(slide, idx)
         return
     if d.get("projects"):
@@ -2034,6 +2061,68 @@ def s_closing(slide, d, idx):
             tfk.paragraphs[0].space_after = Pt(8)
             if st.get("sub"):
                 tfk.paragraphs[1].space_after = Pt(2)
+    _footer(slide, idx)
+
+
+def s_project_form_summary(slide, d, idx):
+    """Final checklist: P1/P2/P3 mapped to the official form items."""
+    _bg(slide, WHITE)
+    _rect(slide, Inches(0.7), Inches(0.72), Inches(0.11), Inches(0.28), ACCENT)
+    _text(slide, Inches(1.0), Inches(0.7), Inches(11.5), Inches(0.3),
+          [[(d.get("kicker", "결론 | 프로젝트별 양식 대응"), dict(size=12.5, bold=True, color=ACCENT))]])
+    _rect(slide, Inches(0.7), Inches(1.12), Inches(0.135), Inches(0.84), ACCENT)
+    _text(slide, Inches(1.02), Inches(1.16), Inches(11.5), Inches(1.0),
+          [[(d["title"], dict(size=31, bold=True, color=NAVY))]])
+
+    projects = d.get("projects", [])[:3]
+    x0 = Inches(0.78); y0 = Inches(2.08); gap = Inches(0.24)
+    cw = Emu(int((int(Inches(11.78)) - int(gap) * 2) / 3))
+    ch = Inches(4.20); pad = Inches(0.22)
+    row_h = Inches(0.58)
+    label_w = Inches(0.86)
+    colors = [ACCENT, RGBColor(0x4B, 0x63, 0x88), RGBColor(0x2E, 0x7D, 0x66)]
+    for i, pj in enumerate(projects):
+        x = Emu(int(x0) + i * (int(cw) + int(gap)))
+        accent = colors[i % len(colors)]
+        _rect(slide, x, y0, cw, ch, PANEL, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        _rect(slide, x, y0, cw, Inches(0.12), accent)
+        _rect(slide, x + pad, y0 + Inches(0.28), Inches(0.54), Inches(0.32),
+              accent, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        _text(slide, x + pad, y0 + Inches(0.28), Inches(0.54), Inches(0.32),
+              [[(pj.get("tag", ""), dict(size=12.5, bold=True, color=WHITE))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, x + pad + Inches(0.66), y0 + Inches(0.24),
+              Emu(int(cw) - int(pad) * 2 - int(Inches(0.66))), Inches(0.38),
+              [[(pj.get("name", ""), dict(size=12.7, bold=True, color=NAVY))]],
+              anchor=MSO_ANCHOR.MIDDLE)
+        _rect(slide, x + pad, y0 + Inches(0.78), Emu(int(cw) - int(pad) * 2), Pt(1.0), LINE)
+        for j, item in enumerate(pj.get("items", [])[:5]):
+            ry = y0 + Inches(0.96) + Emu(j * int(row_h))
+            _rect(slide, x + pad, ry, label_w, Inches(0.34), WHITE, line=LINE,
+                  shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+            _text(slide, x + pad, ry, label_w, Inches(0.34),
+                  [[(item.get("label", ""), dict(size=10.6, bold=True, color=accent))]],
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+            _text(slide, x + pad + Inches(0.96), ry - Inches(0.02),
+                  Emu(int(cw) - int(pad) * 2 - int(Inches(1.02))), Inches(0.42),
+                  [[(item.get("text", ""), dict(size=10.7, bold=(j == 0), color=INK))]],
+                  anchor=MSO_ANCHOR.MIDDLE)
+        if pj.get("score"):
+            _rect(slide, x + pad, y0 + Inches(3.82), Emu(int(cw) - int(pad) * 2), Inches(0.24),
+                  RGBColor(0xEC, 0xF1, 0xF7), line=LINE)
+            _text(slide, x + pad + Inches(0.08), y0 + Inches(3.82),
+                  Emu(int(cw) - int(pad) * 2 - int(Inches(0.16))), Inches(0.24),
+                  [[(pj["score"], dict(size=10.5, bold=True, color=NAVY))]],
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+
+    if d.get("bottom"):
+        by = Inches(6.52)
+        _rect(slide, x0, by, Inches(11.78), Inches(0.50), RGBColor(0xEC, 0xF1, 0xF7),
+              line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        _rect(slide, x0, by, Inches(0.10), Inches(0.50), ACCENT)
+        _text(slide, x0 + Inches(0.28), by, Inches(11.28), Inches(0.50),
+              [[(d["bottom"], dict(size=12.0, bold=True, color=NAVY))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
 
@@ -4476,6 +4565,7 @@ def s_unknown_neco_explain(slide, d, idx):
 
 DISPATCH = {"title": s_title, "section": s_section, "stats": s_stats, "bullets": s_bullets,
             "two_col": s_two_col, "image_grid": s_image_grid, "table": s_table, "closing": s_closing,
+            "project_form_summary": s_project_form_summary,
             "flow": s_flow, "timeline": s_timeline, "cards": s_cards, "pipeline": s_pipeline,
             "papertext": s_papertext, "archflow": s_archflow,
             "p1_known_perf": s_p1_known_perf, "unknown_ablation": s_unknown_ablation,
