@@ -1941,43 +1941,60 @@ def _closing_projects(slide, projects, common):
 
 
 def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
-    """AI Specialist scoring summary — official evaluation-axis evidence."""
-    x0 = Inches(0.78); y0 = Inches(2.02)
-    gap = Inches(0.24)
+    """Clean AI Specialist scoring summary: one card per evaluation axis."""
+    x0 = Inches(0.78); y0 = Inches(2.08)
+    gap = Inches(0.30)
     cw = Emu(int((int(Inches(11.78)) - int(gap) * 2) / 3))
-    # bottom_lines(과제별 본인 기여 3줄)이 있으면 하단 밴드를 키워야 하므로 축 카드 높이를
-    # 그만큼 줄여 footer 위 안전선을 유지한다(폰트 축소 없이 영역만 재배분 — additive 가드).
-    ch = Inches(3.92) if bottom_lines else Inches(4.36)
-    pad = Inches(0.24)
+    ch = Inches(3.58) if bottom_lines else Inches(4.20)
+    pad = Inches(0.28)
     colors = [ACCENT, RGBColor(0x4B, 0x63, 0x88), RGBColor(0x2E, 0x7D, 0x66)]
-    ev_h = Inches(2.24) if bottom_lines else Inches(2.68)
     for i, axis in enumerate(axes[:3]):
         x = Emu(int(x0) + i * (int(cw) + int(gap)))
         accent = colors[i % len(colors)]
         _rect(slide, x, y0, cw, ch, PANEL, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-        _rect(slide, x, y0, cw, Inches(0.12), accent)
-        _text(slide, x + pad, y0 + Inches(0.26), Emu(int(cw) - int(pad)*2), Inches(0.38),
-              [[(axis.get("axis", ""), dict(size=16.0, bold=True, color=NAVY))]],
+        _rect(slide, x, y0, cw, Inches(0.10), accent)
+        _text(slide, x + pad, y0 + Inches(0.28), Emu(int(cw) - int(pad)*2), Inches(0.38),
+              [[(axis.get("axis", ""), dict(size=17.0, bold=True, color=NAVY))]],
               anchor=MSO_ANCHOR.MIDDLE)
         if axis.get("question"):
-            _text(slide, x + pad, y0 + Inches(0.70), Emu(int(cw) - int(pad)*2), Inches(0.44),
-                  [[(axis["question"], dict(size=10.8, bold=True, color=accent))]],
+            _rect(slide, x + pad, y0 + Inches(0.78), Emu(int(cw) - int(pad)*2), Inches(0.36),
+                  WHITE, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+            _text(slide, x + pad + Inches(0.08), y0 + Inches(0.78),
+                  Emu(int(cw) - int(pad)*2 - int(Inches(0.16))), Inches(0.36),
+                  [[(axis["question"], dict(size=11.2, bold=True, color=NAVY))]],
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        chip_y = y0 + Inches(1.36)
+        for j, ev in enumerate(axis.get("evidence", [])[:3]):
+            cy = Emu(int(chip_y) + j * int(Inches(0.66)))
+            box_fill = RGBColor(0xF7, 0xFA, 0xFC) if j == 0 else WHITE
+            _rect(slide, x + pad, cy, Emu(int(cw) - int(pad)*2), Inches(0.50),
+                  box_fill, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+            _rect(slide, x + pad, cy, Inches(0.08), Inches(0.50), accent)
+            _text(slide, x + pad + Inches(0.18), cy,
+                  Emu(int(cw) - int(pad)*2 - int(Inches(0.28))), Inches(0.50),
+                  [[(ev, dict(size=12.5, bold=(j == 0), color=INK))]],
                   anchor=MSO_ANCHOR.MIDDLE)
-        _rect(slide, x + pad, y0 + Inches(1.25), Emu(int(cw) - int(pad)*2), Pt(1.0), LINE)
-        _bullets_tf(slide, x + pad, y0 + Inches(1.44), Emu(int(cw) - int(pad)*2),
-                    ev_h, axis.get("evidence", []), size=11.6, gap=7, line_spacing=1.07)
 
-    # 본인 기여 — 과제별 3줄(bottom_lines)을 우선 렌더. 없으면 기존 1줄(bottom) 동작 유지.
+    # 본인 기여는 세 줄 설명이 아니라 3개 chip으로만 표시한다.
     if bottom_lines:
-        by = Inches(6.10); bh = Inches(0.92)
+        by = Inches(6.06); bh = Inches(0.72)
         _rect(slide, x0, by, Inches(11.78), bh, RGBColor(0xEC, 0xF1, 0xF7),
               line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
         _rect(slide, x0, by, Inches(0.10), bh, ACCENT)
-        rows = [[("본인 기여 — 과제별 직접 설계/구현 범위", dict(size=11.0, bold=True, color=ACCENT))]]
-        for ln in bottom_lines:
-            rows.append([(ln, dict(size=11.4, bold=True, color=NAVY))])
-        _text(slide, x0 + Inches(0.28), by, Inches(11.28), bh, rows,
-              anchor=MSO_ANCHOR.MIDDLE, align=PP_ALIGN.LEFT)
+        _text(slide, x0 + Inches(0.28), by + Inches(0.08), Inches(1.42), Inches(0.22),
+              [[("본인 기여", dict(size=11.2, bold=True, color=ACCENT))]],
+              anchor=MSO_ANCHOR.MIDDLE)
+        chip_x = x0 + Inches(1.82)
+        chip_gap = Inches(0.16)
+        chip_w = Emu(int((int(Inches(9.64)) - int(chip_gap) * 2) / 3))
+        for i, ln in enumerate(bottom_lines[:3]):
+            cx = Emu(int(chip_x) + i * (int(chip_w) + int(chip_gap)))
+            _rect(slide, cx, by + Inches(0.14), chip_w, Inches(0.44), WHITE,
+                  line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+            _text(slide, cx + Inches(0.08), by + Inches(0.14),
+                  Emu(int(chip_w) - int(Inches(0.16))), Inches(0.44),
+                  [[(ln, dict(size=11.3, bold=True, color=NAVY))]],
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     elif bottom:
         by = Inches(6.54)
         _rect(slide, x0, by, Inches(11.78), Inches(0.48), RGBColor(0xEC, 0xF1, 0xF7),
@@ -2065,7 +2082,7 @@ def s_closing(slide, d, idx):
 
 
 def s_project_form_summary(slide, d, idx):
-    """Final checklist: P1/P2/P3 mapped to the official form items."""
+    """Final matrix: official form items x P1/P2/P3."""
     _bg(slide, WHITE)
     _rect(slide, Inches(0.7), Inches(0.72), Inches(0.11), Inches(0.28), ACCENT)
     _text(slide, Inches(1.0), Inches(0.7), Inches(11.5), Inches(0.3),
@@ -2075,48 +2092,48 @@ def s_project_form_summary(slide, d, idx):
           [[(d["title"], dict(size=31, bold=True, color=NAVY))]])
 
     projects = d.get("projects", [])[:3]
-    x0 = Inches(0.78); y0 = Inches(2.08); gap = Inches(0.24)
-    cw = Emu(int((int(Inches(11.78)) - int(gap) * 2) / 3))
-    ch = Inches(4.20); pad = Inches(0.22)
-    row_h = Inches(0.58)
-    label_w = Inches(0.86)
+    x0 = Inches(0.78); y0 = Inches(2.06)
+    label_w = Inches(1.18)
+    total_w = Inches(11.78)
+    proj_w = Emu(int((int(total_w) - int(label_w)) / 3))
+    header_h = Inches(0.62)
+    row_h = Inches(0.68)
     colors = [ACCENT, RGBColor(0x4B, 0x63, 0x88), RGBColor(0x2E, 0x7D, 0x66)]
+    # table background
+    table_h = Emu(int(header_h) + 5 * int(row_h))
+    _rect(slide, x0, y0, total_w, table_h, PANEL, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    _rect(slide, x0, y0, total_w, Inches(0.10), ACCENT)
+    _rect(slide, x0, y0, label_w, header_h, RGBColor(0xEC, 0xF1, 0xF7), line=LINE)
+    _text(slide, x0, y0, label_w, header_h,
+          [[("양식", dict(size=12.0, bold=True, color=ACCENT))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     for i, pj in enumerate(projects):
-        x = Emu(int(x0) + i * (int(cw) + int(gap)))
+        x = Emu(int(x0) + int(label_w) + i * int(proj_w))
         accent = colors[i % len(colors)]
-        _rect(slide, x, y0, cw, ch, PANEL, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-        _rect(slide, x, y0, cw, Inches(0.12), accent)
-        _rect(slide, x + pad, y0 + Inches(0.28), Inches(0.54), Inches(0.32),
-              accent, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-        _text(slide, x + pad, y0 + Inches(0.28), Inches(0.54), Inches(0.32),
-              [[(pj.get("tag", ""), dict(size=12.5, bold=True, color=WHITE))]],
+        _rect(slide, x, y0, proj_w, header_h, WHITE, line=LINE)
+        _rect(slide, x, y0, proj_w, Inches(0.10), accent)
+        _text(slide, x + Inches(0.10), y0, Emu(int(proj_w) - int(Inches(0.20))), header_h,
+              [[(f"{pj.get('tag', '')}  {pj.get('name', '')}", dict(size=12.8, bold=True, color=NAVY))]],
               align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, x + pad + Inches(0.66), y0 + Inches(0.24),
-              Emu(int(cw) - int(pad) * 2 - int(Inches(0.66))), Inches(0.38),
-              [[(pj.get("name", ""), dict(size=12.7, bold=True, color=NAVY))]],
-              anchor=MSO_ANCHOR.MIDDLE)
-        _rect(slide, x + pad, y0 + Inches(0.78), Emu(int(cw) - int(pad) * 2), Pt(1.0), LINE)
-        for j, item in enumerate(pj.get("items", [])[:5]):
-            ry = y0 + Inches(0.96) + Emu(j * int(row_h))
-            _rect(slide, x + pad, ry, label_w, Inches(0.34), WHITE, line=LINE,
-                  shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-            _text(slide, x + pad, ry, label_w, Inches(0.34),
-                  [[(item.get("label", ""), dict(size=10.6, bold=True, color=accent))]],
-                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-            _text(slide, x + pad + Inches(0.96), ry - Inches(0.02),
-                  Emu(int(cw) - int(pad) * 2 - int(Inches(1.02))), Inches(0.42),
-                  [[(item.get("text", ""), dict(size=10.7, bold=(j == 0), color=INK))]],
-                  anchor=MSO_ANCHOR.MIDDLE)
-        if pj.get("score"):
-            _rect(slide, x + pad, y0 + Inches(3.82), Emu(int(cw) - int(pad) * 2), Inches(0.24),
-                  RGBColor(0xEC, 0xF1, 0xF7), line=LINE)
-            _text(slide, x + pad + Inches(0.08), y0 + Inches(3.82),
-                  Emu(int(cw) - int(pad) * 2 - int(Inches(0.16))), Inches(0.24),
-                  [[(pj["score"], dict(size=10.5, bold=True, color=NAVY))]],
+
+    labels = [item.get("label", "") for item in projects[0].get("items", [])[:5]] if projects else []
+    for r, label in enumerate(labels):
+        ry = Emu(int(y0) + int(header_h) + r * int(row_h))
+        fill = WHITE if r % 2 == 0 else RGBColor(0xF7, 0xF9, 0xFC)
+        _rect(slide, x0, ry, label_w, row_h, RGBColor(0xEC, 0xF1, 0xF7), line=LINE)
+        _text(slide, x0 + Inches(0.06), ry, Emu(int(label_w) - int(Inches(0.12))), row_h,
+              [[(label, dict(size=11.8, bold=True, color=ACCENT))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        for c, pj in enumerate(projects):
+            x = Emu(int(x0) + int(label_w) + c * int(proj_w))
+            text = pj.get("items", [])[r].get("text", "") if r < len(pj.get("items", [])) else ""
+            _rect(slide, x, ry, proj_w, row_h, fill, line=LINE)
+            _text(slide, x + Inches(0.12), ry, Emu(int(proj_w) - int(Inches(0.24))), row_h,
+                  [[(text, dict(size=11.7, bold=(r == 0), color=INK))]],
                   align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
     if d.get("bottom"):
-        by = Inches(6.52)
+        by = Inches(6.56)
         _rect(slide, x0, by, Inches(11.78), Inches(0.50), RGBColor(0xEC, 0xF1, 0xF7),
               line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
         _rect(slide, x0, by, Inches(0.10), Inches(0.50), ACCENT)
@@ -2311,7 +2328,41 @@ def s_timeline(slide, d, idx):
                     (", ".join(pn_d.get("lines", [])), dict(size=10.5, color=RGBColor(0x3A, 0x48, 0x5C)))]
             _text(slide, Inches(0.6), Emu(ry), Inches(12.13), Emu(rowh), [runs],
                   anchor=MSO_ANCHOR.MIDDLE)
-        if d.get("caption"):
+        # ── 타 조직 확산 미니 시각요소 (additive; d["spread_steps"] 있을 때만) ──
+        # caption 행(y6.72) 좌측 빈 띠에 "확산" 한눈에 보이는 3-스텝 미니 화살표를 한 줄로 배치.
+        # 패널(끝 y6.67) 아래·footer(7.04") 위 안전 띠 안에서만 그리고, caption 은 우측으로 좁혀
+        # 좌측 확산 라인과 겹치지 않게 한다. spread_steps 없으면 기존 caption 풀폭 동작 유지.
+        spread = d.get("spread_steps")
+        if spread:
+            spread = spread[:3]
+            sy = int(Inches(6.72)); sh = int(Inches(0.30))
+            sx = int(Inches(0.6))
+            # 좌측 라벨(확산) — teal 텍스트
+            lblw = int(Inches(0.62))
+            _text(slide, Emu(sx), Emu(sy), Emu(lblw), Emu(sh),
+                  [[("확산", dict(size=10.5, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
+            # 3 스텝 칩 + 사이 화살표 — 좌측 5.15" 안에 압축(끝 x≈6.37, caption 좌측 6.55 미침범)
+            zone_x = sx + lblw; zone_w = int(Inches(5.15))
+            arr_w = int(Inches(0.24)); ns = len(spread)
+            step_w = (zone_w - arr_w * (ns - 1)) // ns
+            for k, st in enumerate(spread):
+                stx = zone_x + k * (step_w + arr_w)
+                _rect(slide, Emu(stx), Emu(sy), Emu(step_w), Emu(sh),
+                      RGBColor(0xF4, 0xF6, 0xF8), line=LINE, line_w=Pt(0.75),
+                      shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+                _text(slide, Emu(stx + int(Inches(0.04))), Emu(sy),
+                      Emu(step_w - int(Inches(0.08))), Emu(sh),
+                      [[(st, dict(size=9, bold=True, color=NAVY))]],
+                      align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+                if k < ns - 1:
+                    _text(slide, Emu(stx + step_w), Emu(sy), Emu(arr_w), Emu(sh),
+                          [[("→", dict(size=11, bold=True, color=ACCENT))]],
+                          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE, wrap=False)
+            # caption 은 우측 영역(x6.55~)으로 좁혀 좌측 확산 라인과 미겹침
+            if d.get("caption"):
+                _text(slide, Inches(6.55), Emu(int(Inches(6.72))), Inches(6.18), Inches(0.28),
+                      [[(d["caption"], dict(size=10.5, color=MUTED))]], align=PP_ALIGN.RIGHT)
+        elif d.get("caption"):
             _text(slide, Inches(0.6), Emu(int(Inches(6.72))), Inches(12.13), Inches(0.28),
                   [[(d["caption"], dict(size=10.5, color=MUTED))]], align=PP_ALIGN.RIGHT)
     else:

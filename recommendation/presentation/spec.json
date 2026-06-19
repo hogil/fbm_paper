@@ -649,7 +649,7 @@
           "head": "운영 유지보수 (재학습/모니터링)",
           "lines": [
             "현업 CSV predict-검토-fine-tune 재학습 wrapper (P3)",
-            "NT sweep FN/FP 모니터링, viewer label-retrain 루프 (P1)"
+            "NT sweep FN/FP 모니터링, viewer label-retrain 루프 (P1) (트리거: NT 임계 초과/신규 label 누적)"
           ]
         },
         {
@@ -660,51 +660,52 @@
           ]
         }
       ],
+      "spread_steps": [
+        "현업 viewer 도입",
+        "Confluence 문서",
+        "세미나/코드 교육"
+      ],
       "caption": "P1/P2 = 2026.09 GPU 배포 검증, P3 = 2026.12 현업 검증 예정"
     },
     {
       "type": "closing",
       "kicker": "결론 | 평가 항목 대응 summary",
-      "title": "채점표 기준으로 핵심 증거를 정리",
+      "title": "평가 항목별 핵심 근거",
       "score_axes": [
         {
           "axis": "기술 전문성",
-          "question": "문제정의, 모델/실험, data pipeline, 운영 loop",
+          "question": "문제정의 · 모델 · pipeline",
           "evidence": [
-            "[P1] Known·Unknown+대량 UI 정의, pipeline + F1 0.78→0.95",
-            "[P2] measure value·2-combo label 한계 → FCM-PM/val-margin",
-            "[P3] real abnormal 부족 → episode generator/binary validation"
+            "P1: FBM pipeline",
+            "P2: FCM-PM",
+            "P3: generator"
           ]
         },
         {
           "axis": "기술 리더십",
-          "question": "협업, 기술 의사결정, 조직 확산",
+          "question": "협업 · 의사결정 · 확산",
           "evidence": [
-            "현업 엔지니어/관리자와 viewer 운영·검증 flow 주도",
-            "DRAM 전제품 coverage, Confluence/세미나/코드 교육으로 확산",
-            "교수 자문과 반도체 데이터 특성을 기술 의사결정에 연결"
+            "현업/관리자와 운영·검증 flow 주도",
+            "교수 자문 기반 기술 선택",
+            "세미나·문서·코드 교육"
           ]
         },
         {
           "axis": "기술성과",
-          "question": "양산 적용, KPI 개선, 확장 가능성",
+          "question": "양산 · KPI · 확장",
           "evidence": [
-            "[P1] viewer 일 2만 wafer 운영, 공수 90% 감소, 수율 +0.02%p",
-            "[P1] object-id map, image+measure multimodal로 확장",
-            "[P2/P3] controlled validation과 generator config로 타 제품 적용 기반"
+            "P1 viewer 양산 운영",
+            "공수 90%↓, 수율 +0.02%p",
+            "object-id map·multimodal 확장"
           ]
         }
       ],
-      "bottom_lines": [
-        "P1 60% — fail-map pipeline, 운영 viewer 기여, Known 2-stage, Unknown contrastive 직접 설계와 구현",
-        "P2 80% — single source 정의, FCM-PM, Pair Mask, val-margin, NB reject 전 구간 직접 설계",
-        "P3 70% — episode generator, Region/Noise/Anomaly 규칙, 정상 산포 보정, binary gate PoC 직접 설계"
-      ]
+      "bottom": ""
     },
     {
       "type": "project_form_summary",
       "kicker": "결론 | 프로젝트별 양식 대응 summary",
-      "title": "3개 프로젝트를 공식 양식 2~6번으로 정리",
+      "title": "프로젝트별 공식 양식 대응표",
       "projects": [
         {
           "tag": "P1",
@@ -712,26 +713,26 @@
           "items": [
             {
               "label": "2 소개",
-              "text": "Known 고질불량 정확 파악, Unknown 후보 조기검출, 대량 UI"
+              "text": "고질불량 · 신규 후보 · 대량 조회"
             },
             {
               "label": "3 개발",
-              "text": "FBM pipeline/viewer + Known/Unknown AI"
+              "text": "map 생성 · viewer · AI"
             },
             {
               "label": "4 성과",
-              "text": "일 2만 wafer 운영, 공수 90%↓, 정량 KPI 기여"
+              "text": "일 2만 wafer, 공수 90%↓"
             },
             {
               "label": "5 확장",
-              "text": "object-id map, image+measure multimodal"
+              "text": "chip map · 영상+수치"
             },
             {
               "label": "6 기여",
-              "text": "pipeline/viewer/model E2E 설계·구현, 60%"
+              "text": "설계·구현 60%"
             }
           ],
-          "score": "전문성+성과 중심, 양산 운영 evidence"
+          "score": ""
         },
         {
           "tag": "P2",
@@ -739,26 +740,26 @@
           "items": [
             {
               "label": "2 소개",
-              "text": "measure value 한계, 2-combo label 확보 현실적으로 불가"
+              "text": "계측값 한계 · 중복 라벨 부족"
             },
             {
               "label": "3 개발",
-              "text": "FCM-PM, val-margin, NB reject"
+              "text": "FCM-PM · val-margin · NB"
             },
             {
               "label": "4 성과",
-              "text": "bit-F1 0.9927, FAR 0.00% validation"
+              "text": "bit-F1 0.9927 · FAR 0%"
             },
             {
               "label": "5 확장",
-              "text": "KD/threshold gate, 1x deploy candidate"
+              "text": "KD · threshold · 1x 후보"
             },
             {
               "label": "6 기여",
-              "text": "FCM-PM/selection/reject 설계·검증, 80%"
+              "text": "설계·검증 80%"
             }
           ],
-          "score": "전문성+리더십 중심, label 부족 해결"
+          "score": ""
         },
         {
           "tag": "P3",
@@ -766,29 +767,29 @@
           "items": [
             {
               "label": "2 소개",
-              "text": "real abnormal 부족, trend validation 병목"
+              "text": "이상 라벨 부족 · 검증 병목"
             },
             {
               "label": "3 개발",
-              "text": "domain-rule generator + binary validation"
+              "text": "rule generator · binary 검증"
             },
             {
               "label": "4 성과",
-              "text": "7,000 benchmark, binary-F1 0.9967"
+              "text": "7,000 benchmark · F1 0.9967"
             },
             {
               "label": "5 확장",
-              "text": "real trend 검증, L1 monitoring 확장"
+              "text": "real trend · L1 monitoring"
             },
             {
               "label": "6 기여",
-              "text": "10년 BBD/Overlay/CD rule 코드화, 70%"
+              "text": "rule 코드화 70%"
             }
           ],
-          "score": "전문성+확장성 중심, 검증체계 구축"
+          "score": ""
         }
       ],
-      "bottom": "채점표 대응 — 기술 전문성: 문제정의·모델·pipeline / 기술 리더십: 의사결정·확산 / 기술성과: 양산·KPI·확장"
+      "bottom": "채점표 대응 — 기술 전문성 · 기술 리더십 · 기술성과"
     }
   ]
 }
