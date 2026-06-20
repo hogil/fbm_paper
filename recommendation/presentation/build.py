@@ -2096,8 +2096,8 @@ def s_project_form_summary(slide, d, idx):
     label_w = Inches(1.18)
     total_w = Inches(11.78)
     proj_w = Emu(int((int(total_w) - int(label_w)) / 3))
-    header_h = Inches(0.62)
-    row_h = Inches(0.68)
+    header_h = Inches(1.00)
+    row_h = Inches(0.60)
     colors = [ACCENT, RGBColor(0x4B, 0x63, 0x88), RGBColor(0x2E, 0x7D, 0x66)]
     # table background
     table_h = Emu(int(header_h) + 5 * int(row_h))
@@ -2112,9 +2112,17 @@ def s_project_form_summary(slide, d, idx):
         accent = colors[i % len(colors)]
         _rect(slide, x, y0, proj_w, header_h, WHITE, line=LINE)
         _rect(slide, x, y0, proj_w, Inches(0.10), accent)
-        _text(slide, x + Inches(0.10), y0, Emu(int(proj_w) - int(Inches(0.20))), header_h,
-              [[(f"{pj.get('tag', '')}  {pj.get('name', '')}", dict(size=12.8, bold=True, color=NAVY))]],
-              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        img_x = x + Inches(0.18)
+        img_y = y0 + Inches(0.17)
+        _rect(slide, img_x, img_y, Inches(0.66), Inches(0.66), RGBColor(0xF4, 0xF7, 0xFA),
+              line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        _img_fit(slide, pj.get("thumb", ""), img_x + Inches(0.05), img_y + Inches(0.05),
+                 Inches(0.56), Inches(0.56), frame=False)
+        _text(slide, x + Inches(0.96), y0 + Inches(0.20),
+              Emu(int(proj_w) - int(Inches(1.06))), Inches(0.60),
+              [[(pj.get("tag", ""), dict(size=11.2, bold=True, color=accent)),
+                ("  " + pj.get("name", ""), dict(size=12.6, bold=True, color=NAVY))]],
+              align=PP_ALIGN.LEFT, anchor=MSO_ANCHOR.MIDDLE)
 
     labels = [item.get("label", "") for item in projects[0].get("items", [])[:5]] if projects else []
     for r, label in enumerate(labels):

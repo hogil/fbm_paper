@@ -710,6 +710,7 @@
         {
           "tag": "P1",
           "name": "Failbit Map",
+          "thumb": "wafer_center_scratch.png",
           "items": [
             {
               "label": "2 소개",
@@ -737,6 +738,7 @@
         {
           "tag": "P2",
           "name": "Chip Multi-label",
+          "thumb": "chip_eval_scratch_selected.png",
           "items": [
             {
               "label": "2 소개",
@@ -764,6 +766,7 @@
         {
           "tag": "P3",
           "name": "Trend Anomaly",
+          "thumb": "trend_spike_view.png",
           "items": [
             {
               "label": "2 소개",
