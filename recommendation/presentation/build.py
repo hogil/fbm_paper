@@ -2216,12 +2216,12 @@ def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
         if not raw_items:
             raw_items = [{"check": "", "answer": ev} for ev in axis.get("evidence", [])[:4]]
         raw_items = raw_items[:4]
-        list_y = title_y + Inches(0.98)
-        bottom_margin = Inches(0.20)
+        list_y = title_y + Inches(0.94)
+        bottom_margin = Inches(0.12)
         avail_h = Emu(int(y0) + int(ch) - int(list_y) - int(bottom_margin))
         n = max(1, len(raw_items))
-        row_h = Emu(int(avail_h) // n - int(Inches(0.06)))
-        row_gap = Inches(0.06)
+        row_gap = Inches(0.05)
+        row_h = Emu(int(avail_h) // n - int(row_gap))
         for j, item in enumerate(raw_items):
             cy = Emu(int(list_y) + j * (int(row_h) + int(row_gap)))
             box_fill = RGBColor(0xF7, 0xFA, 0xFC) if j == 0 else WHITE
@@ -2231,15 +2231,15 @@ def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
             check = item.get("check", "")
             answer = item.get("answer", "")
             if check:
-                _text(slide, x + pad + Inches(0.18), cy + Inches(0.06),
+                _text(slide, x + pad + Inches(0.18), cy + Inches(0.07),
                       Emu(int(cw) - int(pad)*2 - int(Inches(0.30))), Inches(0.18),
-                      [[(check, dict(size=11.5, bold=True, color=accent))]],
+                      [[(check, dict(size=10.5, bold=True, color=accent))]],
                       anchor=MSO_ANCHOR.MIDDLE)
-                _text(slide, x + pad + Inches(0.18), cy + Inches(0.30),
+                _text(slide, x + pad + Inches(0.18), cy + Inches(0.27),
                       Emu(int(cw) - int(pad)*2 - int(Inches(0.30))),
-                      Emu(int(row_h) - int(Inches(0.34))),
-                      [[(answer, dict(size=11.6, bold=(j == 0), color=INK))]],
-                      anchor=MSO_ANCHOR.MIDDLE)
+                      Emu(int(row_h) - int(Inches(0.30))),
+                      [[(answer, dict(size=10.5, bold=(j == 0), color=INK))]],
+                      anchor=MSO_ANCHOR.TOP)
             else:
                 _text(slide, x + pad + Inches(0.18), cy,
                       Emu(int(cw) - int(pad)*2 - int(Inches(0.28))), row_h,

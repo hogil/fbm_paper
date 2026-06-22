@@ -762,15 +762,15 @@
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "Cython 변환, palette PNG, pyvips/Numba viewer, CNN→YOLO, contrastive embedding→HDBSCAN grouping"
+              "answer": "Cython 생성, pyvips/Numba viewer, CNN→YOLO, contrastive→HDBSCAN"
             },
             {
               "check": "기술 리더십",
-              "answer": "DRAM YE에게 FBM 판독법 학습, label/FP/FN 검증 수행"
+              "answer": "DRAM YE 공동 구상, 현업에 FBM 판독법 교육"
             },
             {
               "check": "기술성과",
-              "answer": "Known F1 0.95, Unknown 13→7, D1a/b/c/d 사용"
+              "answer": "Known F1 0.95, Unknown 13→7 후보 압축"
             }
           ]
         },
@@ -781,11 +781,11 @@
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "image multi-label, FCM-PM, Pair Mask, val_margin, Naive Bayes reject"
+              "answer": "multi-label, FCM-PM, Pair Mask, val_margin, Naive Bayes reject"
             },
             {
               "check": "기술 리더십",
-              "answer": "P1 판독 기준으로 현업 유사 chip image와 2-combo rule 설계"
+              "answer": "P1 판독 기준으로 검증 chip과 2-combo rule 설계"
             },
             {
               "check": "기술성과",
@@ -800,15 +800,15 @@
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "Region/Noise/Anomaly generator, 합성 benchmark, binary gate 검증, robustness 점검"
+              "answer": "Region/Noise/Anomaly generator, 합성 benchmark, binary gate 검증"
             },
             {
               "check": "기술 리더십",
-              "answer": "BBD/Overlay/CD 판정 경험을 generator rule로 코드화"
+              "answer": "BBD/Overlay/CD 담당 경험을 generator rule로 코드화"
             },
             {
               "check": "기술성과",
-              "answer": "7,000 trend benchmark, binary-F1 0.9967, 타 item 확장"
+              "answer": "7,000 trend benchmark, binary-F1 0.9967, 타 item 확대"
             }
           ]
         }
