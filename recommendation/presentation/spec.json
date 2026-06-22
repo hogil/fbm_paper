@@ -762,7 +762,7 @@
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "raw log 변환, 대량 viewer, Known 2-stage 분류, Unknown contrastive grouping"
+              "answer": "raw log 변환, 대량 viewer, Known CNN→ROI-YOLO(object-id map) 2-stage, Unknown contrastive(NeCo)→HDBSCAN"
             },
             {
               "check": "기술 리더십",
@@ -804,7 +804,7 @@
             },
             {
               "check": "기술 리더십",
-              "answer": "BBD/Overlay/CD 판정 경험을 generator rule과 검증 체계로 구현"
+              "answer": "현업 경험을 generator rule과 검증 체계로 구현"
             },
             {
               "check": "기술성과",

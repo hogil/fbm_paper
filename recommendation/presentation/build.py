@@ -2192,12 +2192,12 @@ def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
             img_x = x + Inches(0.25)
             img_y = y0 + Inches(0.22)
             img_w = Emu(int(cw) - int(Inches(0.50)))
-            img_h = Inches(0.82)
+            img_h = Inches(0.68)
             _rect(slide, img_x, img_y, img_w, img_h, WHITE, line=LINE,
                   shape=MSO_SHAPE.ROUNDED_RECTANGLE)
             _img_cover(slide, axis["thumb"], img_x + Inches(0.04), img_y + Inches(0.04),
                        Emu(int(img_w) - int(Inches(0.08))), img_h - Inches(0.08))
-            title_y = y0 + Inches(1.16)
+            title_y = y0 + Inches(1.02)
         else:
             title_y = y0 + Inches(0.28)
 
@@ -2221,9 +2221,13 @@ def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
         avail_h = Emu(int(y0) + int(ch) - int(list_y) - int(bottom_margin))
         n = max(1, len(raw_items))
         row_gap = Inches(0.05)
-        row_h = Emu(int(avail_h) // n - int(row_gap))
+        extra = int(Inches(0.20))  # 첫 행(기술 전문성)은 내용이 길어 더 높게 배분
+        base_h = (int(avail_h) - extra - int(row_gap) * (n - 1)) // n
+        cy_cur = int(list_y)
         for j, item in enumerate(raw_items):
-            cy = Emu(int(list_y) + j * (int(row_h) + int(row_gap)))
+            row_h = Emu(base_h + extra if j == 0 else base_h)
+            cy = Emu(cy_cur)
+            cy_cur += int(row_h) + int(row_gap)
             box_fill = RGBColor(0xF7, 0xFA, 0xFC) if j == 0 else WHITE
             _rect(slide, x + pad, cy, Emu(int(cw) - int(pad)*2), row_h,
                   box_fill, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
@@ -2233,12 +2237,12 @@ def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
             if check:
                 _text(slide, x + pad + Inches(0.18), cy + Inches(0.05),
                       Emu(int(cw) - int(pad)*2 - int(Inches(0.30))), Inches(0.18),
-                      [[(check, dict(size=10.5, bold=True, color=accent))]],
+                      [[(check, dict(size=10, bold=True, color=accent))]],
                       anchor=MSO_ANCHOR.MIDDLE)
-                _text(slide, x + pad + Inches(0.18), cy + Inches(0.24),
+                _text(slide, x + pad + Inches(0.18), cy + Inches(0.23),
                       Emu(int(cw) - int(pad)*2 - int(Inches(0.30))),
-                      Emu(int(row_h) - int(Inches(0.26))),
-                      [[(answer, dict(size=10, bold=(j == 0), color=INK))]],
+                      Emu(int(row_h) - int(Inches(0.25))),
+                      [[(answer, dict(size=9.5, bold=(j == 0), color=INK))]],
                       anchor=MSO_ANCHOR.TOP)
             else:
                 _text(slide, x + pad + Inches(0.18), cy,
