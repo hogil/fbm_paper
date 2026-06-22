@@ -4743,32 +4743,35 @@ def s_unknown_neco_explain(slide, d, idx):
 
 
 def _webpage_mock(slide, x, y, w, h):
-    """Bootstrap 스타일 web app 더미 목업 (native shapes — 이미지 생성 X)."""
+    """Bootstrap 스타일 web app 더미 목업 (native shapes — 박스 높이를 채움)."""
     x = int(x); y = int(y); w = int(w); h = int(h)
     _rect(slide, Emu(x), Emu(y), Emu(w), Emu(h), WHITE, line=RGBColor(0xD0, 0xD6, 0xDE))
-    bar = int(Inches(0.18))
+    bar = int(Inches(0.22))
     _rect(slide, Emu(x), Emu(y), Emu(w), Emu(bar), RGBColor(0xE9, 0xEC, 0xF1))
-    dot = int(Inches(0.055)); dy = y + (bar - dot) // 2
+    dot = int(Inches(0.07)); dy = y + (bar - dot) // 2
     for k, col in enumerate((RGBColor(0xE0, 0x6C, 0x60), RGBColor(0xE6, 0xB5, 0x4D), RGBColor(0x5C, 0xB8, 0x5C))):
-        _rect(slide, Emu(x + int(Inches(0.09)) + k * int(Inches(0.11))), Emu(dy), Emu(dot), Emu(dot),
+        _rect(slide, Emu(x + int(Inches(0.1)) + k * int(Inches(0.13))), Emu(dy), Emu(dot), Emu(dot),
               col, shape=MSO_SHAPE.OVAL)
-    _rect(slide, Emu(x + int(Inches(0.46))), Emu(dy), Emu(w - int(Inches(0.58))), Emu(int(Inches(0.085))),
+    _rect(slide, Emu(x + int(Inches(0.54))), Emu(dy), Emu(w - int(Inches(0.66))), Emu(int(Inches(0.1))),
           WHITE, line=RGBColor(0xD0, 0xD6, 0xDE), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-    nav = int(Inches(0.16)); ny = y + bar
+    nav = int(Inches(0.24)); ny = y + bar
     _rect(slide, Emu(x), Emu(ny), Emu(w), Emu(nav), NAVY)
     for k in range(4):
-        _rect(slide, Emu(x + int(Inches(0.12)) + k * int(Inches(0.46))), Emu(ny + int(Inches(0.05))),
-              Emu(int(Inches(0.34))), Emu(int(Inches(0.07))), RGBColor(0xFF, 0xFF, 0xFF))
-    cy0 = ny + nav + int(Inches(0.08))
-    cardw = (w - int(Inches(0.3))) // 3
+        _rect(slide, Emu(x + int(Inches(0.14)) + k * int(Inches(0.5))), Emu(ny + int(Inches(0.08))),
+              Emu(int(Inches(0.38))), Emu(int(Inches(0.08))), RGBColor(0xFF, 0xFF, 0xFF))
+    body_y = ny + nav + int(Inches(0.12)); body_bot = y + h - int(Inches(0.12))
+    cardh = int(Inches(0.6)); cardw = (w - int(Inches(0.34))) // 3
     for k in range(3):
-        cxk = x + int(Inches(0.1)) + k * (cardw + int(Inches(0.05)))
-        _rect(slide, Emu(cxk), Emu(cy0), Emu(cardw), Emu(int(Inches(0.26))), RGBColor(0xEE, 0xF1, 0xF7),
+        cxk = x + int(Inches(0.12)) + k * (cardw + int(Inches(0.05)))
+        _rect(slide, Emu(cxk), Emu(body_y), Emu(cardw), Emu(cardh), RGBColor(0xEE, 0xF1, 0xF7),
               line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-    ry0 = cy0 + int(Inches(0.34))
-    for k in range(2):
-        _rect(slide, Emu(x + int(Inches(0.1))), Emu(ry0 + k * int(Inches(0.12))), Emu(w - int(Inches(0.2))),
-              Emu(int(Inches(0.08))), RGBColor(0xE8, 0xEC, 0xF2) if k % 2 == 0 else RGBColor(0xF2, 0xF4, 0xF8))
+    # table rows fill remaining height
+    ry = body_y + cardh + int(Inches(0.16)); rowh = int(Inches(0.17)); rgap = int(Inches(0.1))
+    k = 0
+    while ry + rowh <= body_bot:
+        _rect(slide, Emu(x + int(Inches(0.12))), Emu(ry), Emu(w - int(Inches(0.24))), Emu(rowh),
+              RGBColor(0xE8, 0xEC, 0xF2) if k % 2 == 0 else RGBColor(0xF4, 0xF6, 0xFA))
+        ry += rowh + rgap; k += 1
 
 
 def s_career(slide, d, idx):
@@ -4803,8 +4806,8 @@ def s_career(slide, d, idx):
     # 캡쳐 placeholder (더미 공간 — 추후 screenshot 삽입)
     caps = d.get("captures", [])
     if caps:
-        cy = int(Inches(3.02)); chh = int(Inches(1.46))
-        m = max(1, len(caps)); cgap = int(Inches(0.4))
+        cy = int(Inches(3.05)); chh = int(Inches(2.7))
+        m = max(1, len(caps)); cgap = int(Inches(0.5))
         cw = (tot - cgap * (m - 1)) // m
         cap_h = int(Inches(0.3))
         for i, cap in enumerate(caps):
