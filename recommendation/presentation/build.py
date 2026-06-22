@@ -29,7 +29,7 @@ COVER_BAR = RGBColor(0xCF, 0xD4, 0xDB)
 
 FONT = "맑은 고딕"
 EMU_W, EMU_H = Inches(13.333), Inches(7.5)
-FOOTER = "최호길 | QIE Data Science | AI Specialist 인증"
+FOOTER = "최호길 | QIE그룹 DSM 파트 | AI Specialist 인증"
 
 
 _NAMED = {"navy": "0F1E3D", "navy2": "1B3260", "accent": "96A0AD", "gold": "F2B705",
@@ -349,7 +349,7 @@ def s_title(slide, d, idx):
     # 하단 구분선 + 소속/날짜 라인으로 하단 공백 메움(날짜 2026은 정보 전달용으로 푸터 우측에 배치)
     _rect(slide, Inches(0.97), Inches(6.55), Inches(11.36), Pt(1), LINE)
     _text(slide, Inches(0.97), Inches(6.68), Inches(8.5), Inches(0.4),
-          [[(d.get("footer_l", "삼성전자 메모리제조센터 | QIE그룹 Data Science"),
+          [[(d.get("footer_l", "삼성전자 메모리제조센터 | QIE그룹 DSM 파트"),
              dict(size=12, bold=True, color=NAVY)),
             (d.get("footer_r", "    AI Specialist 인증 사내 경연 발표"),
              dict(size=12, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)

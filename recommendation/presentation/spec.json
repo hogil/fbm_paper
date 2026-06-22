@@ -6,14 +6,14 @@
       "kicker": "'26 AI Specialist 면접 심사 자료",
       "title": "AI Specialist 인증 발표",
       "subtitle": "10년 현업 경험을 바탕으로 데이터 처리 구조, viewer backend/frontend, AI model까지 직접 설계한 3개 과제",
-      "author": "최호길  |  메모리제조센터 QIE그룹 Data Science 파트",
+      "author": "최호길  |  메모리제조센터 QIE그룹 DSM 파트",
       "affil": ""
     },
     {
       "type": "career",
       "kicker": "커리어 소개",
       "title": "반도체 계측 도메인에서 제조품질 AI로",
-      "profile": "최호길  |  메모리 DRAM YE QIE그룹 DSM 파트, 14년차  |  연세대학교 인공지능학과 석사 ('25.09~ 재학)",
+      "profile": "최호길  |  메모리제조센터 QIE그룹 DSM 파트, 14년차  |  연세대학교 인공지능학과 석사 (야간, '25.09~ 재학)",
       "captures": [
         {
           "label": "DX web tool 홈페이지 (HTML / JS, Bootstrap)",
@@ -42,8 +42,8 @@
         },
         {
           "period": "2023.03 ~ 현재",
-          "role": "QIE 그룹 DSM 파트",
-          "detail": "DRAM YE 전배, P1/P2/P3 AI 직접 설계"
+          "role": "QIE그룹 DSM 파트",
+          "detail": "QIE 전배, P1/P2/P3 AI 직접 설계"
         }
       ],
       "awards": "'25 AI 센터 DS BP Good Challenger, '26 MTC 제안 1등급, '26 삼성 논문상 초록 통과, '26 메모리사업부 PEER AWARD",
@@ -731,8 +731,8 @@
         {
           "head": "운영 유지보수 (재학습/모니터링)",
           "lines": [
-            "P1 viewer label-retrain 루프 + NT sweep FN/FP 모니터링",
-            "P2 검증 후 review-fine-tune, P3 현업 CSV predict-검토-fine-tune wrapper"
+            "현재 운영: P1 viewer label-retrain 루프, batch 성공/적재량/응답, engineer review/label",
+            "모델 배포 후 (설계): confidence/FAR/drift 모니터링, threshold 재조정, version 등록/rollback"
           ]
         },
         {
@@ -762,7 +762,7 @@
             "AI 관점 문제 정의와 목표 설정 (P1/P2/P3)",
             "모델/실험으로 성능 개선: F1 0.95 / 0.9927 / 0.9967",
             "데이터 pipeline 체계화 (변환, 합성, generator)",
-            "재학습/모니터링: label-retrain, NT sweep, fine-tune"
+            "재학습/모니터링: viewer retrain 운영 / 배포 시 drift, FAR 모니터링"
           ]
         },
         {
