@@ -127,6 +127,26 @@
       "ops": "mapviewer D1a/b/c/d 운영"
     },
     {
+      "type": "bullets",
+      "kicker": "P1 | Concept + field constraint",
+      "title": "이산 grade 공간 데이터 표현으로서의 Failbit Map",
+      "bullets": [
+        "**Role** — Failbit Map은 공정 개발 결과를 확인하는 최종 map으로, 불량 정도와 위치, 형태를 확인해 현 개발 수준을 파악하고 공정 개선 방향을 결정",
+        "**Data** — EDS Failbit Map은 Memory Cell Block 단위 불량 정도를 Grade 0~7로 표현한 wafer-level data",
+        "**Scale** — wafer 1장은 약 1,000만 block 규모이며, chip당 1개, wafer 내 약 800개 수준의 Measure 값만으로는 불량 위치와 형상 분석에 한계",
+        "**Storage** — palette PNG는 grade index를 저장하고, positions JSON은 chip/block 좌표를 보존해 viewer overlay와 모델 입력을 같은 좌표계로 정렬"
+      ],
+      "size": 16.2,
+      "gap": 16,
+      "body_y": 2.08,
+      "body_h": 4.6,
+      "body_w": 6.18,
+      "body_anchor": "top",
+      "image": "wafer_edge_ring_scratch_rot.png",
+      "img_label": "wafer Failbit Map / Edge-Ring",
+      "caption": "최외곽 chip에서 동일 scratch성 fail pattern이 반복되어 edge-ring 형태로 관찰됨"
+    },
+    {
       "type": "archflow",
       "kicker": "P1 | 전체 아키텍처",
       "title": "좌표 보존 Failbit Map 운영 pipeline",
@@ -176,26 +196,6 @@
           "text": "Organizational asset base  (image-measure aligned, multimodal-ready)"
         }
       ]
-    },
-    {
-      "type": "bullets",
-      "kicker": "P1 | Concept + field constraint",
-      "title": "이산 grade 공간 데이터 표현으로서의 Failbit Map",
-      "bullets": [
-        "**Role** — Failbit Map은 공정 개발 결과를 확인하는 최종 map으로, 불량 정도와 위치, 형태를 확인해 현 개발 수준을 파악하고 공정 개선 방향을 결정",
-        "**Data** — EDS Failbit Map은 Memory Cell Block 단위 불량 정도를 Grade 0~7로 표현한 wafer-level data",
-        "**Scale** — wafer 1장은 약 1,000만 block 규모이며, chip당 1개, wafer 내 약 800개 수준의 Measure 값만으로는 불량 위치와 형상 분석에 한계",
-        "**Storage** — palette PNG는 grade index를 저장하고, positions JSON은 chip/block 좌표를 보존해 viewer overlay와 모델 입력을 같은 좌표계로 정렬"
-      ],
-      "size": 16.2,
-      "gap": 16,
-      "body_y": 2.08,
-      "body_h": 4.6,
-      "body_w": 6.18,
-      "body_anchor": "top",
-      "image": "wafer_edge_ring_scratch_rot.png",
-      "img_label": "wafer Failbit Map / Edge-Ring",
-      "caption": "최외곽 chip에서 동일 scratch성 fail pattern이 반복되어 edge-ring 형태로 관찰됨"
     },
     {
       "type": "papertext",
