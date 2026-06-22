@@ -1910,6 +1910,134 @@ def s_image_grid(slide, d, idx):
     _footer(slide, idx)
 
 
+def s_unknown_embedding_grouping(slide, d, idx):
+    _bg(slide, WHITE)
+    _title_block(slide, d.get("kicker"), d["title"])
+    _motiv_head(slide, d.get("motivation"))
+
+    y = Inches(2.05)
+    h = Inches(4.58)
+    gap = Inches(0.22)
+    x1, w1 = Inches(0.75), Inches(3.35)
+    x2, w2 = Emu(int(x1) + int(w1) + int(gap)), Inches(4.35)
+    x3, w3 = Emu(int(x2) + int(w2) + int(gap)), Inches(3.58)
+    header_h = Inches(0.44)
+
+    def panel(x, w, title, subtitle=None):
+        _rect(slide, x, y, w, h, WHITE, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        _rect(slide, x, y, w, header_h, NAVY, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        _rect(slide, x, Emu(int(y)+int(header_h)-int(Inches(0.08))), w, Inches(0.08), NAVY)
+        _text(slide, x+Inches(0.16), y+Inches(0.06), Emu(int(w)-int(Inches(0.32))), Inches(0.26),
+              [[(title, dict(size=13.5, bold=True, color=WHITE))]],
+              anchor=MSO_ANCHOR.MIDDLE)
+        if subtitle:
+            _text(slide, x+Inches(0.18), y+Inches(0.52), Emu(int(w)-int(Inches(0.36))), Inches(0.24),
+                  [[(subtitle, dict(size=11.5, color=MUTED))]],
+                  align=PP_ALIGN.CENTER)
+
+    panel(x1, w1, "1. wafer image", "label 없는 신규 불량 후보")
+    panel(x2, w2, "2. embedding space", "비슷한 wafer pattern은 가까운 점으로")
+    panel(x3, w3, "3. HDBSCAN grouping", "검토할 후보 group만 남김")
+
+    imgs = d.get("images", [])[:3]
+    ix0 = int(x1) + int(Inches(0.20))
+    iy = int(y) + int(Inches(0.86))
+    iw = int(Inches(0.92))
+    for i, im in enumerate(imgs):
+        ix = ix0 + i * int(Inches(1.00))
+        _rect(slide, Emu(ix), Emu(iy), Inches(0.92), Inches(0.92), PANEL, line=LINE)
+        _img_fit(slide, im["src"], Emu(ix+int(Inches(0.04))), Emu(iy+int(Inches(0.04))),
+                 Inches(0.84), Inches(0.84), frame=False)
+        lab = chr(ord("A") + i)
+        _rect(slide, Emu(ix+int(Inches(0.58))), Emu(iy+int(Inches(0.06))), Inches(0.24), Inches(0.20),
+              ACCENT, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        _text(slide, Emu(ix+int(Inches(0.58))), Emu(iy+int(Inches(0.06))), Inches(0.24), Inches(0.20),
+              [[(lab, dict(size=11, bold=True, color=WHITE))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+
+    _text(slide, x1+Inches(0.25), y+Inches(2.02), w1-Inches(0.50), Inches(0.70),
+          [[("same-wafer view", dict(size=12.5, bold=True, color=NAVY)),
+            ("는 positive", dict(size=12.5, color=INK))],
+           [("other wafer", dict(size=12.5, bold=True, color=NAVY)),
+            ("는 비교 대상", dict(size=12.5, color=INK))]])
+    _rect(slide, x1+Inches(0.25), y+Inches(3.02), w1-Inches(0.50), Inches(0.68),
+          PANEL, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    _text(slide, x1+Inches(0.42), y+Inches(3.12), w1-Inches(0.84), Inches(0.48),
+          [[("image → vector", dict(size=14, bold=True, color=NAVY))],
+           [("각 wafer를 하나의 embedding으로 변환", dict(size=11.5, color=INK))]],
+          align=PP_ALIGN.CENTER)
+
+    # embedding scatter plot
+    plot_x, plot_y = int(x2)+int(Inches(0.34)), int(y)+int(Inches(0.88))
+    plot_w, plot_h = int(w2)-int(Inches(0.68)), int(Inches(3.02))
+    _rect(slide, Emu(plot_x), Emu(plot_y), Emu(plot_w), Emu(plot_h), RGBColor(0xFA,0xFB,0xFD), line=LINE)
+    colors = [RGBColor(0x2E,0x86,0x6E), RGBColor(0x2F,0x5E,0x9E), RGBColor(0xC4,0x8B,0x2C)]
+    clusters = [
+        ((0.26, 0.34), [(0.22,0.31),(0.27,0.30),(0.30,0.37),(0.24,0.41),(0.34,0.32),(0.19,0.37)]),
+        ((0.68, 0.42), [(0.63,0.38),(0.68,0.36),(0.73,0.43),(0.66,0.48),(0.76,0.49),(0.60,0.45)]),
+        ((0.50, 0.74), [(0.45,0.70),(0.52,0.69),(0.56,0.76),(0.48,0.80),(0.40,0.77),(0.58,0.84)])
+    ]
+    for (cx, cy), pts in clusters:
+        ell = slide.shapes.add_shape(MSO_SHAPE.OVAL,
+                                     Emu(plot_x+int((cx-0.13)*plot_w)), Emu(plot_y+int((cy-0.13)*plot_h)),
+                                     Emu(int(0.26*plot_w)), Emu(int(0.26*plot_h)))
+        ell.fill.background()
+        ell.line.color.rgb = RGBColor(0xC6,0xD0,0xDF)
+        ell.line.width = Pt(1)
+    for ci, (_, pts) in enumerate(clusters):
+        for px, py in pts:
+            _rect(slide, Emu(plot_x+int(px*plot_w)-int(Inches(0.035))),
+                  Emu(plot_y+int(py*plot_h)-int(Inches(0.035))),
+                  Inches(0.07), Inches(0.07), colors[ci], shape=MSO_SHAPE.OVAL)
+    for px, py in [(0.14,0.72),(0.86,0.24),(0.82,0.78),(0.37,0.18),(0.11,0.17)]:
+        _rect(slide, Emu(plot_x+int(px*plot_w)-int(Inches(0.025))),
+              Emu(plot_y+int(py*plot_h)-int(Inches(0.025))),
+              Inches(0.05), Inches(0.05), RGBColor(0xA8,0xB1,0xBF), shape=MSO_SHAPE.OVAL)
+    _text(slide, x2+Inches(0.42), y+Inches(4.04), w2-Inches(0.84), Inches(0.32),
+          [[("embedding distance가 가까운 wafer끼리 후보 group 형성", dict(size=12.5, bold=True, color=NAVY))]],
+          align=PP_ALIGN.CENTER)
+
+    # group result cards
+    stat_y = y+Inches(0.92)
+    _rect(slide, x3+Inches(0.28), stat_y, Inches(1.32), Inches(0.94), PANEL, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    _text(slide, x3+Inches(0.28), stat_y+Inches(0.10), Inches(1.32), Inches(0.34),
+          [[("13", dict(size=23, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
+    _text(slide, x3+Inches(0.28), stat_y+Inches(0.52), Inches(1.32), Inches(0.24),
+          [[("후보 group", dict(size=11.5, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
+    _rect(slide, x3+Inches(1.90), stat_y, Inches(1.32), Inches(0.94), RGBColor(0xE9,0xF2,0xEF), line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    _text(slide, x3+Inches(1.90), stat_y+Inches(0.10), Inches(1.32), Inches(0.34),
+          [[("7", dict(size=23, bold=True, color=RGBColor(0x2E,0x86,0x6E)))]], align=PP_ALIGN.CENTER)
+    _text(slide, x3+Inches(1.90), stat_y+Inches(0.52), Inches(1.32), Inches(0.24),
+          [[("신규 failure 확인", dict(size=11.5, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
+    for k, (g, lab, col) in enumerate([
+        ("G03", "Center pattern", colors[0]),
+        ("G07", "Ring pattern", colors[1]),
+        ("G12", "Crescent pattern", colors[2]),
+    ]):
+        gy = y+Inches(2.18+k*0.62)
+        _rect(slide, x3+Inches(0.34), gy, w3-Inches(0.68), Inches(0.46),
+              WHITE, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        _rect(slide, x3+Inches(0.50), gy+Inches(0.13), Inches(0.18), Inches(0.18), col, shape=MSO_SHAPE.OVAL)
+        _text(slide, x3+Inches(0.78), gy+Inches(0.08), Inches(0.58), Inches(0.24),
+              [[(g, dict(size=12.5, bold=True, color=NAVY))]])
+        _text(slide, x3+Inches(1.35), gy+Inches(0.08), w3-Inches(1.78), Inches(0.24),
+              [[(lab, dict(size=12, color=INK))]])
+    _rect(slide, x3+Inches(0.34), y+Inches(4.20), w3-Inches(0.68), Inches(0.34),
+          RGBColor(0xF4,0xF6,0xF8), line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    _text(slide, x3+Inches(0.42), y+Inches(4.26), w3-Inches(0.84), Inches(0.20),
+          [[("자동 판정이 아니라 engineer review queue", dict(size=11.5, bold=True, color=NAVY))]],
+          align=PP_ALIGN.CENTER)
+
+    for ax in [Emu(int(x1)+int(w1)+int(Inches(0.04))), Emu(int(x2)+int(w2)+int(Inches(0.04)))]:
+        _rect(slide, ax, y+Inches(2.28), Inches(0.36), Inches(0.28), ACCENT, shape=MSO_SHAPE.RIGHT_ARROW)
+
+    note = d.get("img_note", "")
+    if note:
+        _text(slide, Inches(0.85), Inches(6.72), Inches(11.65), Inches(0.22),
+              [[(note, dict(size=12.2, color=RGBColor(0x3A,0x48,0x5C)))]],
+              align=PP_ALIGN.CENTER)
+    _footer(slide, idx)
+
+
 def s_table(slide, d, idx):
     _bg(slide, WHITE)
     _title_block(slide, d.get("kicker"), d["title"])
@@ -4933,7 +5061,8 @@ def s_career(slide, d, idx):
 
 DISPATCH = {"title": s_title, "section": s_section, "stats": s_stats, "bullets": s_bullets,
             "career": s_career,
-            "two_col": s_two_col, "image_grid": s_image_grid, "table": s_table, "closing": s_closing,
+            "two_col": s_two_col, "image_grid": s_image_grid, "unknown_embedding_grouping": s_unknown_embedding_grouping,
+            "table": s_table, "closing": s_closing,
             "project_form_summary": s_project_form_summary,
             "flow": s_flow, "timeline": s_timeline, "cards": s_cards, "pipeline": s_pipeline,
             "papertext": s_papertext, "archflow": s_archflow,
