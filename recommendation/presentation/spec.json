@@ -188,12 +188,12 @@
           "arrow": "두 경로 결과를 한 화면으로"
         },
         {
-          "text": "Analysis UI — fast view / overlay / labeling",
-          "sub": "운영 viewer (mapviewer): Numba composite + pyvips tile streaming",
+          "text": "운영 web app — 빠른 조회 / overlay / 라벨링",
+          "sub": "mapviewer: Numba composite + pyvips tile streaming",
           "arrow": "human-in-the-loop: register → label → retrain"
         },
         {
-          "text": "Organizational asset base  (image-measure aligned, multimodal-ready)"
+          "text": "공용 데이터 자산 (이미지+계측 좌표 정렬, 멀티모달 학습 준비)"
         }
       ]
     },
