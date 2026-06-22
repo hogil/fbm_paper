@@ -3195,8 +3195,8 @@ def s_archflow(slide, d, idx):
     stages = d["stages"]
     n = len(stages)
     cx = int(EMU_W) // 2; full_w = I(9.8); full_x = cx - full_w // 2
-    top = I(1.95); bottom = I(6.95)
-    arrow_h = I(0.32)
+    top = I(1.90); bottom = I(6.58)
+    arrow_h = I(0.24)
 
     def box_h(b):
         if b.get("lines"):
