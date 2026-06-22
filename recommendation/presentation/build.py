@@ -3659,7 +3659,7 @@ def s_p2_validation(slide, d, idx):
 
 def s_p2_selection(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P2 | selection + NB reject", "val-margin 선택과 negative-tail 제어")
+    _title_block_compact(slide, "P2 | selection + Naive Bayes reject", "val-margin 선택과 negative-tail 제어")
     _text(slide, Inches(0.78), Inches(1.42), Inches(11.8), Inches(0.30),
           [[("적용 이유   ", dict(size=12, bold=True, color=ACCENT)),
             ("val-F1만으로는 negative tail이 안정적인 checkpoint를 고르기 어려움 → positive/negative score margin으로 선택, FAR 0%",
@@ -3735,9 +3735,9 @@ def s_p2_selection(slide, d, idx):
     _rect(slide, rx, ry, rw, rh, WHITE, line=LINE)
     _rect(slide, rx, ry, Inches(0.10), rh, RGBColor(0x2B,0xA6,0x6B))
     _text(slide, rx+Inches(0.28), ry+Inches(0.22), rw-Inches(0.56), Inches(0.32),
-          [[("NB reject: known profile과 맞지 않는 확률 조합 제거", dict(size=14.0, bold=True, color=NAVY))]])
+          [[("Naive Bayes reject: known profile과 맞지 않는 확률 조합 제거", dict(size=14.0, bold=True, color=NAVY))]])
     _text(slide, rx+Inches(0.28), ry+Inches(0.60), rw-Inches(0.56), Inches(0.26),
-          [[("class별 출력 bit 확률 분포 저장 (bit 독립, NB)",
+          [[("class별 출력 bit 확률 분포 저장 (bit 독립, Naive Bayes)",
              dict(size=10.2, bold=True, color=INK))]])
     _text(slide, rx+Inches(0.28), ry+Inches(0.88), rw-Inches(0.56), Inches(0.20),
           [[("gray band = 저장 분포 99.7% 범위 (±3σ)",
@@ -3809,7 +3809,7 @@ def s_p2_selection(slide, d, idx):
              dict(size=10.2, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
     card_y = ry+Inches(4.50); card_h = Inches(0.44); card_w = Inches(2.42)
     impacts = [
-        ("NB profile", "10 known classes", "4 single + 6 combo"),
+        ("Naive Bayes", "10 known classes", "4 single + 6 combo"),
         ("reject rule", "no profile passes", "reject"),
     ]
     for ii, (head, val, delta) in enumerate(impacts):

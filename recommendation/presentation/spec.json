@@ -70,7 +70,7 @@
           "problem": "measure value 한계 + 2-combo label 확보 불가",
           "approach": "single source → FCM-PM supervision + val-margin",
           "result": "[controlled synthetic] bit-F1 0.9927 / FAR 0.00%",
-          "stack": "Stack: PyTorch, FCM-PM / CutMix, NB reject / KD"
+          "stack": "Stack: PyTorch, FCM-PM / CutMix, Naive Bayes reject / KD"
         },
         {
           "no": "P3",
@@ -538,7 +538,7 @@
       "no": "P2",
       "title": "Chip Multi-label\nFCM-PM classification",
       "lead": "chip 불량 분석은 표준적으로 chip별 measure value 중심으로 수행되나, 중복 failure는 chip 내부 fail bit 분포 image로만 구분할 수 있습니다",
-      "stack": "PyTorch, FCM-PM, label smoothing / ASL, NB reject, KD",
+      "stack": "PyTorch, FCM-PM, label smoothing / ASL, Naive Bayes reject, KD",
       "prog": [
         2,
         3
@@ -559,7 +559,7 @@
             "FCM-PM으로 2-combo 학습 신호 생성",
             "Pair Mask로 background 오학습 차단",
             "val-margin으로 checkpoint 선택",
-            "NB reject로 false alarm 제어"
+            "Naive Bayes reject로 false alarm 제어"
           ]
         },
         {
@@ -592,7 +592,7 @@
     },
     {
       "type": "p2_selection",
-      "kicker": "P2 | selection + NB reject",
+      "kicker": "P2 | selection + Naive Bayes reject",
       "title": "val-margin selection and negative-tail control"
     },
     {
