@@ -193,7 +193,7 @@
           "arrow": "human-in-the-loop: register → label → retrain"
         },
         {
-          "text": "공용 데이터 자산 (이미지+계측 좌표 정렬, 멀티모달 학습 준비)"
+          "text": "이미지 + 각 chip 좌표의 measure value 저장"
         }
       ]
     },
@@ -306,7 +306,7 @@
       "bullets": [
         "**1-stage CNN (백본 선정)** — 불량이 특정 영역에 몰려 나타나, 넓게 보는 Transformer보다 좁은 영역을 잘 보는 CNN이 더 적합하다고 판단 (연세대 인공지능학과 전해곤 교수 자문). ConvNeXtV2는 MaxViT와 F1 0.87 동급이면서 더 가벼워 채택",
         "**Tuning** — Optuna로 schedule, focal loss, class-imbalance, augmentation strength를 조정해 F1 0.92로 향상",
-        "**ROI cascade** — 선택된 ROI 안에서 chip class와 ROI 내 배치까지 재확인하는 selective 2-stage 구조"
+        "**ROI cascade** — 선택된 ROI 안에서 chip class와 ROI 내 배치까지 재확인하는 selective 2-stage 구조, F1 0.92 → 0.95"
       ],
       "body_h": 1.1,
       "bullet_size": 13.5,
