@@ -1987,27 +1987,35 @@ def s_unknown_embedding_grouping(slide, d, idx):
     dots(xs[1] + int(Inches(0.26)), pw - int(Inches(0.52)), va_y + int(Inches(0.10)), int(Inches(1.94)), False)
     desc(xs[1], ["이미지를 점(vector)으로", "비슷한 것끼리 가까이"])
 
-    # ---- panel 3: HDBSCAN grouping (설명 + 논문 + 군집) ----
-    dots(xs[2] + int(Inches(0.26)), pw - int(Inches(0.52)), va_y + int(Inches(0.10)), int(Inches(1.94)), True)
-    desc(xs[2], ["비슷한 vector를", "자동 group화 (군집)"])
+    # ---- panel 3: HDBSCAN grouping (어떻게 묶는지 설명 + 논문 + 군집 결과) ----
+    p3x = xs[2] + int(Inches(0.22))
+    _text(slide, Emu(p3x), Emu(va_y + int(Inches(0.02))), Emu(pw - int(Inches(0.40))), Inches(0.84),
+          [[("- 빽빽이 모인 점 = 한 group", dict(size=10, color=INK))],
+           [("- 드문 점 = noise로 분리", dict(size=10, color=INK))],
+           [("- group 수를 미리 안 정함", dict(size=10, color=INK))]],
+          anchor=MSO_ANCHOR.TOP, align=PP_ALIGN.LEFT)
+    _text(slide, Emu(p3x), Emu(va_y + int(Inches(0.86))), Emu(pw - int(Inches(0.40))), Inches(0.22),
+          [[("(Campello et al., 2013)", dict(size=8.5, color=MUTED))]],
+          anchor=MSO_ANCHOR.TOP, align=PP_ALIGN.LEFT)
+    dots(xs[2] + int(Inches(0.30)), pw - int(Inches(0.60)), va_y + int(Inches(1.14)), int(Inches(1.40)), True)
 
-    # ---- panel 4: 후보 group = 비슷한 wafer 여러 장 -> 현업 전달 ----
-    gth = int(Inches(0.38)); gstep_y = int(Inches(0.48))
+    # ---- panel 4: 후보 group(비슷한 wafer 여러 장) -> 현업 검토 queue ----
+    gth = int(Inches(0.54)); gstep_y = int(Inches(0.64)); tgap = int(Inches(0.27))
+    bar_x = xs[3] + int(Inches(0.16)); t0 = xs[3] + int(Inches(0.34))
     for k in range(3):
         ry = va_y + k * gstep_y
-        _rect(slide, Emu(xs[3] + int(Inches(0.18))), Emu(ry + int(Inches(0.05))), Inches(0.07), Inches(0.28), colors[k])
+        _rect(slide, Emu(bar_x), Emu(ry + int(Inches(0.10))), Inches(0.07), Inches(0.34), colors[k])
         for j in range(3):
-            tx = xs[3] + int(Inches(0.34)) + j * (gth + int(Inches(0.05)))
+            tx = t0 + j * (gth + tgap)
             pthumb(reps[k]["src"], tx, ry, gth)
-    ay4 = va_y + 3 * gstep_y
-    _rect(slide, Emu(xs[3] + pw // 2 - int(Inches(0.12))), Emu(ay4), Inches(0.24), Inches(0.22),
+    ay4 = va_y + 3 * gstep_y + int(Inches(0.04))
+    _rect(slide, Emu(xs[3] + pw // 2 - int(Inches(0.10))), Emu(ay4), Inches(0.20), Inches(0.16),
           ACCENT, shape=MSO_SHAPE.DOWN_ARROW)
-    qy = ay4 + int(Inches(0.30))
-    _rect(slide, Emu(xs[3] + int(Inches(0.28))), Emu(qy), Emu(pw - int(Inches(0.56))), Inches(0.36),
+    qy = ay4 + int(Inches(0.22))
+    _rect(slide, Emu(xs[3] + int(Inches(0.24))), Emu(qy), Emu(pw - int(Inches(0.48))), Inches(0.40),
           RGBColor(0xE9, 0xF2, 0xEF), line=ACCENT, line_w=Pt(1.4), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-    _text(slide, Emu(xs[3] + int(Inches(0.28))), Emu(qy), Emu(pw - int(Inches(0.56))), Inches(0.36),
-          [[("현업 검토 queue", dict(size=11, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    desc(xs[3], ["비슷한 wafer 묶음(여러 장)을", "검토용으로 전달"])
+    _text(slide, Emu(xs[3] + int(Inches(0.24))), Emu(qy), Emu(pw - int(Inches(0.48))), Inches(0.40),
+          [[("현업 검토 queue로 전달", dict(size=11, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
     by = y + h + int(Inches(0.18))
     _rect(slide, Emu(x0), Emu(by), Emu(total), Inches(0.46), RGBColor(0xF4, 0xF6, 0xF8), line=LINE,
