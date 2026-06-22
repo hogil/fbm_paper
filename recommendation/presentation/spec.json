@@ -440,7 +440,7 @@
       "title": "NeCo: 결함 위치에 민감한 patch-neighbor 유사도",
       "bullets": [
         "**핵심** — patch 간 유사도 matrix는 결함의 공간 구조를 인코딩 → 결함 위치가 다르면 matrix가 완전히 다름 (CE 큼)",
-        "**대비** — 단순 local 평균(grid)은 둔감, NeCo는 이 민감한 matrix를 같은 wafer 두 view에서 일치시켜 국소 구조 보존"
+        "**대비** — grid 평균은 둔감. NeCo는 A/B를 직접 분리하는 loss가 아니라, 같은 wafer 두 view에서 neighbor rank를 일치시켜 각 결함의 국소 구조를 보존"
       ],
       "body_h": 0.62,
       "bullet_size": 13.8,
@@ -748,7 +748,7 @@
           ]
         }
       ],
-      "caption": "P1/P2 = 2026.09 GPU 배포 검증, P3 = 2026.12 현업 검증 예정"
+      "caption": "확산 — DRAM D1a/b/c/d 4개 분석 파트 운영, Flash YE P1/P2 확산 요청, 문서/세미나/코드 교육"
     },
     {
       "type": "closing",
@@ -766,11 +766,11 @@
             },
             {
               "check": "기술 리더십",
-              "answer": "DRAM YE 공동 구상, 현업에 FBM 판독법 교육"
+              "answer": "DRAM YE와 운영 flow 공동 구상, 현업 판독 기준을 데이터/AI 구조로 구조화"
             },
             {
               "check": "기술성과",
-              "answer": "Known F1 0.95, Unknown 13→7 후보 압축"
+              "answer": "Known F1 0.95, Unknown 13 후보 중 7건 확인"
             }
           ]
         },
@@ -785,7 +785,7 @@
             },
             {
               "check": "기술 리더십",
-              "answer": "P1 판독 기준으로 검증 chip과 2-combo rule 설계"
+              "answer": "DRAM YE와 중복 failure 문제 공동 구상, FCM-PM/val-margin 의사결정 주도"
             },
             {
               "check": "기술성과",
@@ -804,7 +804,7 @@
             },
             {
               "check": "기술 리더십",
-              "answer": "BBD/Overlay/CD 담당 경험을 generator rule로 코드화"
+              "answer": "generator/학습 코드 동료 전수, 독립 학습/생성 역량 이전"
             },
             {
               "check": "기술성과",
