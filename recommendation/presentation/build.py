@@ -2004,36 +2004,40 @@ def s_unknown_embedding_grouping(slide, d, idx):
           [[("embedding distance가 가까운 wafer끼리 후보 group 형성", dict(size=12.5, bold=True, color=NAVY))]],
           align=PP_ALIGN.CENTER)
 
-    # group result cards
-    stat_y = y+Inches(0.92)
-    _rect(slide, x3+Inches(0.28), stat_y, Inches(1.32), Inches(0.94), PANEL, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-    _text(slide, x3+Inches(0.28), stat_y+Inches(0.10), Inches(1.32), Inches(0.34),
-          [[("13", dict(size=23, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
-    _text(slide, x3+Inches(0.28), stat_y+Inches(0.52), Inches(1.32), Inches(0.24),
-          [[("후보 group", dict(size=11.5, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
-    _rect(slide, x3+Inches(1.90), stat_y, Inches(1.32), Inches(0.94), RGBColor(0xE9,0xF2,0xEF), line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-    _text(slide, x3+Inches(1.90), stat_y+Inches(0.10), Inches(1.32), Inches(0.34),
-          [[("7", dict(size=23, bold=True, color=RGBColor(0x2E,0x86,0x6E)))]], align=PP_ALIGN.CENTER)
-    _text(slide, x3+Inches(1.90), stat_y+Inches(0.52), Inches(1.32), Inches(0.24),
-          [[("신규 failure 확인", dict(size=11.5, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
-    for k, (g, lab, col) in enumerate([
-        ("G03", "label 없음 → 검토", colors[0]),
-        ("G07", "label 없음 → 검토", colors[1]),
-        ("G12", "label 없음 → 검토", colors[2]),
-    ]):
-        gy = y+Inches(2.18+k*0.62)
-        _rect(slide, x3+Inches(0.34), gy, w3-Inches(0.68), Inches(0.46),
-              WHITE, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-        _rect(slide, x3+Inches(0.50), gy+Inches(0.13), Inches(0.18), Inches(0.18), col, shape=MSO_SHAPE.OVAL)
-        _text(slide, x3+Inches(0.78), gy+Inches(0.08), Inches(0.58), Inches(0.24),
-              [[(g, dict(size=12.5, bold=True, color=NAVY))]])
-        _text(slide, x3+Inches(1.35), gy+Inches(0.08), w3-Inches(1.78), Inches(0.24),
-              [[(lab, dict(size=12, color=INK))]])
-    _rect(slide, x3+Inches(0.34), y+Inches(4.20), w3-Inches(0.68), Inches(0.34),
+    # 많은 label-없는 wafer -> 소수 검토 후보 group 으로 '압축' (결과 라벨/판정 없음)
+    cx3 = int(x3) + int(w3) // 2
+    _text(slide, x3+Inches(0.20), y+Inches(0.82), w3-Inches(0.40), Inches(0.24),
+          [[("label 없는 wafer 수천 장", dict(size=11.5, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
+    dn = 11; dx0 = int(x3)+int(Inches(0.42)); dgap = int((int(w3)-int(Inches(0.84)))/(dn-1))
+    dot_y = int(y)+int(Inches(1.14))
+    for i in range(dn):
+        for r in range(2):
+            _rect(slide, Emu(dx0+i*dgap), Emu(dot_y+r*int(Inches(0.15))), Inches(0.05), Inches(0.05),
+                  RGBColor(0xB8,0xC0,0xCE), shape=MSO_SHAPE.OVAL)
+    _rect(slide, Emu(cx3-int(Inches(0.13))), Emu(int(y)+int(Inches(1.60))), Inches(0.26), Inches(0.30),
+          ACCENT, shape=MSO_SHAPE.DOWN_ARROW)
+    _text(slide, x3+Inches(1.55), y+Inches(1.58), w3-Inches(1.7), Inches(0.32),
+          [[("HDBSCAN 군집", dict(size=10.5, bold=True, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
+    rb_y = int(y)+int(Inches(2.04))
+    _rect(slide, x3+Inches(0.34), Emu(rb_y), w3-Inches(0.68), Inches(0.94), RGBColor(0xE9,0xF2,0xEF),
+          line=ACCENT, line_w=Pt(1.4), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    _text(slide, x3+Inches(0.34), Emu(rb_y+int(Inches(0.13))), w3-Inches(0.68), Inches(0.40),
+          [[("검토 후보 group 13개", dict(size=17, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
+    _text(slide, x3+Inches(0.34), Emu(rb_y+int(Inches(0.57))), w3-Inches(0.68), Inches(0.26),
+          [[("수천 장 → 대표 후보로 압축", dict(size=11, color=INK))]], align=PP_ALIGN.CENTER)
+    gn = 4; gcol = [colors[0], colors[1], colors[2], RGBColor(0x8A,0x6D,0xB0)]
+    gx0 = int(x3)+int(Inches(0.78)); gstep = int(Inches(0.66))
+    gb_y = int(y)+int(Inches(3.26))
+    for i in range(gn):
+        _rect(slide, Emu(gx0+i*gstep-int(Inches(0.11))), Emu(gb_y), Inches(0.22), Inches(0.22),
+              gcol[i], line=WHITE, line_w=Pt(1.2), shape=MSO_SHAPE.OVAL)
+    _text(slide, x3+Inches(0.20), y+Inches(3.56), w3-Inches(0.40), Inches(0.24),
+          [[("각 group = 비슷한 wafer 묶음 (label 없음)", dict(size=10.5, color=MUTED))]], align=PP_ALIGN.CENTER)
+    _rect(slide, x3+Inches(0.34), y+Inches(3.98), w3-Inches(0.68), Inches(0.44),
           RGBColor(0xF4,0xF6,0xF8), line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-    _text(slide, x3+Inches(0.42), y+Inches(4.26), w3-Inches(0.84), Inches(0.20),
-          [[("자동 판정이 아니라 engineer review queue", dict(size=11.5, bold=True, color=NAVY))]],
-          align=PP_ALIGN.CENTER)
+    _text(slide, x3+Inches(0.42), y+Inches(4.00), w3-Inches(0.84), Inches(0.40),
+          [[("자동 판정 불가 → 대표 후보만 현업 review queue", dict(size=10.8, bold=True, color=NAVY))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
     for ax in [Emu(int(x1)+int(w1)+int(Inches(0.04))), Emu(int(x2)+int(w2)+int(Inches(0.04)))]:
         _rect(slide, ax, y+Inches(2.28), Inches(0.36), Inches(0.28), ACCENT, shape=MSO_SHAPE.RIGHT_ARROW)
