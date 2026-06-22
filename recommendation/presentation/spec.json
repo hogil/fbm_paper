@@ -766,7 +766,7 @@
             },
             {
               "check": "기술 리더십",
-              "answer": "DRAM YE와 운영 flow 공동 구상, 현업 판독 기준을 데이터/AI 구조로 구조화"
+              "answer": "DRAM YE 공동 구상, FBM 판독법 학습 후 label/FP/FN 검증"
             },
             {
               "check": "기술성과",
