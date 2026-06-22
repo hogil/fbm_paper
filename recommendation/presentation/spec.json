@@ -87,7 +87,7 @@
       "type": "section",
       "no": "P1",
       "title": "Failbit Map\nKnown & Unknown 분석",
-      "lead": "Failbit Map은 공정개발 최종 결과맵, EDS test로 unit block별 불량 정도(0~7)를 약 1,000만 point로 표현, 일 약 2만 장 누적",
+      "lead": "Failbit Map은 EDS test 결과를 wafer에 나타낸 공정개발 최종 결과 map으로, 불량 정도, 위치, 형태로 개발 수준과 공정 개선 방향을 판단합니다 (wafer당 약 1,000만 point)",
       "stack": "Cython / pyvips / Numba, ConvNeXtV2 / YOLO11, contrastive / HDBSCAN",
       "prog": [
         1,
@@ -118,7 +118,7 @@
             "분류 F1 0.95",
             "이상 검출 7/13",
             "일 2만 wafer 양산 운영",
-            "123억 정량 기여",
+            "정량 사업 기여 창출",
             "object-id map 차세대 모델"
           ]
         }
@@ -537,7 +537,7 @@
       "type": "section",
       "no": "P2",
       "title": "Chip Multi-label\nFCM-PM classification",
-      "lead": "chip 불량 분석은 표준적으로 measure value 중심, 동시 발생하는 여러 failure pattern은 이미지로만 확인 가능",
+      "lead": "chip 불량 분석은 표준적으로 chip별 measure value 중심으로 수행되나, 중복 failure는 chip 내부 fail bit 분포 image로만 구분할 수 있습니다",
       "stack": "PyTorch, FCM-PM, label smoothing / ASL, NB reject, KD",
       "prog": [
         2,
@@ -548,18 +548,18 @@
         {
           "head": "문제 / AI 필요성",
           "items": [
-            "chip 내 중복 결함 확인 불가",
-            "single label도 부족",
-            "2-combo label 수집 불가"
+            "measure value로 중복 failure 구분 한계",
+            "2-combo label 대량 확보 불가",
+            "single source 기반 multi-label 학습 필요"
           ]
         },
         {
           "head": "개발 내용",
           "items": [
-            "CutMix 기반 데이터 합성",
-            "multi-label 이미지 분류",
-            "validation 기반 모델 선택",
-            "false alarm 제어"
+            "FCM-PM으로 2-combo 학습 신호 생성",
+            "Pair Mask로 background 오학습 차단",
+            "val-margin으로 checkpoint 선택",
+            "NB reject로 false alarm 제어"
           ]
         },
         {
@@ -610,7 +610,7 @@
       "type": "section",
       "no": "P3",
       "title": "Trend Anomaly",
-      "lead": "Thickness / Overlay / CD 등 제품 계측 trend(시계열)를 사람이 보고 정상 산포 대비 이상 여부 판정",
+      "lead": "Thickness / Overlay / CD 등 제품 계측 trend(시계열)를 담당자가 chart로 보고 정상 산포 대비 이상 여부를 판정",
       "stack": "config 기반 episode generator, binary classifier",
       "prog": [
         3,
@@ -731,7 +731,7 @@
         {
           "head": "운영 유지보수 (재학습/모니터링)",
           "lines": [
-            "현재 운영: P1 viewer label-retrain 루프, batch 성공/적재량/응답, engineer review/label",
+            "현재 운영: P1 viewer label-feedback 루프, batch 성공/적재량/응답, engineer review/label",
             "모델 배포 후 (설계): confidence/FAR/drift 모니터링, threshold 재조정, version 등록/rollback"
           ]
         },
@@ -762,7 +762,7 @@
             "AI 관점 문제 정의와 목표 설정 (P1/P2/P3)",
             "모델/실험으로 성능 개선: F1 0.95 / 0.9927 / 0.9967",
             "데이터 pipeline 체계화 (변환, 합성, generator)",
-            "재학습/모니터링: viewer retrain 운영 / 배포 시 drift, FAR 모니터링"
+            "재학습/모니터링: 현업 label 수집 운영 / 배포 후 retrain, drift 모니터링"
           ]
         },
         {
@@ -770,7 +770,7 @@
           "question": "협업 / 의사결정 / 확산",
           "evidence": [
             "DRAM YE와 P1/P2 공동 구상, 설계와 구현은 본인 주도",
-            "본인 기술 의사결정: ConvNeXtV2, FCM-PM, val-margin, object-id map",
+            "본인 기술 의사결정: ConvNeXtV2, NeCo, FCM-PM, val-margin, episode generator",
             "타 조직 확산: DRAM 전제품 viewer 매일 사용",
             "기술 공유: 세미나, 기술 문서, 동료 코드 교육"
           ]
@@ -780,7 +780,7 @@
           "question": "양산 적용 / KPI / 확장성",
           "evidence": [
             "양산 직접 적용: P1 viewer 운영 (mapviewer)",
-            "KPI 개선: 공수 90% 감소, 수율 +0.02%p, 123억",
+            "KPI 개선: 공수 90% 감소, 수율 +0.02%p, 정량 사업 기여",
             "Flash YE에서 P1/P2 확산 요청 접수 (타 제품 확장)",
             "확장 구조: generator 재현, object-id, multimodal"
           ]
