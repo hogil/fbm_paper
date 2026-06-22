@@ -2538,7 +2538,7 @@ def s_cards(slide, d, idx):
         _img_fit(slide, cd["thumb"], Emu(x + tpad + inset), Emu(ty + tpad // 2 + inset // 2),
                  Emu(cw - 2 * tpad - 2 * inset), Emu(thumb_h - tpad - inset), frame=False)
         # ── 아래 3줄(문제·접근·결과) — 라벨은 틸, 결과 줄 강조 ──
-        labels = [("Problem", "problem"), ("Approach", "approach"), ("Impact", "result")]
+        labels = [("문제", "problem"), ("접근", "approach"), ("성과", "result")]
         rgap = int(Inches(0.10))
         bottom_pad = int(Inches(0.18))
         # stack 한 줄이 있으면 결과 줄 아래에 2줄(10pt)까지 들어갈 공간을 미리 예약해 세 줄을 위로 조인다.

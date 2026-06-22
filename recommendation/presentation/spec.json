@@ -59,7 +59,7 @@
           "task": "Failbit Map failure analysis",
           "thumb": "wafer_center_scratch.png",
           "problem": "고질불량 발생 wafer/물량 선별, 신규 불량 조기 포착, 대량 Failbit Map 조회",
-          "approach": "좌표 보존 FBM + ultra-fast viewer + Known/Unknown AI",
+          "approach": "Failbit Map 생성 + 대용량 viewer + Known/Unknown AI",
           "result": "[양산 운영] 일 2만 wafer/day, 공수 90%↓ + 수율 개선 사례",
           "stack": "Stack: Cython / pyvips / Numba, ConvNeXtV2 / YOLO, contrastive / HDBSCAN"
         },
