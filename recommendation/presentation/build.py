@@ -2231,13 +2231,13 @@ def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
             check = item.get("check", "")
             answer = item.get("answer", "")
             if check:
-                _text(slide, x + pad + Inches(0.18), cy + Inches(0.07),
+                _text(slide, x + pad + Inches(0.18), cy + Inches(0.05),
                       Emu(int(cw) - int(pad)*2 - int(Inches(0.30))), Inches(0.18),
                       [[(check, dict(size=10.5, bold=True, color=accent))]],
                       anchor=MSO_ANCHOR.MIDDLE)
-                _text(slide, x + pad + Inches(0.18), cy + Inches(0.27),
+                _text(slide, x + pad + Inches(0.18), cy + Inches(0.24),
                       Emu(int(cw) - int(pad)*2 - int(Inches(0.30))),
-                      Emu(int(row_h) - int(Inches(0.30))),
+                      Emu(int(row_h) - int(Inches(0.26))),
                       [[(answer, dict(size=10.5, bold=(j == 0), color=INK))]],
                       anchor=MSO_ANCHOR.TOP)
             else:

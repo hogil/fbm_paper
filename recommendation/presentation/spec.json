@@ -758,34 +758,34 @@
         {
           "axis": "P1 | Failbit Map AI",
           "thumb": "p1_roi_crop_real.png",
-          "question": "대량 FBM 조회와 Known/Unknown 분석",
+          "question": "대량 FBM 조회 + Known/Unknown 판정",
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "Cython 생성, pyvips/Numba viewer, CNN→YOLO, contrastive→HDBSCAN"
+              "answer": "data pipeline, web viewer, CNN→ROI-YOLO(object-id map), contrastive→HDBSCAN/NeCo"
             },
             {
               "check": "기술 리더십",
-              "answer": "DRAM YE 공동 구상, 설계/구현 본인 수행 — 판독법 학습 후 label/FP/FN 검증"
+              "answer": "DRAM YE 공동 구상, 설계/구현 본인 수행 — 불량 분석 학습 후 label/FP/FN 검증"
             },
             {
               "check": "기술성과",
-              "answer": "Known F1 0.95, Unknown 13 후보 중 7건 확인"
+              "answer": "D전제품 양산 viewer 운영, Known F1 0.95, Unknown 7건 현업 확인"
             }
           ]
         },
         {
           "axis": "P2 | Chip multi-label",
           "thumb": "fcm_pm_panel.png",
-          "question": "measure value 한계 → image supervision",
+          "question": "measure value 한계 → image 기반 판정",
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "multi-label, FCM-PM, Pair Mask, val_margin, Naive Bayes reject"
+              "answer": "multi-label FCM-PM, Pair Mask, val_margin, NB reject"
             },
             {
               "check": "기술 리더십",
-              "answer": "DRAM YE 중복 failure 문제 공동 구상, FCM-PM/val-margin 설계 본인 수행"
+              "answer": "DRAM YE와 중복 failure 문제 공동 구상, 데이터부터 검증까지 전 과정 본인 단독"
             },
             {
               "check": "기술성과",
@@ -796,15 +796,15 @@
         {
           "axis": "P3 | Trend anomaly",
           "thumb": "trend_spike_view.png",
-          "question": "abnormal label 부족 → synthetic validation",
+          "question": "abnormal label 부족 → 합성 검증",
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "Region/Noise/Anomaly generator, 합성 benchmark, binary gate 검증"
+              "answer": "Region/Noise/Anomaly generator, benchmark + binary gate"
             },
             {
               "check": "기술 리더십",
-              "answer": "generator/학습 코드 동료 전수, 독립 학습/생성 역량 이전"
+              "answer": "generator/검증 체계 본인 개발, 동료에게 전수해 학습/실험 분담"
             },
             {
               "check": "기술성과",
