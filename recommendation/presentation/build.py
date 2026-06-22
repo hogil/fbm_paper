@@ -3737,10 +3737,10 @@ def s_p2_selection(slide, d, idx):
     _text(slide, rx+Inches(0.28), ry+Inches(0.22), rw-Inches(0.56), Inches(0.32),
           [[("NB reject: known profile과 맞지 않는 확률 조합 제거", dict(size=14.0, bold=True, color=NAVY))]])
     _text(slide, rx+Inches(0.28), ry+Inches(0.60), rw-Inches(0.56), Inches(0.26),
-          [[("4 output bits independently checked",
+          [[("class별 출력 bit 확률 분포 저장 (bit 독립, NB)",
              dict(size=10.2, bold=True, color=INK))]])
     _text(slide, rx+Inches(0.28), ry+Inches(0.88), rw-Inches(0.56), Inches(0.20),
-          [[("gray band = 99.7% range per bit",
+          [[("gray band = 저장 분포 99.7% 범위 (±3σ)",
              dict(size=9.6, bold=True, color=MUTED))]])
 
     bit_labels = ["bb", "fk", "sc", "sr"]
@@ -3802,10 +3802,10 @@ def s_p2_selection(slide, d, idx):
     _rect(slide, rx+Inches(0.32), ry+Inches(3.80), rw-Inches(0.64), Inches(0.58),
           RGBColor(0xF4,0xF7,0xFB), line=RGBColor(0xD7,0xDE,0xE8))
     _text(slide, rx+Inches(0.44), ry+Inches(3.88), rw-Inches(0.88), Inches(0.16),
-          [[("One known profile matched → ACCEPT",
+          [[("최고 일치 class likelihood ≥ 임계 → ACCEPT",
              dict(size=10.2, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER)
     _text(slide, rx+Inches(0.44), ry+Inches(4.14), rw-Inches(0.88), Inches(0.16),
-          [[("No profile matched → REJECT",
+          [[("모든 class 임계 미달 → REJECT (OOD/tail)",
              dict(size=10.2, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
     card_y = ry+Inches(4.50); card_h = Inches(0.44); card_w = Inches(2.42)
     impacts = [
