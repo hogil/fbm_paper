@@ -763,20 +763,16 @@
           "question": "AI 문제 정의 → 모델/실험 → pipeline → 모니터링",
           "items": [
             {
-              "check": "AI 관점 문제 정의",
-              "answer": "P1 FBM image, P2 multi-label, P3 trend anomaly 목표화"
+              "check": "문제 정의와 목표",
+              "answer": "P1 FBM image / P2 multi-label / P3 trend anomaly"
             },
             {
-              "check": "모델 설계와 성능 개선",
-              "answer": "Known F1 0.95 / P2 0.9927 / P3 0.9967"
+              "check": "모델 설계와 실험 개선",
+              "answer": "Known F1 0.95 / P2 bit-F1 0.9927 / P3 binary-F1 0.9967"
             },
             {
-              "check": "데이터 pipeline",
-              "answer": "FBM 변환, FCM-PM 합성, episode generator"
-            },
-            {
-              "check": "재학습과 모니터링",
-              "answer": "현업 label 수집, retrain, drift/FAR 관리"
+              "check": "데이터 pipeline과 운영 loop",
+              "answer": "FBM 변환, FCM-PM 합성, generator, label → retrain → monitoring"
             }
           ]
         },
@@ -787,19 +783,15 @@
           "items": [
             {
               "check": "협업 범위와 의사결정",
-              "answer": "DRAM YE와 공동 구상, 설계/구현 본인 주도"
+              "answer": "DRAM YE 공동 구상, 설계/구현 본인 주도"
             },
             {
-              "check": "핵심 기술 선택",
-              "answer": "ConvNeXtV2, NeCo, FCM-PM, val_margin 선택"
+              "check": "기술 선택 전문성",
+              "answer": "ConvNeXtV2, NeCo, FCM-PM, val_margin 적용 결정"
             },
             {
-              "check": "조직 확산",
-              "answer": "DRAM D1a/b/c/d 4개 분석 파트에서 viewer 매일 사용"
-            },
-            {
-              "check": "기술 coverage 확대",
-              "answer": "세미나, 문서, 코드 교육으로 역량 확산"
+              "check": "조직 확산과 coverage",
+              "answer": "4개 분석 파트 매일 사용, 파트 내 3명 AI 구현 지원"
             }
           ]
         },
@@ -814,11 +806,11 @@
             },
             {
               "check": "핵심 KPI 개선",
-              "answer": "공수 90% 감소, 수율 +0.02%p, 정량 기여"
+              "answer": "공수 90%↓, 수율 +0.02%p, 정량 기여"
             },
             {
               "check": "타 공정과 제품 확장",
-              "answer": "Flash YE 확장 요청, object-id, multimodal, generator"
+              "answer": "Flash YE 확장 요청, object-id, multimodal, generator 확장"
             }
           ]
         }

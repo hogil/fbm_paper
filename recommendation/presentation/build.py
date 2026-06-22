@@ -2082,22 +2082,22 @@ def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
         else:
             title_y = y0 + Inches(0.28)
 
-        _text(slide, x + pad, title_y, Emu(int(cw) - int(pad)*2), Inches(0.34),
-              [[(axis.get("axis", ""), dict(size=16.5, bold=True, color=NAVY))]],
+        _text(slide, x + pad, title_y, Emu(int(cw) - int(pad)*2), Inches(0.36),
+              [[(axis.get("axis", ""), dict(size=18.0, bold=True, color=NAVY))]],
               anchor=MSO_ANCHOR.MIDDLE)
         if axis.get("question"):
-            _rect(slide, x + pad, title_y + Inches(0.40), Emu(int(cw) - int(pad)*2), Inches(0.38),
+            _rect(slide, x + pad, title_y + Inches(0.42), Emu(int(cw) - int(pad)*2), Inches(0.38),
                   WHITE, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-            _text(slide, x + pad + Inches(0.08), title_y + Inches(0.40),
+            _text(slide, x + pad + Inches(0.08), title_y + Inches(0.42),
                   Emu(int(cw) - int(pad)*2 - int(Inches(0.16))), Inches(0.36),
-                  [[(axis["question"], dict(size=10.6, bold=True, color=NAVY))]],
+                  [[(axis["question"], dict(size=11.2, bold=True, color=NAVY))]],
                   align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
         raw_items = axis.get("items")
         if not raw_items:
             raw_items = [{"check": "", "answer": ev} for ev in axis.get("evidence", [])[:4]]
         raw_items = raw_items[:4]
-        list_y = title_y + Inches(0.94)
+        list_y = title_y + Inches(0.98)
         bottom_margin = Inches(0.20)
         avail_h = Emu(int(y0) + int(ch) - int(list_y) - int(bottom_margin))
         n = max(1, len(raw_items))
@@ -2114,12 +2114,12 @@ def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
             if check:
                 _text(slide, x + pad + Inches(0.18), cy + Inches(0.06),
                       Emu(int(cw) - int(pad)*2 - int(Inches(0.30))), Inches(0.18),
-                      [[(check, dict(size=10.5, bold=True, color=accent))]],
+                      [[(check, dict(size=11.5, bold=True, color=accent))]],
                       anchor=MSO_ANCHOR.MIDDLE)
-                _text(slide, x + pad + Inches(0.18), cy + Inches(0.26),
+                _text(slide, x + pad + Inches(0.18), cy + Inches(0.30),
                       Emu(int(cw) - int(pad)*2 - int(Inches(0.30))),
-                      Emu(int(row_h) - int(Inches(0.30))),
-                      [[(answer, dict(size=10.6, bold=(j == 0), color=INK))]],
+                      Emu(int(row_h) - int(Inches(0.34))),
+                      [[(answer, dict(size=11.6, bold=(j == 0), color=INK))]],
                       anchor=MSO_ANCHOR.MIDDLE)
             else:
                 _text(slide, x + pad + Inches(0.18), cy,
