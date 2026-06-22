@@ -140,9 +140,7 @@
       "type": "papertext",
       "kicker": "P1 | 데이터 생성 (fail-map)",
       "title": "8단계 grade → palette PNG 무손실 저장",
-      "bullets": [
-        "**Motivation** — wafer 한 장 약 1,000만 test value, 하루 약 2만 장 누적. raw log는 대량 조회와 AI 입력에 부적합 → hex-to-grade는 Cython 가속, 8단계 grade 특성으로 palette PNG 저장량 약 75% 절감"
-      ],
+      "motivation": "raw log는 대량 조회/AI 입력에 부적합 → hex-to-grade Cython 가속 + 8단계 palette PNG로 저장량 약 75% 절감",
       "body_h": 0.72,
       "img_frame": false,
       "bullet_size": 13.5,
@@ -217,6 +215,7 @@
       "type": "papertext",
       "kicker": "P1 | viewer 처리 구조",
       "title": "대용량 Failbit Map viewer를 위한 Numba와 pyvips",
+      "motivation": "대용량 palette PNG를 운영 viewer가 즉시 띄우기 어려움(메모리/속도) → Numba JIT + pyvips tile decode로 peak memory/로드 시간 절감",
       "grayscale": true,
       "hide_fig_captions": true,
       "footer_size": 12,
@@ -242,12 +241,14 @@
       "type": "image_grid",
       "kicker": "P1 | Known 2단계 상세",
       "title": "Known 검증: CNN tuning과 ROI cascade",
+      "motivation": "전체 성능은 CNN이 높지만 같은 위치에 종류가 다른 불량은 ROI-YOLO가 더 정확(root cause 구분) → low confidence sample만 ROI-YOLO 2차 분류, F1 0.92 → 0.95",
       "bullets": [
         "**1-stage CNN (백본 선정)** — 불량이 국소 영역에 몰려 있어 그 외 배경까지 보는 Transformer보다 locality에 강한 CNN이 유리하다고 판단 (연세대 인공지능학과 전해곤 교수 자문). ConvNeXtV2는 MaxViT와 F1 0.87 동급이면서 더 가벼움",
-        "**Tuning** — Optuna로 schedule, focal loss, class-imbalance, augmentation strength를 조정해 F1 0.92로 향상"
+        "**Tuning** — Optuna로 schedule, focal loss, class-imbalance, augmentation strength를 조정해 F1 0.92로 향상",
+        "**ROI cascade** — 선택된 ROI 안에서 chip class와 ROI 내 배치까지 재확인하는 selective 2-stage 구조"
       ],
-      "body_h": 0.82,
-      "bullet_size": 14.8,
+      "body_h": 1.1,
+      "bullet_size": 13.5,
       "img_tile": "#E4EAF4",
       "images": [
         {
@@ -264,12 +265,11 @@
         },
         {
           "src": "p1_chip_yolo_box_real.png",
-          "caption": "chip 분류 + ROI 내 배치 확인",
-          "result_frame": "Detection result"
+          "caption": "chip 분류 + ROI 내 배치 확인"
         }
       ],
       "grid_cols": 4,
-      "img_note": "불량 A와 B는 wafer-level에서 비슷해 1-stage 신뢰도가 낮음. 이 경우만 ROI-YOLO로 chip class와 배치까지 확인해 구분. Optuna 0.92 → 2-stage 0.95."
+      "img_note": "불량 A와 B는 wafer-level에서 비슷해 1-stage로 구분이 어려운 예시."
     },
     {
       "type": "p1_known_perf",
@@ -280,6 +280,7 @@
       "type": "image_grid",
       "kicker": "P1 | 칩 식별 지도 (후속 개발)",
       "title": "차세대 Stage-2: ROI detection → chip identity map",
+      "motivation": "ROI-YOLO는 검증됐으나 class 확장/annotation cost 부담 → chip 좌표 재사용한 object-id map으로 fixed-crop 분류 전환 (개발 중)",
       "bullets": [
         "**Current Stage-2** — ROI-YOLO는 field-validated 구조지만, 선택된 ROI 안에서 box regression, classification, NMS를 수행하므로 class 확장과 detector annotation cost 부담이 남음",
         "**Object-id map** — 제품별 chip coordinate를 재사용해 fixed crop classification으로 바꾸고, chip별 class id를 32×32 wafer grid에 재배치",
@@ -318,6 +319,7 @@
       "type": "image_grid",
       "kicker": "P1 | Unknown 탐색",
       "title": "Unknown 후보 발견 contrastive clustering",
+      "motivation": "신규 불량은 정답 label이 없어 지도학습 불가 → contrastive embedding + HDBSCAN으로 검토 후보를 13개 중 7개로 압축",
       "bullets": [
         "**Embedding** — same-wafer views를 alignment target으로 두고, other wafers를 contrastive reference로 사용",
         "**Review output** — HDBSCAN 결과는 자동 판정이 아니라 엔지니어가 검토할 신규 failure 후보 group"
@@ -344,6 +346,7 @@
       "type": "papertext",
       "kicker": "P1 | Unknown 대조 학습: contrastive loss",
       "title": "false negative 억제 contrastive embedding",
+      "motivation": "near-positive를 negative로 밀면 같은 불량이 흩어짐(false negative) → similarity filter로 near-positive 제외해 cluster 응집 유지",
       "bullets": [
         "**SimCLR** — positive-pair alignment와 in-batch negative contrast로 wafer pattern embedding을 학습",
         "**Negative similarity filter** — cosine similarity가 높은 near-positive candidate를 negative set에서 제외해 false-negative push를 방지"
@@ -544,6 +547,7 @@
       "type": "image_grid",
       "kicker": "P3 | robustness check",
       "title": "robustness와 입력 민감도 점검",
+      "motivation": "입력 표현/checkpoint 선택에 성능이 흔들릴 위험 → 민감도 점검으로 binary-F1 0.9967 안정 확인",
       "bullets": [
         "입력 표현과 checkpoint 선택 민감도 확인 장. main claim은 binary-F1 0.9967"
       ],
@@ -603,8 +607,8 @@
         {
           "head": "운영 유지보수 (재학습/모니터링)",
           "lines": [
-            "현업 CSV predict-검토-fine-tune 재학습 wrapper (P3)",
-            "NT sweep FN/FP 모니터링, viewer label-retrain 루프 (P1) (트리거: NT 임계 초과/신규 label 누적)"
+            "P1 viewer label-retrain 루프 + NT sweep FN/FP 모니터링",
+            "P2 검증 후 review-fine-tune, P3 현업 CSV predict-검토-fine-tune wrapper"
           ]
         },
         {

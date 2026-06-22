@@ -1495,6 +1495,7 @@ def _caption_runs(text, sz):
 def s_image_grid(slide, d, idx):
     _bg(slide, WHITE)
     _title_block(slide, d.get("kicker"), d["title"])
+    _motiv_head(slide, d.get("motivation"))
     imgs = d["images"]; cols = d.get("grid_cols", 3)
     rows = (len(imgs)+cols-1)//cols
     top = Inches(2.0)
@@ -3087,11 +3088,21 @@ def _draw_pyvips(slide, X, Y, W, H):
     txt(0.145, 0.846, 0.710, 0.058, "same output with bounded active rows", size=12.0, bold=True, color=INK)
 
 
+def _motiv_head(slide, text):
+    """기술 슬라이드 헤드의 Motivation 한 줄: 문제 → 이 기술로 개선(수치). 본문은 기술 설명."""
+    if not text:
+        return
+    _text(slide, Inches(0.7), Inches(1.5), Inches(12.0), Inches(0.4),
+          [[("적용 이유   ", dict(size=12, bold=True, color=ACCENT)),
+            (text, dict(size=12.5, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
+
+
 def s_papertext(slide, d, idx):
     """논문 figure(Fig.1/2)의 텍스트 내용을 네이티브 텍스트 박스로 렌더(이미지 캡쳐 X).
     각 fig = 얇은 테두리 박스 + (선택 head) + (라벨 줄 + 들여쓴 monospace 내용) + 하단 Fig 캡션."""
     _bg(slide, WHITE)
     _title_block(slide, d.get("kicker"), d["title"])
+    _motiv_head(slide, d.get("motivation"))
     top = int(Inches(2.0))
     if d.get("bullets"):
         bh = int(Inches(d.get("body_h", 0.7)))
@@ -3517,10 +3528,11 @@ def s_p2_fcmpm(slide, d, idx):
     _bg(slide, WHITE)
     _title_block_compact(slide, "P2 | FCM-PM 원리", "FCM-PM: coverage 보존과 loss masking")
     _text(slide, Inches(0.85), Inches(1.52), Inches(11.75), Inches(0.34),
-          [[("Measure value로 중복 failure 확인이 어려워 image multi-label이 필요합니다",
-             dict(size=13.2, color=INK))]])
+          [[("적용 이유   ", dict(size=12, bold=True, color=ACCENT)),
+            ("2-combo label은 부족하지만 실제 중복 불량은 발생 → single source를 FCM-PM으로 합성해 학습 신호 구성",
+             dict(size=12.5, color=INK))]])
     _text(slide, Inches(0.85), Inches(1.76), Inches(11.75), Inches(0.24),
-          [[("2-combo label 확보가 현실적으로 어려워 single-failure source에서 FCM-PM supervision을 구성 (자문: 연세대학교 인공지능학과 박은병 교수)",
+          [[("Mixup은 pixel이 섞여 noise, Diffusion은 대량 label/compute 부담 → label 의미를 보존하는 CutMix 계열 선택 (자문: 연세대학교 인공지능학과 박은병 교수)",
              dict(size=10.8, color=MUTED))]])
 
     fig_x, fig_y, fig_w, fig_h = Inches(0.78), Inches(1.98), Inches(11.78), Inches(2.30)
@@ -3639,9 +3651,13 @@ def s_p2_validation(slide, d, idx):
 def s_p2_selection(slide, d, idx):
     _bg(slide, WHITE)
     _title_block_compact(slide, "P2 | selection + NB reject", "val-margin 선택과 negative-tail 제어")
+    _text(slide, Inches(0.78), Inches(1.42), Inches(11.8), Inches(0.30),
+          [[("적용 이유   ", dict(size=12, bold=True, color=ACCENT)),
+            ("val-F1만으로는 negative tail이 안정적인 checkpoint를 고르기 어려움 → positive/negative score margin으로 선택, FAR 0%",
+             dict(size=12.5, color=INK))]])
 
     # Left: val-margin selection
-    lx = Inches(0.75); ly = Inches(1.78); lw = Inches(5.70); lh = Inches(4.95)
+    lx = Inches(0.75); ly = Inches(1.84); lw = Inches(5.70); lh = Inches(4.92)
     _rect(slide, lx, ly, lw, lh, WHITE, line=LINE)
     _rect(slide, lx, ly, Inches(0.10), lh, COVER_BAR)
     _text(slide, lx+Inches(0.28), ly+Inches(0.22), lw-Inches(0.56), Inches(0.32),
@@ -3706,7 +3722,7 @@ def s_p2_selection(slide, d, idx):
               align=PP_ALIGN.RIGHT)
 
     # Right: negative-tail control
-    rx = Inches(6.85); ry = Inches(1.78); rw = Inches(5.70); rh = Inches(4.95)
+    rx = Inches(6.85); ry = Inches(1.84); rw = Inches(5.70); rh = Inches(4.92)
     _rect(slide, rx, ry, rw, rh, WHITE, line=LINE)
     _rect(slide, rx, ry, Inches(0.10), rh, RGBColor(0x2B,0xA6,0x6B))
     _text(slide, rx+Inches(0.28), ry+Inches(0.22), rw-Inches(0.56), Inches(0.32),
@@ -3868,8 +3884,9 @@ def s_p3_generator(slide, d, idx):
     _bg(slide, WHITE)
     _title_block_compact(slide, "P3 | episode generation", "정상 baseline episode와 측정 noise 샘플링")
     _text(slide, Inches(0.85), Inches(1.47), Inches(11.6), Inches(0.32),
-          [[("정상 trend는 region별 baseline 위에 episode density와 noise family를 분리해 샘플링. anomaly injection은 다음 장에서 분리",
-             dict(size=12.8, color=INK))]])
+          [[("적용 이유   ", dict(size=12, bold=True, color=ACCENT)),
+            ("실제 정상 데이터로는 다양한 패턴 확보가 어려움 → region/noise/density를 분리 샘플링해 정상 baseline 생성 (anomaly는 다음 장)",
+             dict(size=12.5, color=INK))]])
 
     # Normal baseline only: episode/density/noise sampling.
     fig_x, fig_y, fig_w, fig_h = Inches(0.78), Inches(1.82), Inches(11.75), Inches(3.82)
