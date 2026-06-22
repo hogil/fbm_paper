@@ -3628,32 +3628,31 @@ def s_p2_validation(slide, d, idx):
                            font_size=10.0, header_size=10.2, left_cols={1, 6},
                            bold_rows={6, 7})
 
+    # 오른쪽 패널 = 표에 없는 '추론 비용 / 배포 선택' 스토리 (FAR/role 중복 제거)
     _rect(slide, Inches(9.20), Inches(1.82), Inches(3.62), Inches(0.40), PANEL, line=LINE)
     _text(slide, Inches(9.30), Inches(1.82), Inches(3.42), Inches(0.40),
-          [[("Negative-tail and deployment cost", dict(size=11.0, bold=True, color=NAVY))]],
+          [[("추론 비용 / 배포 선택", dict(size=11.5, bold=True, color=NAVY))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     side_cards = [
-        ("FCM-PM", "NI/OOD FAR 0.00%", "1x cost", "selected single"),
-        ("Ensemble", "best-F1 reference", "5x cost", "upper-bound"),
-        ("KD student", "single-student", "1x cost", "deploy candidate"),
+        ("FCM-PM", "1x", "단일 대표 모델 (selected)"),
+        ("Ensemble", "5x", "성능 상한 (upper bound)"),
+        ("KD student", "1x", "배포 후보 (deploy)"),
     ]
     sy = Inches(2.42)
-    for i, (head, far, cost, role) in enumerate(side_cards):
-        y = Emu(int(sy) + i * int(Inches(1.06)))
-        _rect(slide, Inches(9.20), y, Inches(3.62), Inches(0.92), PANEL if i != 1 else WHITE, line=LINE)
-        _rect(slide, Inches(9.20), y, Inches(0.09), Inches(0.92), COVER_BAR)
-        _text(slide, Inches(9.38), y+Inches(0.10), Inches(1.20), Inches(0.24),
-              [[(head, dict(size=12.2, bold=True, color=NAVY))]],
-              anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, Inches(10.64), y+Inches(0.10), Inches(1.86), Inches(0.24),
-              [[(far, dict(size=11.0, bold=True, color=INK))]],
+    for i, (head, cost, role) in enumerate(side_cards):
+        y = Emu(int(sy) + i * int(Inches(1.02)))
+        _rect(slide, Inches(9.20), y, Inches(3.62), Inches(0.88), PANEL if i != 1 else WHITE, line=LINE)
+        _rect(slide, Inches(9.20), y, Inches(0.09), Inches(0.88), COVER_BAR)
+        _text(slide, Inches(9.40), y+Inches(0.11), Inches(2.10), Inches(0.30),
+              [[(head, dict(size=13.5, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, Inches(11.20), y+Inches(0.11), Inches(1.42), Inches(0.30),
+              [[(cost + " cost", dict(size=12.5, bold=True, color=ACCENT))]],
               align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, Inches(9.38), y+Inches(0.50), Inches(1.08), Inches(0.22),
-              [[(cost, dict(size=11.0, bold=True, color=INK))]],
-              anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, Inches(10.50), y+Inches(0.50), Inches(1.98), Inches(0.22),
-              [[(role, dict(size=11.0, bold=True, color=NAVY))]],
-              align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, Inches(9.40), y+Inches(0.48), Inches(3.22), Inches(0.28),
+              [[(role, dict(size=11.5, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, Inches(9.20), Emu(int(sy) + 3*int(Inches(1.02)) + int(Inches(0.04))), Inches(3.62), Inches(0.84),
+          [[("Ensemble로 성능 상한을 확인하고, KD로 그 성능을 1x 단일 모델에 압축해 운영 비용을 낮춥니다.",
+             dict(size=10.5, color=MUTED))]], anchor=MSO_ANCHOR.TOP)
 
     _footer(slide, idx, size=d.get("footer_size", 9))
 
