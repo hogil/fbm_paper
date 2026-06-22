@@ -4743,58 +4743,81 @@ def s_unknown_neco_explain(slide, d, idx):
 
 
 def s_career(slide, d, idx):
-    """본인 커리어 소개: 프로필 + 경력 흐름(현장 계측 → AI) + 기술 분야 + 수상."""
+    """본인 커리어 소개: 프로필 + 경력 흐름(현장 계측 → AI) + 캡쳐 placeholder + 기술 분야 + 수상."""
     _bg(slide, WHITE)
     _title_block(slide, d.get("kicker"), d["title"])
     SLATE = RGBColor(0x55, 0x60, 0x75)
+    x0 = int(Inches(0.7)); tot = int(Inches(12.0))
     if d.get("profile"):
-        _text(slide, Inches(0.7), Inches(1.5), Inches(12.0), Inches(0.4),
-              [[(d["profile"], dict(size=14, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
-    # 경력 흐름 (현장 계측 → AI) — phase 박스 + 화살표
+        _text(slide, Inches(0.7), Inches(1.46), Inches(12.0), Inches(0.34),
+              [[(d["profile"], dict(size=13, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+    # 경력 흐름 (현장 계측 → AI) — phase 박스 + 화살표 (compact)
     phases = d.get("phases", [])
     n = max(1, len(phases))
-    py = int(Inches(2.15)); ph = int(Inches(1.45))
-    gap = int(Inches(0.5)); x0 = int(Inches(0.7)); tot = int(Inches(12.0))
+    py = int(Inches(1.9)); ph = int(Inches(1.0))
+    gap = int(Inches(0.34))
     pw = (tot - gap * (n - 1)) // n
     for i, pd in enumerate(phases):
         px = x0 + i * (pw + gap)
         _rect(slide, Emu(px), Emu(py), Emu(pw), Emu(ph), PANEL, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-        _rect(slide, Emu(px), Emu(py), Emu(pw), Inches(0.08), ACCENT)
-        _text(slide, Emu(px + int(Inches(0.26))), Emu(py + int(Inches(0.22))), Emu(pw - int(Inches(0.52))), Inches(0.28),
-              [[(pd.get("period", ""), dict(size=12, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, Emu(px + int(Inches(0.26))), Emu(py + int(Inches(0.54))), Emu(pw - int(Inches(0.52))), Inches(0.34),
-              [[(pd.get("role", ""), dict(size=14, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, Emu(px + int(Inches(0.26))), Emu(py + int(Inches(0.9))), Emu(pw - int(Inches(0.52))), Inches(0.46),
-              [[(pd.get("detail", ""), dict(size=11.5, color=SLATE))]], anchor=MSO_ANCHOR.TOP)
+        _rect(slide, Emu(px), Emu(py), Emu(pw), Inches(0.07), ACCENT)
+        _text(slide, Emu(px + int(Inches(0.18))), Emu(py + int(Inches(0.12))), Emu(pw - int(Inches(0.36))), Inches(0.24),
+              [[(pd.get("period", ""), dict(size=10.5, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, Emu(px + int(Inches(0.18))), Emu(py + int(Inches(0.36))), Emu(pw - int(Inches(0.36))), Inches(0.3),
+              [[(pd.get("role", ""), dict(size=12.5, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, Emu(px + int(Inches(0.18))), Emu(py + int(Inches(0.65))), Emu(pw - int(Inches(0.36))), Inches(0.32),
+              [[(pd.get("detail", ""), dict(size=9.8, color=SLATE))]], anchor=MSO_ANCHOR.TOP)
         if i < n - 1:
-            ax = px + pw + (gap - int(Inches(0.3))) // 2
-            _rect(slide, Emu(ax), Emu(py + ph // 2 - int(Inches(0.15))), Inches(0.3), Inches(0.3),
+            ax = px + pw + (gap - int(Inches(0.26))) // 2
+            _rect(slide, Emu(ax), Emu(py + ph // 2 - int(Inches(0.13))), Inches(0.26), Inches(0.26),
                   RGBColor(0xB7, 0xC0, 0xCE), shape=MSO_SHAPE.RIGHT_ARROW)
-    # 기술 분야 chips (4열 grid)
+    # 캡쳐 placeholder (더미 공간 — 추후 screenshot 삽입)
+    caps = d.get("captures", [])
+    if caps:
+        cy = int(Inches(3.02)); chh = int(Inches(1.46))
+        m = max(1, len(caps)); cgap = int(Inches(0.4))
+        cw = (tot - cgap * (m - 1)) // m
+        for i, cap in enumerate(caps):
+            cx = x0 + i * (cw + cgap)
+            _rect(slide, Emu(cx), Emu(cy), Emu(cw), Emu(chh), RGBColor(0xF5, 0xF7, 0xFA),
+                  line=RGBColor(0xC2, 0xCC, 0xDC))
+            _text(slide, Emu(cx), Emu(cy + chh // 2 - int(Inches(0.28))), Emu(cw), Inches(0.32),
+                  [[(cap.get("label", ""), dict(size=12, bold=True, color=SLATE))]],
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+            _text(slide, Emu(cx), Emu(cy + chh // 2 + int(Inches(0.06))), Emu(cw), Inches(0.28),
+                  [[("(캡쳐 예정)", dict(size=10.5, color=MUTED))]],
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    # 기술 분야 chips (compact 4열)
     skills = d.get("skills", [])
     if skills:
-        sy = int(Inches(3.95))
-        _text(slide, Inches(0.7), Emu(sy), Inches(4), Inches(0.3),
-              [[("기술 분야", dict(size=13, bold=True, color=ACCENT))]])
-        gy = sy + int(Inches(0.42)); cols = 4; cgap = int(Inches(0.2))
-        cw = (tot - cgap * (cols - 1)) // cols; chh = int(Inches(0.5)); rgap = int(Inches(0.16))
+        sy = int(Inches(4.56))
+        _text(slide, Inches(0.7), Emu(sy), Inches(3), Inches(0.26),
+              [[("기술 분야", dict(size=11, bold=True, color=ACCENT))]])
+        gy = sy + int(Inches(0.32)); cols = 4; cgap = int(Inches(0.16))
+        cw = (tot - cgap * (cols - 1)) // cols; chh = int(Inches(0.4)); rgap = int(Inches(0.12))
         for i, sk in enumerate(skills):
             r, c = divmod(i, cols)
             cx = x0 + c * (cw + cgap); ry = gy + r * (chh + rgap)
             _rect(slide, Emu(cx), Emu(ry), Emu(cw), Emu(chh), RGBColor(0xEE, 0xF1, 0xF7),
                   line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
             _text(slide, Emu(cx), Emu(ry), Emu(cw), Emu(chh),
-                  [[(sk, dict(size=11.5, bold=True, color=NAVY))]],
+                  [[(sk, dict(size=10.5, bold=True, color=NAVY))]],
                   align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    # 수상 띠
-    if d.get("awards"):
-        ay = int(Inches(6.2)); ah = int(Inches(0.56))
+    # 수상 / 강사·교육 띠 (2줄, 주체 구분)
+    if d.get("awards") or d.get("edu"):
+        ay = int(Inches(6.0)); ah = int(Inches(0.92))
         _rect(slide, Inches(0.7), Emu(ay), Inches(12.0), Emu(ah), RGBColor(0xF2, 0xF5, 0xFA))
         _rect(slide, Inches(0.7), Emu(ay), Inches(0.09), Emu(ah), ACCENT)
-        _text(slide, Inches(0.92), Emu(ay), Inches(1.2), Emu(ah),
-              [[("수상", dict(size=11, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
-        _text(slide, Inches(2.05), Emu(ay), Inches(10.5), Emu(ah),
-              [[(d["awards"], dict(size=12.5, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+        if d.get("awards"):
+            _text(slide, Inches(0.92), Emu(ay + int(Inches(0.06))), Inches(1.25), Inches(0.36),
+                  [[("수상", dict(size=10.5, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
+            _text(slide, Inches(2.05), Emu(ay + int(Inches(0.06))), Inches(10.45), Inches(0.36),
+                  [[(d["awards"], dict(size=10.8, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+        if d.get("edu"):
+            _text(slide, Inches(0.92), Emu(ay + int(Inches(0.5))), Inches(1.25), Inches(0.36),
+                  [[("강사 / 교육", dict(size=10.5, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
+            _text(slide, Inches(2.05), Emu(ay + int(Inches(0.5))), Inches(10.45), Inches(0.36),
+                  [[(d["edu"], dict(size=10.8, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
 

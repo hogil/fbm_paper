@@ -13,7 +13,15 @@
       "type": "career",
       "kicker": "커리어 소개",
       "title": "반도체 계측 도메인에서 제조품질 AI로",
-      "profile": "최호길  |  메모리제조센터 QIE그룹 Data Science 파트, 13년차  |  연세대학교 인공지능학과 석사 과정",
+      "profile": "최호길  |  메모리 DRAM YE QIE그룹 DSM 파트, 13년차  |  연세대학교 인공지능학과 석사 과정",
+      "captures": [
+        {
+          "label": "DX web tool 홈페이지 (HTML / JS)"
+        },
+        {
+          "label": "D1b TF BBD / Overlay 분석"
+        }
+      ],
       "phases": [
         {
           "period": "2013.07 입사",
@@ -21,14 +29,19 @@
           "detail": "BBD / Overlay / CD 계측 분석"
         },
         {
-          "period": "2017 ~",
-          "role": "DX 및 제품 동시 담당",
-          "detail": "계측 trend 판정 도메인 심화"
+          "period": "2016 ~",
+          "role": "DX 제작 / 강사",
+          "detail": "SQL/Spotfire/VBA, HTML/JS web tool 운영"
         },
         {
-          "period": "2023 ~ 현재",
-          "role": "QIE 그룹 Data Science",
-          "detail": "Failbit Map / Chip / Trend AI 직접 설계, 구현"
+          "period": "2021 ~ 2023",
+          "role": "D1b 신제품 TF",
+          "detail": "BBD / Overlay 담당"
+        },
+        {
+          "period": "2023.03 ~ 현재",
+          "role": "QIE 그룹 DSM 파트",
+          "detail": "DRAM YE 전배, P1/P2/P3 AI 직접 설계"
         }
       ],
       "skills": [
@@ -41,7 +54,8 @@
         "HPC (Cython/Numba/pyvips)",
         "AI Systems Engineering"
       ],
-      "awards": "DS AI BP Good Challenger, MTC 고등급 제안 1등급, MEMORY PEER AWARD, 메모리 우수강사"
+      "awards": "DS AI BP Good Challenger, 삼성 논문상, 메모리사업부 PEER AWARD, MTC 고등급 제안 1등급",
+      "edu": "메모리사업부 우수강사('21 하반기), 메모리제조센터 우수강사('23), DS Data Scientist 교육 수료('24)"
     },
     {
       "type": "cards",
