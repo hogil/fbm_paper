@@ -386,7 +386,7 @@
       "type": "unknown_embedding_grouping",
       "kicker": "P1 | Unknown 탐색",
       "title": "Unknown 신규 불량: embedding → grouping → 현업 전달",
-      "motivation": "신규 불량은 정답 label이 없어 지도학습 불가 → embedding(vector)으로 변환해 비슷한 패턴끼리 묶어(grouping) 검토 후보로 압축",
+      "motivation": "신규 불량은 정답 label이 없어 지도학습 불가 → embedding(vector)으로 변환 후 HDBSCAN으로 자동 군집화",
       "bullets": [
         "**Embedding** — same-wafer views를 alignment target으로 두고, other wafers를 contrastive reference로 사용",
         "**Review output** — HDBSCAN 결과는 자동 판정이 아니라 엔지니어가 검토할 신규 failure 후보 group"

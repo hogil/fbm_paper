@@ -1505,7 +1505,17 @@ def _caption_runs(text, sz):
 def s_image_grid(slide, d, idx):
     _bg(slide, WHITE)
     _title_block(slide, d.get("kicker"), d["title"])
-    _motiv_head(slide, d.get("motivation"))
+    # 상단: 적용 이유 + HDBSCAN 설명 + 논문(full reference)
+    _text(slide, Inches(0.72), Inches(1.35), Inches(12.1), Inches(0.27),
+          [[("적용 이유   ", dict(size=12, bold=True, color=ACCENT)),
+            (d.get("motivation", ""), dict(size=12, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, Inches(0.72), Inches(1.64), Inches(12.1), Inches(0.27),
+          [[("HDBSCAN   ", dict(size=11, bold=True, color=NAVY)),
+            ("밀도가 높은 영역을 한 group으로, 희소한 점은 noise로 분리하고, 군집 수를 미리 지정하지 않는 계층적 밀도 기반 군집화",
+             dict(size=11, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, Inches(0.72), Inches(1.92), Inches(12.1), Inches(0.22),
+          [[("Campello, R.J.G.B., Moulavi, D. & Sander, J. Density-Based Clustering Based on Hierarchical Density Estimates. PAKDD 2013, LNCS 7819, pp. 160-172.",
+             dict(size=9, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
     imgs = d["images"]; cols = d.get("grid_cols", 3)
     rows = (len(imgs)+cols-1)//cols
     top = Inches(2.0)
@@ -1914,7 +1924,17 @@ def s_unknown_embedding_grouping(slide, d, idx):
     """Unknown: 다양한 신규 불량 이미지 -> embedding(점) -> HDBSCAN group -> 현업 전달 (label 없음)."""
     _bg(slide, WHITE)
     _title_block(slide, d.get("kicker"), d["title"])
-    _motiv_head(slide, d.get("motivation"))
+    # 상단: 적용 이유 + HDBSCAN 설명 + 논문(full reference)
+    _text(slide, Inches(0.72), Inches(1.35), Inches(12.1), Inches(0.27),
+          [[("적용 이유   ", dict(size=12, bold=True, color=ACCENT)),
+            (d.get("motivation", ""), dict(size=12, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, Inches(0.72), Inches(1.64), Inches(12.1), Inches(0.27),
+          [[("HDBSCAN   ", dict(size=11, bold=True, color=NAVY)),
+            ("밀도가 높은 영역을 한 group으로, 희소한 점은 noise로 분리하고, 군집 수를 미리 지정하지 않는 계층적 밀도 기반 군집화",
+             dict(size=11, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, Inches(0.72), Inches(1.92), Inches(12.1), Inches(0.22),
+          [[("Campello, R.J.G.B., Moulavi, D. & Sander, J. Density-Based Clustering Based on Hierarchical Density Estimates. PAKDD 2013, LNCS 7819, pp. 160-172.",
+             dict(size=9, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
 
     y = int(Inches(2.18)); h = int(Inches(4.02))
     n = 4
@@ -1987,34 +2007,34 @@ def s_unknown_embedding_grouping(slide, d, idx):
     dots(xs[1] + int(Inches(0.26)), pw - int(Inches(0.52)), va_y + int(Inches(0.10)), int(Inches(1.94)), False)
     desc(xs[1], ["이미지를 점(vector)으로", "비슷한 것끼리 가까이"])
 
-    # ---- panel 3: HDBSCAN grouping (어떻게 묶는지 설명 + 논문 + 군집 결과) ----
-    p3x = xs[2] + int(Inches(0.22))
-    _text(slide, Emu(p3x), Emu(va_y + int(Inches(0.02))), Emu(pw - int(Inches(0.40))), Inches(0.84),
-          [[("- 빽빽이 모인 점 = 한 group", dict(size=10, color=INK))],
-           [("- 드문 점 = noise로 분리", dict(size=10, color=INK))],
-           [("- group 수를 미리 안 정함", dict(size=10, color=INK))]],
+    # ---- panel 3: 군집 결과 + 현재 운영 상황 ----
+    dots(xs[2] + int(Inches(0.30)), pw - int(Inches(0.60)), va_y + int(Inches(0.04)), int(Inches(1.30)), True)
+    cby = va_y + int(Inches(1.50))
+    _rect(slide, Emu(xs[2] + int(Inches(0.16))), Emu(cby), Emu(pw - int(Inches(0.32))), Inches(0.90),
+          RGBColor(0xF4, 0xF6, 0xF8), line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    _rect(slide, Emu(xs[2] + int(Inches(0.16))), Emu(cby), Inches(0.08), Inches(0.90), ACCENT)
+    _text(slide, Emu(xs[2] + int(Inches(0.34))), Emu(cby + int(Inches(0.08))), Emu(pw - int(Inches(0.44))), Inches(0.78),
+          [[("현재 운영 (사내 실데이터)", dict(size=10, bold=True, color=NAVY))],
+           [("약 2,000장 → 13개 후보 group", dict(size=10, color=INK))],
+           [("현업 검토로 7개 실제 불량 확인", dict(size=10, color=INK))]],
           anchor=MSO_ANCHOR.TOP, align=PP_ALIGN.LEFT)
-    _text(slide, Emu(p3x), Emu(va_y + int(Inches(0.86))), Emu(pw - int(Inches(0.40))), Inches(0.22),
-          [[("(Campello et al., 2013)", dict(size=8.5, color=MUTED))]],
-          anchor=MSO_ANCHOR.TOP, align=PP_ALIGN.LEFT)
-    dots(xs[2] + int(Inches(0.30)), pw - int(Inches(0.60)), va_y + int(Inches(1.14)), int(Inches(1.40)), True)
 
-    # ---- panel 4: 후보 group(비슷한 wafer 여러 장) -> 현업 검토 queue ----
-    gth = int(Inches(0.54)); gstep_y = int(Inches(0.64)); tgap = int(Inches(0.27))
+    # ---- panel 4: 후보 group(비슷한 wafer 여러 장) -> 현업 검토 queue (이미지 확대) ----
+    gth = int(Inches(0.66)); gstep_y = int(Inches(0.76)); tgap = int(Inches(0.10))
     bar_x = xs[3] + int(Inches(0.16)); t0 = xs[3] + int(Inches(0.34))
     for k in range(3):
         ry = va_y + k * gstep_y
-        _rect(slide, Emu(bar_x), Emu(ry + int(Inches(0.10))), Inches(0.07), Inches(0.34), colors[k])
+        _rect(slide, Emu(bar_x), Emu(ry + int(Inches(0.16))), Inches(0.07), Inches(0.40), colors[k])
         for j in range(3):
             tx = t0 + j * (gth + tgap)
             pthumb(reps[k]["src"], tx, ry, gth)
-    ay4 = va_y + 3 * gstep_y + int(Inches(0.04))
-    _rect(slide, Emu(xs[3] + pw // 2 - int(Inches(0.10))), Emu(ay4), Inches(0.20), Inches(0.16),
+    ay4 = va_y + 3 * gstep_y + int(Inches(0.02))
+    _rect(slide, Emu(xs[3] + pw // 2 - int(Inches(0.10))), Emu(ay4), Inches(0.20), Inches(0.14),
           ACCENT, shape=MSO_SHAPE.DOWN_ARROW)
-    qy = ay4 + int(Inches(0.22))
-    _rect(slide, Emu(xs[3] + int(Inches(0.24))), Emu(qy), Emu(pw - int(Inches(0.48))), Inches(0.40),
+    qy = ay4 + int(Inches(0.20))
+    _rect(slide, Emu(xs[3] + int(Inches(0.24))), Emu(qy), Emu(pw - int(Inches(0.48))), Inches(0.38),
           RGBColor(0xE9, 0xF2, 0xEF), line=ACCENT, line_w=Pt(1.4), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-    _text(slide, Emu(xs[3] + int(Inches(0.24))), Emu(qy), Emu(pw - int(Inches(0.48))), Inches(0.40),
+    _text(slide, Emu(xs[3] + int(Inches(0.24))), Emu(qy), Emu(pw - int(Inches(0.48))), Inches(0.38),
           [[("현업 검토 queue로 전달", dict(size=11, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
     by = y + h + int(Inches(0.18))
@@ -3289,7 +3309,17 @@ def s_papertext(slide, d, idx):
     각 fig = 얇은 테두리 박스 + (선택 head) + (라벨 줄 + 들여쓴 monospace 내용) + 하단 Fig 캡션."""
     _bg(slide, WHITE)
     _title_block(slide, d.get("kicker"), d["title"])
-    _motiv_head(slide, d.get("motivation"))
+    # 상단: 적용 이유 + HDBSCAN 설명 + 논문(full reference)
+    _text(slide, Inches(0.72), Inches(1.35), Inches(12.1), Inches(0.27),
+          [[("적용 이유   ", dict(size=12, bold=True, color=ACCENT)),
+            (d.get("motivation", ""), dict(size=12, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, Inches(0.72), Inches(1.64), Inches(12.1), Inches(0.27),
+          [[("HDBSCAN   ", dict(size=11, bold=True, color=NAVY)),
+            ("밀도가 높은 영역을 한 group으로, 희소한 점은 noise로 분리하고, 군집 수를 미리 지정하지 않는 계층적 밀도 기반 군집화",
+             dict(size=11, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, Inches(0.72), Inches(1.92), Inches(12.1), Inches(0.22),
+          [[("Campello, R.J.G.B., Moulavi, D. & Sander, J. Density-Based Clustering Based on Hierarchical Density Estimates. PAKDD 2013, LNCS 7819, pp. 160-172.",
+             dict(size=9, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
     top = int(Inches(2.0))
     if d.get("bullets"):
         bh = int(Inches(d.get("body_h", 0.7)))
