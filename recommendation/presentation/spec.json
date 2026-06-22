@@ -5,15 +5,15 @@
       "anchor_metrics": "",
       "kicker": "'26 AI Specialist 면접 심사 자료",
       "title": "AI Specialist 인증 발표",
-      "subtitle": "10년 제조품질 현장 경험을 바탕으로 데이터 처리 구조, viewer backend/frontend, AI model까지 직접 설계한 3개 과제",
+      "subtitle": "10년 현업 경험을 바탕으로 데이터 처리 구조, viewer backend/frontend, AI model까지 직접 설계한 3개 과제",
       "author": "최호길  |  메모리제조센터 QIE그룹 Data Science 파트",
-      "affil": "메모리 Photo BBD/Overlay/CD 계측 분석 10년 + QIE AI 실무 3년, 13년차 / 연세대 인공지능 석사 병행"
+      "affil": ""
     },
     {
       "type": "career",
       "kicker": "커리어 소개",
       "title": "반도체 계측 도메인에서 제조품질 AI로",
-      "profile": "최호길  |  메모리 DRAM YE QIE그룹 DSM 파트, 13년차  |  연세대학교 인공지능학과 석사 과정",
+      "profile": "최호길  |  메모리 DRAM YE QIE그룹 DSM 파트, 14년차  |  연세대학교 인공지능학과 석사 ('25.09~ 재학)",
       "captures": [
         {
           "label": "DX web tool 홈페이지 (HTML / JS, Bootstrap)",
@@ -329,7 +329,13 @@
     {
       "type": "p1_known_perf",
       "kicker": "P1 | Known evidence",
-      "title": "Known 16-class backbone scan and staged improvement"
+      "title": "Known 16-class backbone scan and staged improvement",
+      "refs": [
+        "ConvNeXt V2 (Woo et al., 2023)",
+        "Optuna (Akiba et al., 2019)",
+        "Focal Loss (Lin et al., 2017)",
+        "YOLO (Redmon et al., 2016)"
+      ]
     },
     {
       "type": "image_grid",
@@ -395,7 +401,10 @@
       ],
       "grid_cols": 3,
       "body_h": 0.72,
-      "img_note": "실제 현업 데이터 2,000장 review: 13개 후보 중 7개 신규 failure 확인. 화면 이미지는 후속 튜닝용 생성/개발 예시"
+      "img_note": "실제 현업 데이터 2,000장 review: 13개 후보 중 7개 신규 failure 확인. 화면 이미지는 후속 튜닝용 생성/개발 예시",
+      "refs": [
+        "HDBSCAN (Campello et al., 2013)"
+      ]
     },
     {
       "type": "papertext",
@@ -403,8 +412,8 @@
       "title": "false negative 억제 contrastive embedding",
       "motivation": "near-positive를 negative로 밀면 같은 불량이 흩어짐(false negative) → similarity filter로 near-positive 제외해 cluster 응집 유지",
       "bullets": [
-        "**SimCLR** — positive-pair alignment와 in-batch negative contrast로 wafer pattern embedding을 학습",
-        "**Negative similarity filter** — cosine similarity가 높은 near-positive candidate를 negative set에서 제외해 false-negative push를 방지"
+        "**SimCLR (Chen et al., 2020)** — positive-pair alignment와 in-batch negative contrast로 wafer pattern embedding을 학습",
+        "**NV-Retriever negative-similarity filter (Moreira et al., 2024)** — cosine similarity가 높은 near-positive candidate를 negative set에서 제외해 false-negative push를 방지"
       ],
       "body_h": 0.7,
       "bullet_size": 14.0,
@@ -413,11 +422,11 @@
       "figs": [
         {
           "diagram": "simclr_big",
-          "caption": "SimCLR: positive-pair alignment with in-batch negative contrast"
+          "caption": "SimCLR (Chen et al., 2020): positive-pair alignment with in-batch negative contrast"
         },
         {
           "diagram": "pos_neg_hard",
-          "caption": "Negative similarity filter: potential false-negative exclusion preserves cluster compactness"
+          "caption": "NV-Retriever neg-sim filter (Moreira et al., 2024): potential false-negative exclusion preserves cluster compactness"
         }
       ]
     },
@@ -442,12 +451,23 @@
           "src": "ref_neco_method.png",
           "caption": "NeCo: patch-neighbor consistency preserves local failure-pattern structure"
         }
+      ],
+      "refs": [
+        "MoCo (He et al., 2020)",
+        "NeCo (Pariza et al., 2024)",
+        "InfoNCE (van den Oord et al., 2018)"
       ]
     },
     {
       "type": "unknown_ablation",
       "kicker": "P1 | Unknown evidence",
-      "title": "Contrastive recipe ablation on generated evaluation set"
+      "title": "Contrastive recipe ablation on generated evaluation set",
+      "refs": [
+        "InfoNCE (van den Oord et al., 2018)",
+        "DenseCL (Wang et al., 2021)",
+        "MoCo (He et al., 2020)",
+        "NeCo (Pariza et al., 2024)"
+      ]
     },
     {
       "type": "two_col",
@@ -558,7 +578,11 @@
     {
       "type": "p2_fcmpm",
       "kicker": "P2 | FCM-PM 원리",
-      "title": "FCM-PM: failure-preserving synthesis with background-loss masking"
+      "title": "FCM-PM: failure-preserving synthesis with background-loss masking",
+      "refs": [
+        "CutMix (Yun et al., 2019)",
+        "Mixup (Zhang et al., 2018)"
+      ]
     },
     {
       "type": "p2_selection",
@@ -568,7 +592,13 @@
     {
       "type": "p2_validation",
       "kicker": "P2 | 검증 결과",
-      "title": "val-margin 선택 이후 recipe ladder 성능"
+      "title": "val-margin 선택 이후 recipe ladder 성능",
+      "refs": [
+        "Focal Loss (Lin et al., 2017)",
+        "Asymmetric Loss (Ben-Baruch et al., 2021)",
+        "CutMix (Yun et al., 2019)",
+        "Knowledge Distillation (Hinton et al., 2015)"
+      ]
     },
     {
       "type": "section",
@@ -626,7 +656,10 @@
     {
       "type": "p3_result",
       "kicker": "P3 | binary validation",
-      "title": "Anomaly injection rules and binary validation"
+      "title": "Anomaly injection rules and binary validation",
+      "refs": [
+        "Focal Loss (Lin et al., 2017)"
+      ]
     },
     {
       "type": "image_grid",

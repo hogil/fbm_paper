@@ -260,6 +260,16 @@ def _footer(slide, idx, size=9):
           [[(str(idx), dict(size=size, color=MUTED))]], align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
 
 
+def _refs_footnote(slide, refs):
+    # 기법 출처 각주 — 하단 footer 바로 위, 작은 회색 한 줄. (저자, 연도) 형식.
+    items = refs if isinstance(refs, list) else [refs]
+    txt = "참고 문헌   " + "    ".join(items)
+    _text(slide, Inches(0.7), Inches(6.74), Inches(11.9), Inches(0.28),
+          [[("참고 문헌   ", dict(size=8.5, bold=True, color=RGBColor(0x8A, 0x92, 0x9E))),
+            ("    ".join(items), dict(size=8.5, color=MUTED))]],
+          anchor=MSO_ANCHOR.MIDDLE)
+
+
 def _title_block(slide, kicker, title, x=Inches(0.7), y=Inches(0.55), w=Inches(11.9)):
     # 헤더 시스템 통일(full-bleed 스케일): 모든 본문 슬라이드(figure·표·로드맵)가 section(32)/
     # closing(30) 디바이더와 같은 줌 배율로 보이도록 제목을 키우고(29→31) 좌측 teal 바를 더 굵고
@@ -306,8 +316,8 @@ def s_title(slide, d, idx):
     title_lines = [[(seg, dict(size=42, bold=True, color=NAVY))] for seg in d["title"].split("\n")]
     _text(slide, Inches(0.95), Inches(1.46), Inches(11.6), Inches(1.8), title_lines)
     if d.get("subtitle"):
-        _text(slide, Inches(0.97), Inches(3.20), Inches(11.4), Inches(0.6),
-              [[(d["subtitle"], dict(size=17, color=RGBColor(0x47,0x55,0x69)))]])
+        _text(slide, Inches(0.97), Inches(3.20), Inches(11.9), Inches(0.6),
+              [[(d["subtitle"], dict(size=15.5, color=RGBColor(0x47,0x55,0x69)))]])
     # 부제목과 발표자 사이 중앙 공백을 3개 과제(P1/P2/P3) 미니 카드로 채워 무게중심 균형(휑함 완화)
     tasks = d.get("tasks", [
         {"no": "P1", "t": "Failbit Map 불량 분석"},
@@ -3386,20 +3396,20 @@ def s_p1_known_perf(slide, d, idx):
         ("HPO", "ConvNeXtV2 + Optuna", "0.92", "warmup→cosine, focal γ2, effective class-weight, aug"),
         ("Cascade", "ConvNeXtV2 + Optuna + ROI-YOLO", "0.95", "low-confidence only"),
     ]
-    _native_evidence_table(slide, Inches(0.70), Inches(1.88), Inches(12.0), Inches(3.66),
+    _native_evidence_table(slide, Inches(0.70), Inches(1.84), Inches(12.0), Inches(3.42),
                            headers, rows, [1.15, 2.90, 1.05, 4.05],
                            font_size=10.4, header_size=10.7, left_cols={1, 3},
                            bold_rows={7})
 
-    _rect(slide, Inches(0.70), Inches(5.66), Inches(12.0), Inches(0.42), PANEL, line=LINE)
-    _rect(slide, Inches(0.70), Inches(5.66), Inches(0.09), Inches(0.42), ACCENT)
-    _text(slide, Inches(0.90), Inches(5.66), Inches(11.7), Inches(0.42),
+    _rect(slide, Inches(0.70), Inches(5.38), Inches(12.0), Inches(0.42), PANEL, line=LINE)
+    _rect(slide, Inches(0.70), Inches(5.38), Inches(0.09), Inches(0.42), ACCENT)
+    _text(slide, Inches(0.90), Inches(5.38), Inches(11.7), Inches(0.42),
           [[("HPO recipe — ", dict(size=11, bold=True, color=NAVY)),
             ("LR backbone 2e-5 / head 2e-4, weight decay 0.05, warmup 5ep→cosine, focal γ=2.0, effective-number class weighting, EMA 0.95, stochastic depth 0.05, label smoothing 0.02, rotation ±15°+affine",
              dict(size=11, color=RGBColor(0x4A,0x56,0x66)))]],
           anchor=MSO_ANCHOR.MIDDLE)
 
-    card_y = Inches(6.24)
+    card_y = Inches(5.94)
     cards = [
         ("0.78 → 0.87", "backbone gain"),
         ("0.87 → 0.92", "Optuna HPO"),
@@ -3408,7 +3418,7 @@ def s_p1_known_perf(slide, d, idx):
     cw = Inches(3.72); gap = Inches(0.36); x0 = Inches(0.92)
     for i, (big, lab) in enumerate(cards):
         x = Emu(int(x0) + i * (int(cw) + int(gap)))
-        _metric_card_compact(slide, x, card_y, cw, Inches(0.78), big, lab, "", color=COVER_BAR)
+        _metric_card_compact(slide, x, card_y, cw, Inches(0.64), big, lab, "", color=COVER_BAR)
     _footer(slide, idx)
 
 
@@ -4885,6 +4895,8 @@ def build(spec_path, out_path):
     for i, sd in enumerate(spec["slides"], 1):
         slide = prs.slides.add_slide(blank)
         DISPATCH.get(sd["type"], s_bullets)(slide, sd, i)
+        if sd.get("refs"):
+            _refs_footnote(slide, sd["refs"])
     prs.save(out_path)
     return len(spec["slides"])
 
