@@ -642,7 +642,7 @@
             "binary F1 0.9967",
             "abnormal recall 0.9987",
             "현업 trend 검증 예정",
-            "defect type 다중 분류 확장"
+            "anomaly type 분류 확장"
           ]
         }
       ],
