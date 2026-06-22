@@ -2075,7 +2075,7 @@ def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
                   WHITE, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
             _text(slide, x + pad + Inches(0.08), y0 + Inches(0.78),
                   Emu(int(cw) - int(pad)*2 - int(Inches(0.16))), Inches(0.36),
-                  [[(axis["question"], dict(size=11.2, bold=True, color=NAVY))]],
+                  [[(axis["question"], dict(size=10.3, bold=True, color=NAVY))]],
                   align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
         chip_y = y0 + Inches(1.32)
         for j, ev in enumerate(axis.get("evidence", [])[:4]):
@@ -3111,12 +3111,22 @@ def _draw_pyvips(slide, X, Y, W, H):
 
 
 def _motiv_head(slide, text):
-    """기술 슬라이드 헤드의 Motivation 한 줄: 문제 → 이 기술로 개선(수치). 본문은 기술 설명."""
+    """기술 슬라이드 헤드의 Motivation: 문제 → 이 기술로 개선(수치). 본문은 기술 설명.
+    text 에 줄바꿈(\\n)이 있으면 2줄로 렌더(제목↔본문 사이 좁은 띠에 맞게 폰트 축소)."""
     if not text:
         return
-    _text(slide, Inches(0.7), Inches(1.5), Inches(12.0), Inches(0.4),
-          [[("적용 이유   ", dict(size=12, bold=True, color=ACCENT)),
-            (text, dict(size=12.5, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
+    if "\n" in text:
+        lns = text.split("\n")
+        runs = [[("적용 이유   ", dict(size=11, bold=True, color=ACCENT)),
+                 (lns[0], dict(size=11, color=INK))]]
+        for ln in lns[1:]:
+            runs.append([(ln, dict(size=11, color=INK))])
+        _text(slide, Inches(0.7), Inches(1.46), Inches(12.0), Inches(0.5),
+              runs, anchor=MSO_ANCHOR.TOP)
+    else:
+        _text(slide, Inches(0.7), Inches(1.5), Inches(12.0), Inches(0.4),
+              [[("적용 이유   ", dict(size=12, bold=True, color=ACCENT)),
+                (text, dict(size=12.5, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
 
 
 def s_papertext(slide, d, idx):
@@ -3646,9 +3656,9 @@ def s_p2_validation(slide, d, idx):
           [[("추론 비용 / 배포 선택", dict(size=11.5, bold=True, color=NAVY))]],
           align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     side_cards = [
-        ("FCM-PM", "1x", "단일 대표 모델 (selected)"),
-        ("Ensemble", "5x", "성능 상한 (upper bound)"),
-        ("KD student", "1x", "배포 후보 (deploy)"),
+        ("FCM-PM", "1x", "대표 single model / bit-F1 0.9927"),
+        ("Ensemble", "5x", "성능 상한 / bit-F1 0.9956"),
+        ("KD student", "1x", "운영 후보"),
     ]
     sy = Inches(2.42)
     for i, (head, cost, role) in enumerate(side_cards):
@@ -3747,7 +3757,7 @@ def s_p2_selection(slide, d, idx):
     _rect(slide, rx, ry, rw, rh, WHITE, line=LINE)
     _rect(slide, rx, ry, Inches(0.10), rh, RGBColor(0x2B,0xA6,0x6B))
     _text(slide, rx+Inches(0.28), ry+Inches(0.22), rw-Inches(0.56), Inches(0.32),
-          [[("Naive Bayes reject: known profile과 맞지 않는 확률 조합 제거", dict(size=14.0, bold=True, color=NAVY))]])
+          [[("Naive Bayes reject: 학습된 class profile과 맞지 않으면 reject", dict(size=14.0, bold=True, color=NAVY))]])
     _text(slide, rx+Inches(0.28), ry+Inches(0.60), rw-Inches(0.56), Inches(0.26),
           [[("class별 출력 bit 확률 분포 저장 (bit 독립, Naive Bayes)",
              dict(size=10.2, bold=True, color=INK))]])

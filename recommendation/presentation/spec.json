@@ -302,7 +302,7 @@
       "type": "image_grid",
       "kicker": "P1 | Known 2단계 상세",
       "title": "Known 검증: CNN tuning과 ROI cascade",
-      "motivation": "전체 성능은 CNN이 높지만 같은 위치에 종류가 다른 불량은 ROI-YOLO가 더 정확(root cause 구분) → low confidence sample만 ROI-YOLO 2차 분류, F1 0.92 → 0.95",
+      "motivation": "전체 성능은 CNN이 높지만, 같은 위치의 유사 불량은 ROI-YOLO가 root cause 구분에 유리했습니다.\nlow-confidence sample만 2차 분류해 F1 0.92 → 0.95로 개선했습니다.",
       "bullets": [
         "**1-stage CNN (백본 선정)** — 불량이 특정 영역에 몰려 나타나, 넓게 보는 Transformer보다 좁은 영역을 잘 보는 CNN이 더 적합하다고 판단 (연세대 인공지능학과 전해곤 교수 자문). ConvNeXtV2는 MaxViT와 F1 0.87 동급이면서 더 가벼워 채택",
         "**Tuning** — Optuna로 schedule, focal loss, class-imbalance, augmentation strength를 조정해 F1 0.92로 향상",
@@ -759,7 +759,7 @@
       "score_axes": [
         {
           "axis": "기술 전문성",
-          "question": "문제 정의 / 모델 / pipeline / 모니터링",
+          "question": "문제 정의 → 모델 → pipeline → 모니터링",
           "evidence": [
             "AI 관점 문제 정의와 목표 설정 (P1/P2/P3)",
             "모델/실험으로 성능 개선: F1 0.95 / 0.9927 / 0.9967",
@@ -769,17 +769,17 @@
         },
         {
           "axis": "기술 리더십",
-          "question": "협업 / 의사결정 / 확산",
+          "question": "현업 구상 → 의사결정 → 조직 확산",
           "evidence": [
             "DRAM YE와 P1/P2 공동 구상, 설계와 구현은 본인 주도",
             "본인 기술 의사결정: ConvNeXtV2, object-id map, NeCo, FCM-PM, val-margin, episode generator",
             "조직 확산: DRAM D1a/b/c/d 4개 분석 파트 매일 사용",
-            "기술 공유: 세미나, 기술 문서, 동료 코드 교육"
+            "기술 공유: 세미나/문서/코드 교육 → 동료 독립 수행 역량 이전"
           ]
         },
         {
           "axis": "기술성과",
-          "question": "양산 적용 / KPI / 확장성",
+          "question": "양산 적용 → KPI → 타 제품 확장",
           "evidence": [
             "양산 운영(viewer) + 양산 데이터 AI 검증 (Known/Unknown)",
             "KPI 개선: 공수 90% 감소, 수율 +0.02%p, 정량 사업 기여",
