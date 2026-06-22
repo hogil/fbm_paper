@@ -10,6 +10,40 @@
       "affil": "메모리 Photo BBD/Overlay/CD 계측 분석 10년 + QIE AI 실무 3년, 13년차 / 연세대 인공지능 석사 병행"
     },
     {
+      "type": "career",
+      "kicker": "커리어 소개",
+      "title": "반도체 계측 도메인에서 제조품질 AI로",
+      "profile": "최호길  |  메모리제조센터 QIE그룹 Data Science 파트, 13년차  |  연세대학교 인공지능학과 석사 과정",
+      "phases": [
+        {
+          "period": "2013.07 입사",
+          "role": "Photo 기술팀",
+          "detail": "BBD / Overlay / CD 계측 분석"
+        },
+        {
+          "period": "2017 ~",
+          "role": "DX 및 제품 동시 담당",
+          "detail": "계측 trend 판정 도메인 심화"
+        },
+        {
+          "period": "2023 ~ 현재",
+          "role": "QIE 그룹 Data Science",
+          "detail": "Failbit Map / Chip / Trend AI 직접 설계, 구현"
+        }
+      ],
+      "skills": [
+        "Computer Vision",
+        "Deep Learning",
+        "Self-Supervised Learning",
+        "Anomaly Detection",
+        "Synthetic Data Generation",
+        "Data Engineering",
+        "HPC (Cython/Numba/pyvips)",
+        "AI Systems Engineering"
+      ],
+      "awards": "DS AI BP Good Challenger, MTC 고등급 제안 1등급, MEMORY PEER AWARD, 메모리 우수강사"
+    },
+    {
       "type": "cards",
       "kicker": "P1/P2/P3 Overview",
       "title": "3개 과제 핵심 요약",
@@ -57,15 +91,30 @@
       "story": [
         {
           "head": "문제 / AI 필요성",
-          "items": ["48매 조회 / 수작업으로 대량 확인 한계", "고질불량 물량 정확 선별", "신규불량 조기 검출"]
+          "items": [
+            "48매 조회 / 수작업으로 대량 확인 한계",
+            "고질불량 물량 정확 선별",
+            "신규불량 조기 검출"
+          ]
         },
         {
           "head": "개발 내용",
-          "items": ["이미지 데이터 파이프라인", "대용량 이미지 조회 / 라벨링 web app", "CNN 2-stage 분류", "self-supervised 표현학습"]
+          "items": [
+            "이미지 데이터 파이프라인",
+            "대용량 이미지 조회 / 라벨링 web app",
+            "CNN 2-stage 분류",
+            "self-supervised 표현학습"
+          ]
         },
         {
           "head": "성과 / 확장",
-          "items": ["분류 F1 0.95", "이상 검출 7/13", "일 2만 wafer 양산 운영", "123억 정량 기여", "object-id map 차세대 모델"]
+          "items": [
+            "분류 F1 0.95",
+            "이상 검출 7/13",
+            "일 2만 wafer 양산 운영",
+            "123억 정량 기여",
+            "object-id map 차세대 모델"
+          ]
         }
       ],
       "contrib": "데이터 파이프라인 / 대용량 이미지 web app / AI 모델 전 영역 직접 설계, 구현",
@@ -466,15 +515,30 @@
       "story": [
         {
           "head": "문제 / AI 필요성",
-          "items": ["chip 내 중복 결함 확인 불가", "single label도 부족", "2-combo label 수집 불가"]
+          "items": [
+            "chip 내 중복 결함 확인 불가",
+            "single label도 부족",
+            "2-combo label 수집 불가"
+          ]
         },
         {
           "head": "개발 내용",
-          "items": ["CutMix 기반 데이터 합성", "multi-label 이미지 분류", "validation 기반 모델 선택", "false alarm 제어"]
+          "items": [
+            "CutMix 기반 데이터 합성",
+            "multi-label 이미지 분류",
+            "validation 기반 모델 선택",
+            "false alarm 제어"
+          ]
         },
         {
           "head": "성과 / 확장",
-          "items": ["multi-label F1 0.9927", "false alarm 0%", "single + 2-combo 동시 검출", "ensemble robustness 확보", "KD 단일 모델 생산성"]
+          "items": [
+            "multi-label F1 0.9927",
+            "false alarm 0%",
+            "single + 2-combo 동시 검출",
+            "ensemble robustness 확보",
+            "KD 단일 모델 생산성"
+          ]
         }
       ],
       "contrib": "데이터 합성 / multi-label 분류 / 모델 선택 / false alarm 제어 전 영역 직접 설계, 구현",
@@ -514,15 +578,30 @@
       "story": [
         {
           "head": "문제 / AI 필요성",
-          "items": ["수작업 판정 → 누락 / spec-in 위험", "실제 이상 label 희소", "검증 데이터 부족"]
+          "items": [
+            "수작업 판정 → 누락 / spec-in 위험",
+            "실제 이상 label 희소",
+            "검증 데이터 부족"
+          ]
         },
         {
           "head": "개발 내용",
-          "items": ["도메인 규칙 기반 시계열 합성", "정상 산포 / 노이즈 모델링", "이상 패턴 주입", "binary 분류 검증"]
+          "items": [
+            "도메인 규칙 기반 시계열 합성",
+            "정상 산포 / 노이즈 모델링",
+            "이상 패턴 주입",
+            "binary 분류 검증"
+          ]
         },
         {
           "head": "성과 / 확장",
-          "items": ["benchmark 7,000 구성", "binary F1 0.9967", "abnormal recall 0.9987", "현업 데이터 적용", "defect type 다중 분류 확장"]
+          "items": [
+            "benchmark 7,000 구성",
+            "binary F1 0.9967",
+            "abnormal recall 0.9987",
+            "현업 데이터 적용",
+            "defect type 다중 분류 확장"
+          ]
         }
       ],
       "contrib": "BBD / Overlay / CD 계측 경험 기반 데이터 합성 / 이상 검출 / 검증 체계 직접 설계, 구현",
@@ -633,128 +712,35 @@
       "score_axes": [
         {
           "axis": "기술 전문성",
-          "question": "문제정의 / 모델 / pipeline / 모니터링",
+          "question": "문제 정의 / 모델 / pipeline / 모니터링",
           "evidence": [
-            "AI 문제 정의와 목표 설정 (P1 / P2 / P3)",
-            "모델 설계 / 실험으로 성능 개선 (F1 0.95 / 0.9927 / 0.9967)",
-            "데이터 pipeline + validation 구조",
-            "재학습 / 모니터링 체계 (NT sweep, retrain loop)"
+            "AI 관점 문제 정의와 목표 설정 (P1/P2/P3)",
+            "모델/실험으로 성능 개선: F1 0.95 / 0.9927 / 0.9967",
+            "데이터 pipeline 체계화 (변환, 합성, generator)",
+            "재학습/모니터링: label-retrain, NT sweep, fine-tune"
           ]
         },
         {
           "axis": "기술 리더십",
           "question": "협업 / 의사결정 / 확산",
           "evidence": [
-            "현업 / 관리자 / AI센터 협업 주도",
-            "교수 자문 기반 기술 의사결정",
-            "viewer 양산 운영, DRAM 전제품 사용",
-            "세미나 / 문서 / 코드 교육으로 확산"
+            "현업, 관리자, AI센터 협업과 교수 자문 기반 의사결정",
+            "타 조직 확산: DRAM 전제품 분석 파트 매일 사용",
+            "기술 공유: 세미나, 문서, 코드 교육"
           ]
         },
         {
           "axis": "기술성과",
-          "question": "양산 / KPI / 확장",
+          "question": "양산 적용 / KPI / 확장성",
           "evidence": [
-            "P1 viewer 양산 운영 + 123억 정량 기여",
-            "공수 90%↓, 수율 +0.02%p (KPI)",
-            "신규불량 7/13 review",
-            "P2 / P3 타 공정 / 제품 확장 PoC"
+            "양산 직접 적용: P1 viewer 운영 (mapviewer)",
+            "KPI 개선: 공수 90% 감소, 수율 +0.02%p, 123억",
+            "Flash YE에서 P1/P2 적용 가능 여부 문의 접수 (타 제품 확장)",
+            "확장 구조: generator 재현, object-id, multimodal"
           ]
         }
       ],
       "bottom": ""
-    },
-    {
-      "type": "project_form_summary",
-      "kicker": "결론 | 프로젝트별 양식 대응 summary",
-      "title": "프로젝트별 공식 양식 대응표",
-      "projects": [
-        {
-          "tag": "P1",
-          "name": "Failbit Map",
-          "thumb": "wafer_center_scratch.png",
-          "items": [
-            {
-              "label": "2 소개",
-              "text": "고질불량 물량 · 신규 불량 · 대량 조회"
-            },
-            {
-              "label": "3 개발",
-              "text": "map 생성 · viewer · AI"
-            },
-            {
-              "label": "4 성과",
-              "text": "일 2만 wafer, 공수 90%↓"
-            },
-            {
-              "label": "5 확장",
-              "text": "chip map · 영상+수치"
-            },
-            {
-              "label": "6 기여",
-              "text": "설계·구현 60%"
-            }
-          ],
-          "score": ""
-        },
-        {
-          "tag": "P2",
-          "name": "Chip Multi-label",
-          "thumb": "chip_eval_scratch_selected.png",
-          "items": [
-            {
-              "label": "2 소개",
-              "text": "계측값 한계 · 중복 라벨 부족"
-            },
-            {
-              "label": "3 개발",
-              "text": "FCM-PM · val-margin · NB"
-            },
-            {
-              "label": "4 성과",
-              "text": "bit-F1 0.9927 · FAR 0%"
-            },
-            {
-              "label": "5 확장",
-              "text": "KD · threshold · 1x 후보"
-            },
-            {
-              "label": "6 기여",
-              "text": "설계·검증 80%"
-            }
-          ],
-          "score": ""
-        },
-        {
-          "tag": "P3",
-          "name": "Trend Anomaly",
-          "thumb": "trend_spike_view.png",
-          "items": [
-            {
-              "label": "2 소개",
-              "text": "이상 라벨 부족 · 검증 병목"
-            },
-            {
-              "label": "3 개발",
-              "text": "rule generator · binary 검증"
-            },
-            {
-              "label": "4 성과",
-              "text": "7,000 benchmark · F1 0.9967"
-            },
-            {
-              "label": "5 확장",
-              "text": "real trend · L1 monitoring"
-            },
-            {
-              "label": "6 기여",
-              "text": "rule 코드화 70%"
-            }
-          ],
-          "score": ""
-        }
-      ],
-      "bottom": "채점표 대응 — 기술 전문성 · 기술 리더십 · 기술성과"
     }
   ]
 }
