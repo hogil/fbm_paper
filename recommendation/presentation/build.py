@@ -1911,7 +1911,7 @@ def s_image_grid(slide, d, idx):
 
 
 def s_unknown_embedding_grouping(slide, d, idx):
-    """Unknown 신규 불량: 이미지 -> embedding -> HDBSCAN grouping -> 현업 전달 (전 과정 label 없이)."""
+    """Unknown: 정상 다수 + 신규 불량(색) -> embedding(색 유지) -> HDBSCAN grouping -> 현업 전달 (label 없음)."""
     _bg(slide, WHITE)
     _title_block(slide, d.get("kicker"), d["title"])
     _motiv_head(slide, d.get("motivation"))
@@ -1924,7 +1924,8 @@ def s_unknown_embedding_grouping(slide, d, idx):
     xs = [x0 + i * (pw + gap) for i in range(n)]
     titles = ["1. 이미지", "2. embedding", "3. HDBSCAN grouping", "4. 현업 전달"]
     colors = [RGBColor(0x2E, 0x86, 0x6E), RGBColor(0x2F, 0x5E, 0x9E), RGBColor(0xC4, 0x8B, 0x2C)]
-    GRAY = RGBColor(0x9A, 0xA4, 0xB2)
+    GRAY = RGBColor(0xC2, 0xC9, 0xD4)
+    imgs = d.get("images", [])[:3]
 
     for x, t in zip(xs, titles):
         _rect(slide, Emu(x), Emu(y), Emu(pw), Emu(h), WHITE, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
@@ -1938,81 +1939,82 @@ def s_unknown_embedding_grouping(slide, d, idx):
               ACCENT, shape=MSO_SHAPE.RIGHT_ARROW)
 
     va_y = y + hdr + int(Inches(0.20))
-    desc_y = y + h - int(Inches(1.00))
+    desc_y = y + h - int(Inches(0.98))
 
     def desc(x, lines):
-        _text(slide, Emu(x + int(Inches(0.14))), Emu(desc_y), Emu(pw - int(Inches(0.28))), Inches(0.90),
-              [[(t, dict(size=11.5, color=INK))] for t in lines], anchor=MSO_ANCHOR.TOP, align=PP_ALIGN.CENTER)
+        _text(slide, Emu(x + int(Inches(0.12))), Emu(desc_y), Emu(pw - int(Inches(0.24))), Inches(0.88),
+              [[(t, dict(size=11, color=INK))] for t in lines], anchor=MSO_ANCHOR.TOP, align=PP_ALIGN.CENTER)
 
-    # panel 1: 이미지 (label 없는 wafer thumbnails)
-    imgs = d.get("images", [])[:3]
-    th = int(Inches(0.80)); p1cx = xs[0] + pw // 2
-    rows = [(p1cx - th // 2, va_y),
-            (p1cx - th - int(Inches(0.07)), va_y + th + int(Inches(0.12))),
-            (p1cx + int(Inches(0.07)), va_y + th + int(Inches(0.12)))]
+    # ---- panel 1: 정상 다수(회색) + 신규 불량 3종(색) 혼재 ----
+    cax = xs[0] + int(Inches(0.16)); caw = pw - int(Inches(0.32)); cah = int(Inches(2.0))
+    for fx, fy in [(0.12, 0.14), (0.82, 0.12), (0.90, 0.50), (0.08, 0.48),
+                   (0.52, 0.06), (0.88, 0.84), (0.10, 0.86), (0.52, 0.92)]:
+        _rect(slide, Emu(cax + int(fx * caw) - int(Inches(0.07))), Emu(va_y + int(fy * cah) - int(Inches(0.07))),
+              Inches(0.14), Inches(0.14), GRAY, line=WHITE, line_w=Pt(0.8), shape=MSO_SHAPE.OVAL)
+    tw = int(Inches(0.60)); spots = [(0.30, 0.24), (0.67, 0.46), (0.34, 0.68)]
     for k, im in enumerate(imgs):
-        ix, iyy = rows[k]
-        _rect(slide, Emu(ix), Emu(iyy), Emu(th), Emu(th), PANEL, line=LINE)
-        _img_fit(slide, im["src"], Emu(ix + int(Inches(0.04))), Emu(iyy + int(Inches(0.04))),
-                 Emu(th - int(Inches(0.08))), Emu(th - int(Inches(0.08))), frame=False)
-    desc(xs[0], ["label 없는", "신규 불량 wafer"])
+        tx = cax + int(spots[k][0] * caw) - tw // 2; ty = va_y + int(spots[k][1] * cah) - tw // 2
+        _rect(slide, Emu(tx - int(Inches(0.03))), Emu(ty - int(Inches(0.03))),
+              Emu(tw + int(Inches(0.06))), Emu(tw + int(Inches(0.06))), colors[k], shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        _img_fit(slide, im["src"], Emu(tx), Emu(ty), Emu(tw), Emu(tw), frame=False)
+    desc(xs[0], ["정상 다수 + 신규 불량 3종", "(label 없음, 색은 추적용)"])
 
-    # panels 2 & 3 share one point layout (embedding -> grouping)
-    pts = [(0.26, 0.24), (0.33, 0.33), (0.22, 0.40),
-           (0.70, 0.30), (0.77, 0.40), (0.66, 0.47),
-           (0.46, 0.70), (0.55, 0.66), (0.50, 0.80),
-           (0.16, 0.72), (0.84, 0.74)]
-    cl = [0, 0, 0, 1, 1, 1, 2, 2, 2, -1, -1]
-    centers = [(0.27, 0.32), (0.71, 0.39), (0.50, 0.72)]
+    # ---- panels 2 & 3: embedding scatter (색=신규 불량, 회색=정상) ----
+    cpts = {0: [(0.24, 0.26), (0.31, 0.33), (0.20, 0.39)],
+            1: [(0.70, 0.27), (0.77, 0.35), (0.66, 0.42)],
+            2: [(0.46, 0.68), (0.55, 0.65), (0.50, 0.80)]}
+    npts = [(0.13, 0.60), (0.87, 0.62), (0.42, 0.15), (0.61, 0.53), (0.30, 0.54)]
+    ecenters = [(0.25, 0.32), (0.71, 0.34), (0.50, 0.71)]
 
     def scatter(xi, grouped):
-        sx = xs[xi] + int(Inches(0.28)); sw = pw - int(Inches(0.56))
-        sy = va_y + int(Inches(0.04)); sh = int(Inches(1.92))
+        sx = xs[xi] + int(Inches(0.26)); sw = pw - int(Inches(0.52))
+        sy = va_y + int(Inches(0.02)); sh = int(Inches(1.96))
         if grouped:
-            for (cx, cy) in centers:
+            for cx, cy in ecenters:
                 ell = slide.shapes.add_shape(MSO_SHAPE.OVAL,
-                                             Emu(sx + int((cx - 0.17) * sw)), Emu(sy + int((cy - 0.17) * sh)),
-                                             Emu(int(0.34 * sw)), Emu(int(0.34 * sh)))
+                                             Emu(sx + int((cx - 0.16) * sw)), Emu(sy + int((cy - 0.16) * sh)),
+                                             Emu(int(0.32 * sw)), Emu(int(0.32 * sh)))
                 ell.fill.background(); ell.line.color.rgb = RGBColor(0xC6, 0xD0, 0xDF); ell.line.width = Pt(1)
-        for (px, py), c in zip(pts, cl):
-            if grouped:
-                col = colors[c] if c >= 0 else GRAY
-                sz = 0.085 if c >= 0 else 0.05
-            else:
-                col = GRAY; sz = 0.075
-            _rect(slide, Emu(sx + int(px * sw) - int(Inches(sz / 2))), Emu(sy + int(py * sh) - int(Inches(sz / 2))),
-                  Inches(sz), Inches(sz), col, shape=MSO_SHAPE.OVAL)
+        for fx, fy in npts:
+            _rect(slide, Emu(sx + int(fx * sw) - int(Inches(0.03))), Emu(sy + int(fy * sh) - int(Inches(0.03))),
+                  Inches(0.06), Inches(0.06), GRAY, shape=MSO_SHAPE.OVAL)
+        for ci, ps in cpts.items():
+            for fx, fy in ps:
+                _rect(slide, Emu(sx + int(fx * sw) - int(Inches(0.045))), Emu(sy + int(fy * sh) - int(Inches(0.045))),
+                      Inches(0.09), Inches(0.09), colors[ci], line=WHITE, line_w=Pt(0.8), shape=MSO_SHAPE.OVAL)
 
     scatter(1, False)
-    desc(xs[1], ["이미지 → vector", "비슷한 것끼리 가까이"])
+    desc(xs[1], ["이미지 → vector", "신규 불량은 색, 정상은 회색"])
     scatter(2, True)
     desc(xs[2], ["비슷한 vector를", "자동 group화 (군집)"])
 
-    # panel 4: 현업 전달 (후보 group -> 검토 queue)
-    g0y = va_y + int(Inches(0.06))
+    # ---- panel 4: 후보 group = 비슷한 wafer 여러 장 -> 현업 전달 ----
+    gth = int(Inches(0.38)); gstep_y = int(Inches(0.48))
     for k in range(3):
-        gx = xs[3] + int(Inches(0.42)); gyy = g0y + k * int(Inches(0.40))
-        _rect(slide, Emu(gx), Emu(gyy), Inches(0.24), Inches(0.24), colors[k], line=WHITE, line_w=Pt(1.2),
-              shape=MSO_SHAPE.OVAL)
-        _text(slide, Emu(gx + int(Inches(0.34))), Emu(gyy - int(Inches(0.01))), Emu(pw - int(Inches(0.86))), Inches(0.26),
-              [[("후보 group " + str(k + 1), dict(size=10.5, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
-    p4cx = xs[3] + pw // 2
-    _rect(slide, Emu(p4cx - int(Inches(0.12))), Emu(g0y + int(Inches(1.30))), Inches(0.24), Inches(0.24),
+        ry = va_y + k * gstep_y
+        _rect(slide, Emu(xs[3] + int(Inches(0.18))), Emu(ry + int(Inches(0.05))), Inches(0.07), Inches(0.28), colors[k])
+        for j in range(3):
+            tx = xs[3] + int(Inches(0.34)) + j * (gth + int(Inches(0.05)))
+            _rect(slide, Emu(tx - int(Inches(0.02))), Emu(ry - int(Inches(0.02))),
+                  Emu(gth + int(Inches(0.04))), Emu(gth + int(Inches(0.04))), colors[k], shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+            _img_fit(slide, imgs[k]["src"], Emu(tx), Emu(ry), Emu(gth), Emu(gth), frame=False)
+    ay4 = va_y + 3 * gstep_y
+    _rect(slide, Emu(xs[3] + pw // 2 - int(Inches(0.12))), Emu(ay4), Inches(0.24), Inches(0.22),
           ACCENT, shape=MSO_SHAPE.DOWN_ARROW)
-    eb_y = g0y + int(Inches(1.62))
-    _rect(slide, Emu(xs[3] + int(Inches(0.34))), Emu(eb_y), Emu(pw - int(Inches(0.68))), Inches(0.40),
+    qy = ay4 + int(Inches(0.30))
+    _rect(slide, Emu(xs[3] + int(Inches(0.28))), Emu(qy), Emu(pw - int(Inches(0.56))), Inches(0.36),
           RGBColor(0xE9, 0xF2, 0xEF), line=ACCENT, line_w=Pt(1.4), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-    _text(slide, Emu(xs[3] + int(Inches(0.34))), Emu(eb_y), Emu(pw - int(Inches(0.68))), Inches(0.40),
-          [[("현업 검토 queue", dict(size=11.5, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    desc(xs[3], ["후보 group만", "검토용으로 전달"])
+    _text(slide, Emu(xs[3] + int(Inches(0.28))), Emu(qy), Emu(pw - int(Inches(0.56))), Inches(0.36),
+          [[("현업 검토 queue", dict(size=11, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    desc(xs[3], ["비슷한 wafer 묶음(여러 장)을", "검토용으로 전달"])
 
-    # bottom message: label 없이 비지도
+    # bottom message
     by = y + h + int(Inches(0.18))
     _rect(slide, Emu(x0), Emu(by), Emu(total), Inches(0.46), RGBColor(0xF4, 0xF6, 0xF8), line=LINE,
           shape=MSO_SHAPE.ROUNDED_RECTANGLE)
     _rect(slide, Emu(x0), Emu(by), Inches(0.09), Inches(0.46), ACCENT)
     _text(slide, Emu(x0 + int(Inches(0.28))), Emu(by), Emu(total - int(Inches(0.42))), Inches(0.46),
-          [[("전 과정 label 없이(비지도) — 자동 판정이 아니라 현업이 볼 신규 불량 후보를 줄여 전달",
+          [[("전 과정 label 없이(비지도) — 정상 속 신규 불량을 묶어, 현업이 볼 후보만 줄여 전달",
              dict(size=12.5, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
