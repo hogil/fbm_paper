@@ -2443,13 +2443,25 @@ def s_timeline(slide, d, idx):
         # 타임라인 하단 빈 띠(lower 카드 아래 y5.95~)에 확장/운영유지보수를 풀폭 라벨 라인으로 배치.
         # 박스 없이 패널당 1줄(head 굵게 + 본문), 하단 카드와 미겹침. 상단 완료/예정 chip이 legend를
         # 대신하므로 하단 legend는 생략하고 caption(일정 요약)만 우측에 둔다.
-        rowy = int(Inches(5.95)); rowh = int(Inches(0.36))
+        # 운영 유지보수/확장을 가로 박스로 렌더 (현재 운영 / 배포 후 / 확장 등)
+        n_p = max(1, len(panels))
+        py0 = int(Inches(5.84)); pbh = int(Inches(0.80))
+        px0 = int(Inches(0.6)); ptot = int(Inches(12.13)); pgap = int(Inches(0.20))
+        pbw = (ptot - pgap * (n_p - 1)) // n_p
+        SLATE_P = RGBColor(0x44, 0x52, 0x64)
         for j, pn_d in enumerate(panels):
-            ry = rowy + j * rowh
-            runs = [(pn_d.get("head", "") + " — ", dict(size=11, bold=True, color=NAVY)),
-                    (", ".join(pn_d.get("lines", [])), dict(size=10.5, color=RGBColor(0x3A, 0x48, 0x5C)))]
-            _text(slide, Inches(0.6), Emu(ry), Inches(12.13), Emu(rowh), [runs],
+            px = px0 + j * (pbw + pgap)
+            _rect(slide, Emu(px), Emu(py0), Emu(pbw), Emu(pbh), PANEL,
+                  line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+            _rect(slide, Emu(px), Emu(py0), Emu(pbw), Inches(0.06), ACCENT)
+            _text(slide, Emu(px + int(Inches(0.14))), Emu(py0 + int(Inches(0.08))),
+                  Emu(pbw - int(Inches(0.28))), Inches(0.24),
+                  [[(pn_d.get("head", ""), dict(size=10.5, bold=True, color=NAVY))]],
                   anchor=MSO_ANCHOR.MIDDLE)
+            for k, ln in enumerate(pn_d.get("lines", [])[:2]):
+                _text(slide, Emu(px + int(Inches(0.14))), Emu(py0 + int(Inches(0.35)) + k * int(Inches(0.21))),
+                      Emu(pbw - int(Inches(0.26))), Inches(0.20),
+                      [[(ln, dict(size=9.2, color=SLATE_P))]], anchor=MSO_ANCHOR.MIDDLE)
         # ── 타 조직 확산 미니 시각요소 (additive; d["spread_steps"] 있을 때만) ──
         # caption 행(y6.72) 좌측 빈 띠에 "확산" 한눈에 보이는 3-스텝 미니 화살표를 한 줄로 배치.
         # 패널(끝 y6.67) 아래·footer(7.04") 위 안전 띠 안에서만 그리고, caption 은 우측으로 좁혀

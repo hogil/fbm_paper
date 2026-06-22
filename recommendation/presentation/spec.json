@@ -729,17 +729,24 @@
       ],
       "panels": [
         {
-          "head": "운영 유지보수 (재학습/모니터링)",
+          "head": "현재 운영",
           "lines": [
-            "현재 운영: P1 viewer label-feedback 루프, batch 성공/적재량/응답, engineer review/label",
-            "모델 배포 후 (설계): confidence/FAR/drift 모니터링, threshold 재조정, version 등록/rollback"
+            "P1 viewer label-feedback 루프",
+            "batch 성공/적재량/응답, engineer review/label"
           ]
         },
         {
-          "head": "확장 계획 (타 공정/제품)",
+          "head": "모델 배포 후 (설계)",
           "lines": [
-            "episode generator config 재현으로 타 공정 복제 (P3)",
-            "obj-id map Stage-2 [개발 중], image+measure multimodal (P1)"
+            "confidence/FAR/drift 모니터링",
+            "threshold 재조정, version 등록/rollback"
+          ]
+        },
+        {
+          "head": "확장 (타 공정/제품)",
+          "lines": [
+            "object-id map Stage-2, image+measure multimodal",
+            "generator config로 타 공정 재현"
           ]
         }
       ],
