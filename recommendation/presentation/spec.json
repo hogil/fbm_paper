@@ -16,10 +16,12 @@
       "profile": "최호길  |  메모리 DRAM YE QIE그룹 DSM 파트, 13년차  |  연세대학교 인공지능학과 석사 과정",
       "captures": [
         {
-          "label": "DX web tool 홈페이지 (HTML / JS)"
+          "label": "DX web tool 홈페이지 (HTML / JS, Bootstrap)",
+          "mock": "webpage"
         },
         {
-          "label": "D1b TF BBD / Overlay 분석"
+          "label": "D1b TF BBD / Overlay wafer map",
+          "img": "wafer_edge_ring_scratch_rot.png"
         }
       ],
       "phases": [

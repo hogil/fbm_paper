@@ -4742,6 +4742,35 @@ def s_unknown_neco_explain(slide, d, idx):
     _footer(slide, idx)
 
 
+def _webpage_mock(slide, x, y, w, h):
+    """Bootstrap 스타일 web app 더미 목업 (native shapes — 이미지 생성 X)."""
+    x = int(x); y = int(y); w = int(w); h = int(h)
+    _rect(slide, Emu(x), Emu(y), Emu(w), Emu(h), WHITE, line=RGBColor(0xD0, 0xD6, 0xDE))
+    bar = int(Inches(0.18))
+    _rect(slide, Emu(x), Emu(y), Emu(w), Emu(bar), RGBColor(0xE9, 0xEC, 0xF1))
+    dot = int(Inches(0.055)); dy = y + (bar - dot) // 2
+    for k, col in enumerate((RGBColor(0xE0, 0x6C, 0x60), RGBColor(0xE6, 0xB5, 0x4D), RGBColor(0x5C, 0xB8, 0x5C))):
+        _rect(slide, Emu(x + int(Inches(0.09)) + k * int(Inches(0.11))), Emu(dy), Emu(dot), Emu(dot),
+              col, shape=MSO_SHAPE.OVAL)
+    _rect(slide, Emu(x + int(Inches(0.46))), Emu(dy), Emu(w - int(Inches(0.58))), Emu(int(Inches(0.085))),
+          WHITE, line=RGBColor(0xD0, 0xD6, 0xDE), shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    nav = int(Inches(0.16)); ny = y + bar
+    _rect(slide, Emu(x), Emu(ny), Emu(w), Emu(nav), NAVY)
+    for k in range(4):
+        _rect(slide, Emu(x + int(Inches(0.12)) + k * int(Inches(0.46))), Emu(ny + int(Inches(0.05))),
+              Emu(int(Inches(0.34))), Emu(int(Inches(0.07))), RGBColor(0xFF, 0xFF, 0xFF))
+    cy0 = ny + nav + int(Inches(0.08))
+    cardw = (w - int(Inches(0.3))) // 3
+    for k in range(3):
+        cxk = x + int(Inches(0.1)) + k * (cardw + int(Inches(0.05)))
+        _rect(slide, Emu(cxk), Emu(cy0), Emu(cardw), Emu(int(Inches(0.26))), RGBColor(0xEE, 0xF1, 0xF7),
+              line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+    ry0 = cy0 + int(Inches(0.34))
+    for k in range(2):
+        _rect(slide, Emu(x + int(Inches(0.1))), Emu(ry0 + k * int(Inches(0.12))), Emu(w - int(Inches(0.2))),
+              Emu(int(Inches(0.08))), RGBColor(0xE8, 0xEC, 0xF2) if k % 2 == 0 else RGBColor(0xF2, 0xF4, 0xF8))
+
+
 def s_career(slide, d, idx):
     """본인 커리어 소개: 프로필 + 경력 흐름(현장 계측 → AI) + 캡쳐 placeholder + 기술 분야 + 수상."""
     _bg(slide, WHITE)
@@ -4777,15 +4806,24 @@ def s_career(slide, d, idx):
         cy = int(Inches(3.02)); chh = int(Inches(1.46))
         m = max(1, len(caps)); cgap = int(Inches(0.4))
         cw = (tot - cgap * (m - 1)) // m
+        cap_h = int(Inches(0.3))
         for i, cap in enumerate(caps):
             cx = x0 + i * (cw + cgap)
-            _rect(slide, Emu(cx), Emu(cy), Emu(cw), Emu(chh), RGBColor(0xF5, 0xF7, 0xFA),
-                  line=RGBColor(0xC2, 0xCC, 0xDC))
-            _text(slide, Emu(cx), Emu(cy + chh // 2 - int(Inches(0.28))), Emu(cw), Inches(0.32),
-                  [[(cap.get("label", ""), dict(size=12, bold=True, color=SLATE))]],
-                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-            _text(slide, Emu(cx), Emu(cy + chh // 2 + int(Inches(0.06))), Emu(cw), Inches(0.28),
-                  [[("(캡쳐 예정)", dict(size=10.5, color=MUTED))]],
+            _rect(slide, Emu(cx), Emu(cy), Emu(cw), Emu(chh), WHITE, line=RGBColor(0xC2, 0xCC, 0xDC))
+            content_h = chh - cap_h
+            ix = cx + int(Inches(0.08)); iy = cy + int(Inches(0.08))
+            iw = cw - int(Inches(0.16)); ih = content_h - int(Inches(0.12))
+            if cap.get("img"):
+                _img_fit(slide, cap["img"], Emu(ix), Emu(iy), Emu(iw), Emu(ih), frame=False)
+            elif cap.get("mock") == "webpage":
+                _webpage_mock(slide, ix, iy, iw, ih)
+            else:
+                _text(slide, Emu(cx), Emu(cy + content_h // 2 - int(Inches(0.16))), Emu(cw), Inches(0.32),
+                      [[("(캡쳐 예정)", dict(size=10.5, color=MUTED))]],
+                      align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+            _rect(slide, Emu(cx), Emu(cy + content_h), Emu(cw), Emu(cap_h), RGBColor(0xF2, 0xF5, 0xFA))
+            _text(slide, Emu(cx), Emu(cy + content_h), Emu(cw), Emu(cap_h),
+                  [[(cap.get("label", ""), dict(size=10.5, bold=True, color=SLATE))]],
                   align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     # 기술 분야 chips (compact 4열)
     skills = d.get("skills", [])
