@@ -630,7 +630,7 @@
           "head": "개발 내용",
           "items": [
             "도메인 규칙 기반 시계열 합성",
-            "정상 산포 / 노이즈 모델링",
+            "노이즈, 5MA smoothing, 판정 기준 튜닝",
             "이상 패턴 주입",
             "binary 분류 검증"
           ]
@@ -802,7 +802,7 @@
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "Region×Noise×Anomaly episode generator, normality calibration"
+              "answer": "Region, Noise, Anomaly generator와 5MA smoothing, 정상/이상 판정 기준 튜닝"
             },
             {
               "check": "기술 리더십",
