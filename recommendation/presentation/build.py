@@ -2055,39 +2055,77 @@ def _closing_projects(slide, projects, common):
 
 
 def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
-    """Clean AI Specialist scoring summary: one card per evaluation axis."""
-    x0 = Inches(0.78); y0 = Inches(2.08)
+    """AI Specialist scoring summary: fill each official evaluation item with evidence."""
+    x0 = Inches(0.78); y0 = Inches(2.00)
     gap = Inches(0.30)
     cw = Emu(int((int(Inches(11.78)) - int(gap) * 2) / 3))
-    ch = Inches(3.58) if bottom_lines else Inches(4.20)
+    ch = Inches(4.86) if not bottom_lines else Inches(4.30)
     pad = Inches(0.28)
-    colors = [ACCENT, RGBColor(0x4B, 0x63, 0x88), RGBColor(0x2E, 0x7D, 0x66)]
+    colors = [RGBColor(0x2E, 0x7D, 0x66), ACCENT, RGBColor(0x4B, 0x63, 0x88)]
     for i, axis in enumerate(axes[:3]):
         x = Emu(int(x0) + i * (int(cw) + int(gap)))
         accent = colors[i % len(colors)]
         _rect(slide, x, y0, cw, ch, PANEL, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
         _rect(slide, x, y0, cw, Inches(0.10), accent)
-        _text(slide, x + pad, y0 + Inches(0.28), Emu(int(cw) - int(pad)*2), Inches(0.38),
-              [[(axis.get("axis", ""), dict(size=17.0, bold=True, color=NAVY))]],
+
+        # Visual memory hook: one project image per scoring axis, matching the overview tone.
+        if axis.get("thumb"):
+            img_x = x + Inches(0.25)
+            img_y = y0 + Inches(0.22)
+            img_w = Emu(int(cw) - int(Inches(0.50)))
+            img_h = Inches(0.82)
+            _rect(slide, img_x, img_y, img_w, img_h, WHITE, line=LINE,
+                  shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+            _img_cover(slide, axis["thumb"], img_x + Inches(0.04), img_y + Inches(0.04),
+                       Emu(int(img_w) - int(Inches(0.08))), img_h - Inches(0.08))
+            title_y = y0 + Inches(1.16)
+        else:
+            title_y = y0 + Inches(0.28)
+
+        _text(slide, x + pad, title_y, Emu(int(cw) - int(pad)*2), Inches(0.34),
+              [[(axis.get("axis", ""), dict(size=16.5, bold=True, color=NAVY))]],
               anchor=MSO_ANCHOR.MIDDLE)
         if axis.get("question"):
-            _rect(slide, x + pad, y0 + Inches(0.78), Emu(int(cw) - int(pad)*2), Inches(0.36),
+            _rect(slide, x + pad, title_y + Inches(0.40), Emu(int(cw) - int(pad)*2), Inches(0.38),
                   WHITE, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-            _text(slide, x + pad + Inches(0.08), y0 + Inches(0.78),
+            _text(slide, x + pad + Inches(0.08), title_y + Inches(0.40),
                   Emu(int(cw) - int(pad)*2 - int(Inches(0.16))), Inches(0.36),
-                  [[(axis["question"], dict(size=10.3, bold=True, color=NAVY))]],
+                  [[(axis["question"], dict(size=10.6, bold=True, color=NAVY))]],
                   align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-        chip_y = y0 + Inches(1.32)
-        for j, ev in enumerate(axis.get("evidence", [])[:4]):
-            cy = Emu(int(chip_y) + j * int(Inches(0.62)))
+
+        raw_items = axis.get("items")
+        if not raw_items:
+            raw_items = [{"check": "", "answer": ev} for ev in axis.get("evidence", [])[:4]]
+        raw_items = raw_items[:4]
+        list_y = title_y + Inches(0.94)
+        bottom_margin = Inches(0.20)
+        avail_h = Emu(int(y0) + int(ch) - int(list_y) - int(bottom_margin))
+        n = max(1, len(raw_items))
+        row_h = Emu(int(avail_h) // n - int(Inches(0.06)))
+        row_gap = Inches(0.06)
+        for j, item in enumerate(raw_items):
+            cy = Emu(int(list_y) + j * (int(row_h) + int(row_gap)))
             box_fill = RGBColor(0xF7, 0xFA, 0xFC) if j == 0 else WHITE
-            _rect(slide, x + pad, cy, Emu(int(cw) - int(pad)*2), Inches(0.50),
+            _rect(slide, x + pad, cy, Emu(int(cw) - int(pad)*2), row_h,
                   box_fill, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-            _rect(slide, x + pad, cy, Inches(0.08), Inches(0.50), accent)
-            _text(slide, x + pad + Inches(0.18), cy,
-                  Emu(int(cw) - int(pad)*2 - int(Inches(0.28))), Inches(0.50),
-                  [[(ev, dict(size=12.5, bold=(j == 0), color=INK))]],
-                  anchor=MSO_ANCHOR.MIDDLE)
+            _rect(slide, x + pad, cy, Inches(0.08), row_h, accent)
+            check = item.get("check", "")
+            answer = item.get("answer", "")
+            if check:
+                _text(slide, x + pad + Inches(0.18), cy + Inches(0.06),
+                      Emu(int(cw) - int(pad)*2 - int(Inches(0.30))), Inches(0.18),
+                      [[(check, dict(size=10.5, bold=True, color=accent))]],
+                      anchor=MSO_ANCHOR.MIDDLE)
+                _text(slide, x + pad + Inches(0.18), cy + Inches(0.26),
+                      Emu(int(cw) - int(pad)*2 - int(Inches(0.30))),
+                      Emu(int(row_h) - int(Inches(0.30))),
+                      [[(answer, dict(size=10.6, bold=(j == 0), color=INK))]],
+                      anchor=MSO_ANCHOR.MIDDLE)
+            else:
+                _text(slide, x + pad + Inches(0.18), cy,
+                      Emu(int(cw) - int(pad)*2 - int(Inches(0.28))), row_h,
+                      [[(answer, dict(size=11.3, bold=(j == 0), color=INK))]],
+                      anchor=MSO_ANCHOR.MIDDLE)
 
     # 본인 기여는 세 줄 설명이 아니라 3개 chip으로만 표시한다.
     if bottom_lines:
@@ -3757,7 +3795,7 @@ def s_p2_selection(slide, d, idx):
     _rect(slide, rx, ry, rw, rh, WHITE, line=LINE)
     _rect(slide, rx, ry, Inches(0.10), rh, RGBColor(0x2B,0xA6,0x6B))
     _text(slide, rx+Inches(0.28), ry+Inches(0.22), rw-Inches(0.56), Inches(0.32),
-          [[("Naive Bayes reject: 학습된 class profile과 맞지 않으면 reject", dict(size=14.0, bold=True, color=NAVY))]])
+          [[("Naive Bayes reject: class profile 불일치 제거", dict(size=14.0, bold=True, color=NAVY))]])
     _text(slide, rx+Inches(0.28), ry+Inches(0.60), rw-Inches(0.56), Inches(0.26),
           [[("class별 출력 bit 확률 분포 저장 (bit 독립, Naive Bayes)",
              dict(size=10.2, bold=True, color=INK))]])
@@ -3831,7 +3869,7 @@ def s_p2_selection(slide, d, idx):
              dict(size=10.2, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
     card_y = ry+Inches(4.50); card_h = Inches(0.44); card_w = Inches(2.42)
     impacts = [
-        ("Naive Bayes", "10 known classes", "4 single + 6 combo"),
+        ("NB profile", "10 known classes", "4 single + 6 combo"),
         ("reject rule", "no profile passes", "reject"),
     ]
     for ii, (head, val, delta) in enumerate(impacts):

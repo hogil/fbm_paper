@@ -759,32 +759,67 @@
       "score_axes": [
         {
           "axis": "기술 전문성",
-          "question": "문제 정의 → 모델 → pipeline → 모니터링",
-          "evidence": [
-            "AI 관점 문제 정의와 목표 설정 (P1/P2/P3)",
-            "모델/실험으로 성능 개선: F1 0.95 / 0.9927 / 0.9967",
-            "데이터 pipeline 체계화 (변환, 합성, generator)",
-            "재학습/모니터링: 현업 label 수집 운영 / 배포 후 retrain, drift 모니터링"
+          "thumb": "roi_yolo_cascade_panel.png",
+          "question": "AI 문제 정의 → 모델/실험 → pipeline → 모니터링",
+          "items": [
+            {
+              "check": "AI 관점 문제 정의",
+              "answer": "P1 FBM image, P2 multi-label, P3 trend anomaly 목표화"
+            },
+            {
+              "check": "모델 설계와 성능 개선",
+              "answer": "Known F1 0.95 / P2 0.9927 / P3 0.9967"
+            },
+            {
+              "check": "데이터 pipeline",
+              "answer": "FBM 변환, FCM-PM 합성, episode generator"
+            },
+            {
+              "check": "재학습과 모니터링",
+              "answer": "현업 label 수집, retrain, drift/FAR 관리"
+            }
           ]
         },
         {
           "axis": "기술 리더십",
-          "question": "현업 구상 → 의사결정 → 조직 확산",
-          "evidence": [
-            "DRAM YE와 P1/P2 공동 구상, 설계와 구현은 본인 주도",
-            "본인 기술 의사결정: ConvNeXtV2, object-id map, NeCo, FCM-PM, val-margin, episode generator",
-            "조직 확산: DRAM D1a/b/c/d 4개 분석 파트 매일 사용",
-            "기술 공유: 세미나/문서/코드 교육 → 동료 독립 수행 역량 이전"
+          "thumb": "wafer_center_scratch.png",
+          "question": "현업 구상 → 기술 결정 → 조직 확산",
+          "items": [
+            {
+              "check": "협업 범위와 의사결정",
+              "answer": "DRAM YE와 공동 구상, 설계/구현 본인 주도"
+            },
+            {
+              "check": "핵심 기술 선택",
+              "answer": "ConvNeXtV2, NeCo, FCM-PM, val_margin 선택"
+            },
+            {
+              "check": "조직 확산",
+              "answer": "DRAM D1a/b/c/d 4개 분석 파트에서 viewer 매일 사용"
+            },
+            {
+              "check": "기술 coverage 확대",
+              "answer": "세미나, 문서, 코드 교육으로 역량 확산"
+            }
           ]
         },
         {
           "axis": "기술성과",
+          "thumb": "trend_spike_view.png",
           "question": "양산 적용 → KPI → 타 제품 확장",
-          "evidence": [
-            "양산 운영(viewer) + 양산 데이터 AI 검증 (Known/Unknown)",
-            "KPI 개선: 공수 90% 감소, 수율 +0.02%p, 정량 사업 기여",
-            "Flash YE에서 P1/P2 확산 요청 접수 (타 제품 확장)",
-            "확장 구조: generator 재현, object-id, multimodal"
+          "items": [
+            {
+              "check": "양산 공정과 품질 적용",
+              "answer": "P1 viewer 양산 운영, Known 및 Unknown 데이터 검증"
+            },
+            {
+              "check": "핵심 KPI 개선",
+              "answer": "공수 90% 감소, 수율 +0.02%p, 정량 기여"
+            },
+            {
+              "check": "타 공정과 제품 확장",
+              "answer": "Flash YE 확장 요청, object-id, multimodal, generator"
+            }
           ]
         }
       ],
