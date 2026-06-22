@@ -3735,7 +3735,7 @@ def s_p2_selection(slide, d, idx):
     _rect(slide, rx, ry, rw, rh, WHITE, line=LINE)
     _rect(slide, rx, ry, Inches(0.10), rh, RGBColor(0x2B,0xA6,0x6B))
     _text(slide, rx+Inches(0.28), ry+Inches(0.22), rw-Inches(0.56), Inches(0.32),
-          [[("NB reject: independent bit-likelihood profile", dict(size=14.0, bold=True, color=NAVY))]])
+          [[("NB reject: known profile과 맞지 않는 확률 조합 제거", dict(size=14.0, bold=True, color=NAVY))]])
     _text(slide, rx+Inches(0.28), ry+Inches(0.60), rw-Inches(0.56), Inches(0.26),
           [[("4 output bits independently checked",
              dict(size=10.2, bold=True, color=INK))]])
