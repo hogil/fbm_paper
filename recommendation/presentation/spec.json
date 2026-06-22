@@ -58,7 +58,7 @@
           "no": "P1",
           "task": "Failbit Map failure analysis",
           "thumb": "wafer_center_scratch.png",
-          "problem": "고질불량 발생 wafer/물량 선별, 신규 불량 조기 포착, 대량 Failbit Map 조회",
+          "problem": "Failbit Map 소량만 조회 가능, 불량은 수작업 분석",
           "approach": "Failbit Map 생성 + 대용량 viewer + Known/Unknown AI",
           "result": "[양산 운영] 일 2만 wafer/day, 공수 90%↓ + 수율 개선 사례",
           "stack": "Stack: Cython / pyvips / Numba, ConvNeXtV2 / YOLO11, contrastive / HDBSCAN"
@@ -67,8 +67,8 @@
           "no": "P2",
           "task": "Chip multi-label classification",
           "thumb": "chip_eval_scratch_selected.png",
-          "problem": "measure value 한계 + 2-combo label 확보 불가",
-          "approach": "single source → FCM-PM supervision + val-margin",
+          "problem": "chip 중복 불량(2-combo) 발생, measure value로 분석 불가",
+          "approach": "단일 결함 원천 → FCM-PM 합성 + val-margin 선택",
           "result": "[controlled synthetic] bit-F1 0.9927 / FAR 0.00%",
           "stack": "Stack: PyTorch, FCM-PM / CutMix, Naive Bayes reject / KD"
         },
@@ -76,8 +76,8 @@
           "no": "P3",
           "task": "Trend anomaly",
           "thumb": "trend_spike.png",
-          "problem": "real abnormal label 부족, trend validation bottleneck",
-          "approach": "domain-rule episode generator + binary validation",
+          "problem": "실제 이상 데이터 부족, trend 판정 검증 어려움",
+          "approach": "도메인 규칙 기반 episode 생성 + 이진 검증",
           "result": "[synthetic trend PoC] benchmark 7,000, binary-F1 0.9967",
           "stack": "Stack: episode generator / binary classifier"
         }
@@ -748,7 +748,7 @@
           ]
         }
       ],
-      "caption": "확산 — DRAM D1a/b/c/d 4개 분석 파트 운영, Flash YE P1/P2 확산 요청, 문서/세미나/코드 교육"
+      "caption": "확산 — DRAM D1a/b/c/d 분석 파트 사용, Flash YE P1/P2 확산 요청"
     },
     {
       "type": "closing",
