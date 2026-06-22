@@ -4035,7 +4035,7 @@ def s_p3_intro(slide, d, idx):
 
     # right metrics + image
     rx = Inches(6.85); ry = Inches(2.05)
-    _metric_card_compact(slide, rx, ry, Inches(1.75), Inches(1.05), "Rule", "domain coding", "region/noise/anomaly")
+    _metric_card_compact(slide, rx, ry, Inches(1.75), Inches(1.05), "Rule", "domain coding", "region/noise/anom.")
     _metric_card_compact(slide, rx+Inches(1.95), ry, Inches(1.75), Inches(1.05), "Normal", "baseline control", "fleet-bound stats")
     _metric_card_compact(slide, rx+Inches(3.90), ry, Inches(1.75), Inches(1.05), "Robust", "shortcut check", "color/median/NT")
     _rect(slide, rx, Inches(3.34), Inches(5.65), Inches(3.18), WHITE, line=LINE)
