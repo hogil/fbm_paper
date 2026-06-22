@@ -51,12 +51,12 @@
     },
     {
       "type": "cards",
-      "kicker": "P1/P2/P3 Overview",
+      "kicker": "P1/P2/P3 개요",
       "title": "3개 과제 핵심 요약",
       "cards": [
         {
           "no": "P1",
-          "task": "Failbit Map failure analysis",
+          "task": "Failbit Map 불량 분석",
           "thumb": "wafer_center_scratch.png",
           "problem": "Failbit Map 소량만 조회 가능, 불량은 수작업 분석",
           "approach": "Failbit Map 생성 + 대용량 viewer + Known/Unknown AI",
@@ -65,7 +65,7 @@
         },
         {
           "no": "P2",
-          "task": "Chip multi-label classification",
+          "task": "Chip 다중 결함 분류",
           "thumb": "chip_eval_scratch_selected.png",
           "problem": "chip 중복 불량(2-combo) 발생, measure value로 분석 불가",
           "approach": "단일 결함 원천 → FCM-PM 합성 + val-margin 선택",
@@ -74,7 +74,7 @@
         },
         {
           "no": "P3",
-          "task": "Trend anomaly",
+          "task": "Trend 이상 탐지",
           "thumb": "trend_spike.png",
           "problem": "실제 이상 데이터 부족, trend 판정 검증 어려움",
           "approach": "도메인 규칙 기반 episode 생성 + 이진 검증",
@@ -128,7 +128,7 @@
     },
     {
       "type": "bullets",
-      "kicker": "P1 | Concept + field constraint",
+      "kicker": "P1 | 개념 + 현장 제약",
       "title": "이산 grade 공간 데이터 표현으로서의 Failbit Map",
       "bullets": [
         "**Role** — Failbit Map은 공정 개발 결과를 확인하는 최종 map으로, 불량 정도와 위치, 형태를 확인해 현 개발 수준을 파악하고 공정 개선 방향을 결정",
@@ -241,7 +241,7 @@
               ]
             ]
           ],
-          "caption": "Fig. 1. Hex-to-grade conversion accelerated by Cython"
+          "caption": "Fig. 1. Cython으로 가속한 hex→grade 변환"
         },
         {
           "head": "RGB PNG vs Palette-indexed PNG",
@@ -268,7 +268,7 @@
               ]
             ]
           ],
-          "caption": "Fig. 2. Palette-indexed PNG for failbit map compression."
+          "caption": "Fig. 2. Failbit Map 압축용 palette-indexed PNG"
         }
       ]
     },
@@ -290,11 +290,11 @@
       "figs": [
         {
           "diagram": "numba",
-          "caption": "Numba: Python runtime moves outside the inner pixel loop"
+          "caption": "Numba: Python runtime을 내부 pixel loop 밖으로 빼 native 실행"
         },
         {
           "diagram": "pyvips",
-          "caption": "pyvips: final image built stripe-by-stripe through C pipeline"
+          "caption": "pyvips: C pipeline으로 stripe 단위로 최종 이미지 생성"
         }
       ]
     },
@@ -322,7 +322,7 @@
         },
         {
           "src": "p1_roi_crop_real.png",
-          "caption": "low-confidence → ROI-YOLO"
+          "caption": "저신뢰 → ROI-YOLO"
         },
         {
           "src": "p1_chip_yolo_box_real.png",
@@ -360,22 +360,22 @@
       "images": [
         {
           "src": "AAN585_00P_18_20260501_010000_97.6_2_EE_NORMAL_raw.png",
-          "caption": "Product A / raw intensity",
+          "caption": "제품 A / raw intensity",
           "pair": "A"
         },
         {
           "src": "AAN585_00P_18_20260501_010000_97.6_2_EE_NORMAL_objid.png",
-          "caption": "Product A / object-id grid",
+          "caption": "제품 A / object-id grid",
           "pair": "A"
         },
         {
           "src": "ACZ452_00P_14_20260501_010000_97.6_2_PT_NORMAL_raw.png",
-          "caption": "Product B / raw intensity",
+          "caption": "제품 B / raw intensity",
           "pair": "B"
         },
         {
           "src": "ACZ452_00P_14_20260501_010000_97.6_2_PT_NORMAL_objid.png",
-          "caption": "Product B / object-id grid",
+          "caption": "제품 B / object-id grid",
           "pair": "B"
         }
       ],
@@ -464,7 +464,7 @@
     },
     {
       "type": "unknown_ablation",
-      "kicker": "P1 | Unknown evidence",
+      "kicker": "P1 | Unknown 검증",
       "title": "Contrastive recipe ablation on generated evaluation set",
       "refs": [
         "InfoNCE (van den Oord et al., 2018)",
@@ -475,7 +475,7 @@
     },
     {
       "type": "two_col",
-      "kicker": "P1 | Result + impact",
+      "kicker": "P1 | 성과 + 현업 적용",
       "title": "양산 운영과 모델 검증 단계 구분",
       "diagram": "twotrack",
       "cols": [
@@ -517,11 +517,11 @@
           "chips": [
             {
               "big": "validation 완료",
-              "label": "Known real data"
+              "label": "Known 실데이터"
             },
             {
               "big": "현업 review",
-              "label": "Unknown candidate"
+              "label": "Unknown 후보"
             },
             {
               "big": "2026.09",
@@ -564,7 +564,7 @@
           "head": "성과 / 확장",
           "items": [
             "multi-label F1 0.9927",
-            "false alarm 0%",
+            "오경보 0%",
             "single + 2-combo 동시 검출",
             "ensemble robustness 확보",
             "KD 단일 모델 생산성"
@@ -654,12 +654,12 @@
     },
     {
       "type": "p3_generator",
-      "kicker": "P3 | episode generation",
+      "kicker": "P3 | episode 생성",
       "title": "Baseline episodes and measurement-noise sampling"
     },
     {
       "type": "p3_result",
-      "kicker": "P3 | binary validation",
+      "kicker": "P3 | 이진 검증",
       "title": "Anomaly injection rules and binary validation",
       "refs": [
         "Focal Loss (Lin et al., 2017)"
@@ -667,7 +667,7 @@
     },
     {
       "type": "image_grid",
-      "kicker": "P3 | robustness check",
+      "kicker": "P3 | robustness 점검",
       "title": "robustness와 입력 민감도 점검",
       "motivation": "입력 표현/checkpoint 선택에 성능이 흔들릴 위험 → 민감도 점검으로 binary-F1 0.9967 안정 확인",
       "bullets": [
@@ -709,7 +709,7 @@
         {
           "date": "2026.01",
           "label": "P3 Trend anomaly PoC",
-          "sub": "episode generation, binary validation",
+          "sub": "episode 생성, 이진 검증",
           "done": true
         },
         {
@@ -743,7 +743,7 @@
         {
           "head": "확장 (타 공정/제품)",
           "lines": [
-            "object-id map Stage-2, image+measure multimodal",
+            "object-id map Stage-2, image+measure 멀티모달",
             "generator config로 타 공정 재현"
           ]
         }

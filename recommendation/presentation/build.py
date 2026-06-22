@@ -3142,7 +3142,7 @@ def _draw_numba(slide, X, Y, W, H):
     box(0.055, 0.07, 0.89, 0.34, CARD, line=SOFT)
     box(0.08, 0.10, 0.16, 0.08, PY_BG, line=PY_LINE)
     txt(0.08, 0.102, 0.16, 0.076, "BEFORE", size=12.0, bold=True, color=INK)
-    txt(0.27, 0.095, 0.40, 0.08, "Interpreter overhead inside loop", size=12.0, bold=True, color=INK)
+    txt(0.27, 0.095, 0.40, 0.08, "loop 안 인터프리터 overhead", size=12.0, bold=True, color=INK)
     txt(0.70, 0.10, 0.18, 0.08, "N times", size=15, bold=True, color=PY_LINE)
 
     nodes = [
@@ -3159,13 +3159,13 @@ def _draw_numba(slide, X, Y, W, H):
             color=(PY_LINE if label == "PY" else INK), name="Consolas")
     for ax in [0.172, 0.312, 0.438, 0.577, 0.703]:
         arrow(ax, 0.268, 0.030, 0.035, color=ARROW)
-    txt(0.20, 0.352, 0.64, 0.035, "per-pixel interpreter dispatch", size=12.0, bold=True, color=MUTED_INK)
+    txt(0.20, 0.352, 0.64, 0.035, "픽셀마다 인터프리터 실행", size=12.0, bold=True, color=MUTED_INK)
 
     # After: the first call builds native code, then that code executes the loop.
     box(0.055, 0.47, 0.89, 0.43, CARD, line=SOFT)
     box(0.08, 0.50, 0.16, 0.08, JIT_BG, line=BD)
     txt(0.08, 0.502, 0.16, 0.076, "AFTER", size=12.0, bold=True, color=INK)
-    txt(0.265, 0.495, 0.42, 0.08, "First call JIT-compiles typed loop", size=12.0, bold=True, color=INK)
+    txt(0.265, 0.495, 0.42, 0.08, "첫 호출에 typed loop 컴파일", size=12.0, bold=True, color=INK)
 
     box(0.095, 0.590, 0.185, 0.070, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT, shape=MSO_SHAPE.RECTANGLE)
     txt(0.100, 0.594, 0.175, 0.062, "input dtype", size=12.0, bold=True, color=INK)
@@ -3227,7 +3227,7 @@ def _draw_pyvips(slide, X, Y, W, H):
     box(0.055, 0.085, 0.89, 0.285, CARD_BG, line=SOFT_LINE)
     box(0.080, 0.115, 0.145, 0.075, HOT, line=HOT_LINE)
     txt(0.080, 0.118, 0.145, 0.068, "PILLOW", size=12.0, bold=True, color=INK)
-    txt(0.255, 0.120, 0.225, 0.060, "full-frame buffer", size=12.0, bold=True, color=MUTED_INK)
+    txt(0.255, 0.120, 0.225, 0.060, "전체 frame 버퍼", size=12.0, bold=True, color=MUTED_INK)
 
     box(0.095, 0.222, 0.090, 0.072, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT_LINE, shape=MSO_SHAPE.RECTANGLE)
     for i in range(3):
@@ -3258,7 +3258,7 @@ def _draw_pyvips(slide, X, Y, W, H):
     box(0.055, 0.455, 0.89, 0.315, CARD_BG, line=SOFT_LINE)
     box(0.080, 0.485, 0.160, 0.075, COOL, line=COOL_LINE)
     txt(0.080, 0.488, 0.160, 0.068, "LIBVIPS", size=12.0, bold=True, color=INK)
-    txt(0.255, 0.490, 0.225, 0.060, "active-stripe buffer", size=12.0, bold=True, color=MUTED_INK)
+    txt(0.255, 0.490, 0.225, 0.060, "활성 stripe 버퍼", size=12.0, bold=True, color=MUTED_INK)
 
     box(0.095, 0.606, 0.090, 0.072, RGBColor(0xF4, 0xF4, 0xF4), line=SOFT_LINE, shape=MSO_SHAPE.RECTANGLE)
     for i in range(3):
@@ -3287,7 +3287,7 @@ def _draw_pyvips(slide, X, Y, W, H):
     txt(0.765, 0.690, 0.140, 0.040, "output", size=12.0, bold=True, color=INK)
 
     box(0.145, 0.840, 0.710, 0.070, RGBColor(0xEA, 0xEA, 0xEA), line=SOFT_LINE, shape=MSO_SHAPE.RECTANGLE)
-    txt(0.145, 0.846, 0.710, 0.058, "same output with bounded active rows", size=12.0, bold=True, color=INK)
+    txt(0.145, 0.846, 0.710, 0.058, "활성 row만 처리해도 결과 동일", size=12.0, bold=True, color=INK)
 
 
 def _motiv_head(slide, text):
@@ -3582,7 +3582,7 @@ def _native_evidence_table(slide, x, y, w, h, headers, rows, col_fracs,
 
 def s_p1_known_perf(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P1 | Known evidence", "Known 16-class backbone 탐색과 단계별 개선")
+    _title_block_compact(slide, "P1 | Known 검증", "Known 16-class backbone 탐색과 단계별 개선")
     _text(slide, Inches(0.80), Inches(1.42), Inches(11.8), Inches(0.34),
           [[("[실전 현업 데이터 validation] 16 class / 1,500 labeled / 4:1 stratified split.",
              dict(size=13.2, bold=True, color=NAVY))]])
@@ -3861,7 +3861,7 @@ def s_p2_validation(slide, d, idx):
 
 def s_p2_selection(slide, d, idx):
     _bg(slide, WHITE)
-    _title_block_compact(slide, "P2 | selection + Naive Bayes reject", "val-margin 선택과 negative-tail 제어")
+    _title_block_compact(slide, "P2 | 모델 선택 + Naive Bayes reject", "val-margin 선택과 negative-tail 제어")
     _text(slide, Inches(0.78), Inches(1.42), Inches(11.8), Inches(0.30),
           [[("적용 이유   ", dict(size=12, bold=True, color=ACCENT)),
             ("val-F1만으로는 negative tail이 안정적인 checkpoint를 고르기 어려움 → positive/negative score margin으로 선택, FAR 0%",
@@ -3872,7 +3872,7 @@ def s_p2_selection(slide, d, idx):
     _rect(slide, lx, ly, lw, lh, WHITE, line=LINE)
     _rect(slide, lx, ly, Inches(0.10), lh, COVER_BAR)
     _text(slide, lx+Inches(0.28), ly+Inches(0.22), lw-Inches(0.56), Inches(0.32),
-          [[("val-margin checkpoint selection", dict(size=16.0, bold=True, color=NAVY))]])
+          [[("val-margin checkpoint 선택", dict(size=16.0, bold=True, color=NAVY))]])
     _text(slide, lx+Inches(0.28), ly+Inches(0.62), lw-Inches(0.56), Inches(0.25),
           [[("val_margin = mean(p_positive) - max(p_negative)", dict(size=12.0, bold=True, color=INK, name="Consolas"))]])
 
@@ -3912,7 +3912,7 @@ def s_p2_selection(slide, d, idx):
           [[("margin 선택 시 eval 향상 (illustrative)", dict(size=10.5, bold=True, color=MUTED))]],
           align=PP_ALIGN.CENTER)
     _text(slide, lx+Inches(0.34), ly+Inches(3.72), lw-Inches(0.68), Inches(0.20),
-          [[("post-hoc check: correlation with held-out eval bit_F1", dict(size=9.6, bold=True, color=MUTED))]],
+          [[("post-hoc: held-out eval bit_F1과 상관", dict(size=9.6, bold=True, color=MUTED))]],
           align=PP_ALIGN.CENTER)
     card_y = ly+Inches(3.94); card_h = Inches(0.80); card_w = Inches(2.42)
     impacts = [
@@ -3992,9 +3992,9 @@ def s_p2_selection(slide, d, idx):
               [[(note, dict(size=8.0, bold=True, color=MUTED))]], align=PP_ALIGN.CENTER)
 
     panels = [
-        ("known single bb", [0.82, 0.12, 0.12, 0.12], [0.84, 0.12, 0.13, 0.11], "ACCEPT", "4 bit profile match"),
-        ("known 2-combo bb+sc", [0.62, 0.12, 0.60, 0.12], [0.62, 0.13, 0.60, 0.12], "ACCEPT", "bit likelihoods align"),
-        ("tail/OOD on bb", [0.82, 0.12, 0.12, 0.12], [0.20, 0.42, 0.40, 0.38], "REJECT", "known-profile mismatch"),
+        ("단일 결함 bb", [0.82, 0.12, 0.12, 0.12], [0.84, 0.12, 0.13, 0.11], "ACCEPT", "4 bit profile 일치"),
+        ("2-combo bb+sc", [0.62, 0.12, 0.60, 0.12], [0.62, 0.13, 0.60, 0.12], "ACCEPT", "likelihood 일치"),
+        ("tail/OOD bb", [0.82, 0.12, 0.12, 0.12], [0.20, 0.42, 0.40, 0.38], "REJECT", "profile 불일치"),
     ]
     px0 = rx + Inches(0.32); py0 = ry + Inches(1.18)
     pw = Inches(1.56); ph = Inches(2.48); pg = Inches(0.20)
