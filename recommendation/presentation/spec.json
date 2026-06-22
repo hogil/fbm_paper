@@ -383,10 +383,10 @@
       "img_note": "Field-validated 대표 성과는 ROI-YOLO 2-stage F1 0.95이고, object-id map은 detector cost와 class 확장 부담을 줄이기 위한 차세대 Stage-2 구조"
     },
     {
-      "type": "image_grid",
+      "type": "unknown_embedding_grouping",
       "kicker": "P1 | Unknown 탐색",
-      "title": "Unknown 후보 발견 contrastive clustering",
-      "motivation": "신규 불량은 정답 label이 없어 지도학습 불가 → contrastive embedding + HDBSCAN으로 검토 후보를 13개 중 7개로 압축",
+      "title": "Unknown 후보: embedding 후 group으로 압축",
+      "motivation": "신규 불량은 정답 label이 없어 지도학습 불가 → wafer image를 embedding으로 바꾸고, 가까운 패턴끼리 묶어 검토 후보를 줄임",
       "bullets": [
         "**Embedding** — same-wafer views를 alignment target으로 두고, other wafers를 contrastive reference로 사용",
         "**Review output** — HDBSCAN 결과는 자동 판정이 아니라 엔지니어가 검토할 신규 failure 후보 group"
@@ -408,9 +408,7 @@
       "grid_cols": 3,
       "body_h": 0.72,
       "img_note": "실제 현업 데이터 2,000장 review: 13개 후보 중 7개 신규 failure 확인. 화면 이미지는 후속 튜닝용 생성/개발 예시",
-      "refs": [
-        "HDBSCAN (Campello et al., 2013)"
-      ]
+      "refs": []
     },
     {
       "type": "papertext",
@@ -630,7 +628,7 @@
           "head": "개발 내용",
           "items": [
             "도메인 규칙 기반 시계열 합성",
-            "노이즈, 5MA smoothing, 판정 기준 튜닝",
+            "노이즈, smoothing window, 판정 기준 튜닝",
             "이상 패턴 주입",
             "binary 분류 검증"
           ]
@@ -802,7 +800,7 @@
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "Region, Noise, Anomaly generator와 5MA smoothing, 정상/이상 판정 기준 튜닝"
+              "answer": "Region, Noise, Anomaly generator와 smoothing window, 이상 판정 기준 튜닝"
             },
             {
               "check": "기술 리더십",
