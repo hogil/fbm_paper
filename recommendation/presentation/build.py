@@ -2007,17 +2007,9 @@ def s_unknown_embedding_grouping(slide, d, idx):
     dots(xs[1] + int(Inches(0.26)), pw - int(Inches(0.52)), va_y + int(Inches(0.10)), int(Inches(1.94)), False)
     desc(xs[1], ["이미지를 점(vector)으로", "비슷한 것끼리 가까이"])
 
-    # ---- panel 3: 군집 결과 + 현재 운영 상황 ----
-    dots(xs[2] + int(Inches(0.30)), pw - int(Inches(0.60)), va_y + int(Inches(0.04)), int(Inches(1.30)), True)
-    cby = va_y + int(Inches(1.50))
-    _rect(slide, Emu(xs[2] + int(Inches(0.16))), Emu(cby), Emu(pw - int(Inches(0.32))), Inches(0.90),
-          RGBColor(0xF4, 0xF6, 0xF8), line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-    _rect(slide, Emu(xs[2] + int(Inches(0.16))), Emu(cby), Inches(0.08), Inches(0.90), ACCENT)
-    _text(slide, Emu(xs[2] + int(Inches(0.34))), Emu(cby + int(Inches(0.08))), Emu(pw - int(Inches(0.44))), Inches(0.78),
-          [[("현재 운영 (사내 실데이터)", dict(size=10, bold=True, color=NAVY))],
-           [("약 2,000장 → 13개 후보 group", dict(size=10, color=INK))],
-           [("현업 검토로 7개 실제 불량 확인", dict(size=10, color=INK))]],
-          anchor=MSO_ANCHOR.TOP, align=PP_ALIGN.LEFT)
+    # ---- panel 3: 밀도 높은 지점 grouping (panel 2와 동일 배치, 중앙 채움) ----
+    dots(xs[2] + int(Inches(0.26)), pw - int(Inches(0.52)), va_y + int(Inches(0.10)), int(Inches(1.94)), True)
+    desc(xs[2], ["밀도 높은 지점끼리", "자동 group화 (군집)"])
 
     # ---- panel 4: 후보 group(비슷한 wafer 여러 장) -> 현업 검토 queue (이미지 확대) ----
     gth = int(Inches(0.66)); gstep_y = int(Inches(0.76)); tgap = int(Inches(0.10))
