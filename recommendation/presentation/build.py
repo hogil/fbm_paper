@@ -2238,7 +2238,7 @@ def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
                 _text(slide, x + pad + Inches(0.18), cy + Inches(0.24),
                       Emu(int(cw) - int(pad)*2 - int(Inches(0.30))),
                       Emu(int(row_h) - int(Inches(0.26))),
-                      [[(answer, dict(size=10.5, bold=(j == 0), color=INK))]],
+                      [[(answer, dict(size=10, bold=(j == 0), color=INK))]],
                       anchor=MSO_ANCHOR.TOP)
             else:
                 _text(slide, x + pad + Inches(0.18), cy,

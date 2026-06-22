@@ -762,15 +762,15 @@
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "data pipeline, web viewer, CNN→ROI-YOLO(object-id map), contrastive→HDBSCAN/NeCo"
+              "answer": "raw log 변환, 대량 viewer, Known 2-stage 분류, Unknown contrastive grouping"
             },
             {
               "check": "기술 리더십",
-              "answer": "DRAM YE 공동 구상, 설계/구현 본인 수행 — 불량 분석 학습 후 label/FP/FN 검증"
+              "answer": "현업 FBM 분석 기준을 반영해 pipeline, viewer, Known/Unknown 검증 flow 설계 주도"
             },
             {
               "check": "기술성과",
-              "answer": "D전제품 양산 viewer 운영, Known F1 0.95, Unknown 7건 현업 확인"
+              "answer": "D1a/b/c/d 사용, Known/Unknown 품질 AI 검증, 일 2만 wafer, 공수 90%↓ + 수율 +0.02%p 1건, 123억"
             }
           ]
         },
@@ -781,15 +781,15 @@
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "multi-label FCM-PM, Pair Mask, val_margin, NB reject"
+              "answer": "image multi-label, FCM-PM, Pair Mask, val_margin, NB reject"
             },
             {
               "check": "기술 리더십",
-              "answer": "DRAM YE와 중복 failure 문제 공동 구상, 데이터부터 검증까지 전 과정 본인 단독"
+              "answer": "chip 중복 failure를 multi-label 과제로 정의하고 2-combo 합성/선택/reject 구조 설계"
             },
             {
               "check": "기술성과",
-              "answer": "controlled validation bit-F1 0.9927, FAR 0.00%, KD 후보"
+              "answer": "생성 benchmark로 2-combo 검증 가능화, bit-F1 0.9927 / FAR 0.00%"
             }
           ]
         },
@@ -800,15 +800,15 @@
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "Region/Noise/Anomaly generator, benchmark + binary gate"
+              "answer": "Region/Noise/Anomaly generator, binary validation"
             },
             {
               "check": "기술 리더십",
-              "answer": "generator/검증 체계 본인 개발, 동료에게 전수해 학습/실험 분담"
+              "answer": "BBD/Overlay/CD 판정 경험을 generator rule과 검증 체계로 구현"
             },
             {
               "check": "기술성과",
-              "answer": "7,000 trend benchmark, binary-F1 0.9967, 현업 item 확장"
+              "answer": "7,000 trend benchmark로 anomaly 검증 가능화, binary-F1 0.9967"
             }
           ]
         }
