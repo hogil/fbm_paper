@@ -457,9 +457,9 @@
         }
       ],
       "refs": [
-        "MoCo (He et al., 2020)",
-        "NeCo (Pariza et al., 2024)",
-        "InfoNCE (van den Oord et al., 2018)"
+        "MoCo (He et al., 2020): momentum encoder + dynamic queue for large negative sets",
+        "NeCo (Pariza et al., 2024): patch-neighbor consistency across two views preserving local structure",
+        "InfoNCE (van den Oord et al., 2018): noise-contrastive loss maximizing mutual information"
       ]
     },
     {

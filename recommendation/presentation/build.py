@@ -261,9 +261,22 @@ def _footer(slide, idx, size=9):
 
 
 def _refs_footnote(slide, refs):
-    # 기법 출처 각주 — 하단 footer 바로 위, 작은 회색 한 줄. (저자, 연도) 형식.
+    # 기법 출처 각주 — 하단 footer 바로 위, 작은 회색. (저자, 연도) 형식.
     items = refs if isinstance(refs, list) else [refs]
-    txt = "참고 문헌   " + "    ".join(items)
+    if any(": " in it for it in items):
+        # 설명형 출처: 'Name (Author, Year): 한 줄 설명'을 줄별로 (참고 문헌 라벨 없음)
+        n = len(items); lh = 0.175
+        y0 = 7.00 - n * lh - 0.04
+        for k, it in enumerate(items):
+            if ": " in it:
+                head, desc = it.split(": ", 1)
+                runs = [[(head + ": ", dict(size=8.5, bold=True, color=RGBColor(0x6B, 0x72, 0x80))),
+                         (desc, dict(size=8.5, color=MUTED))]]
+            else:
+                runs = [[(it, dict(size=8.5, color=MUTED))]]
+            _text(slide, Inches(0.7), Inches(y0 + k * lh), Inches(11.9), Inches(0.18),
+                  runs, anchor=MSO_ANCHOR.MIDDLE)
+        return
     _text(slide, Inches(0.7), Inches(6.74), Inches(11.9), Inches(0.28),
           [[("참고 문헌   ", dict(size=8.5, bold=True, color=RGBColor(0x8A, 0x92, 0x9E))),
             ("    ".join(items), dict(size=8.5, color=MUTED))]],
@@ -2175,12 +2188,12 @@ def _closing_projects(slide, projects, common):
 
 def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
     """AI Specialist scoring summary: fill each official evaluation item with evidence."""
-    x0 = Inches(0.78); y0 = Inches(2.00)
+    x0 = Inches(0.78); y0 = Inches(1.18)   # 제목 제거 → 카드를 위로 올려 공간 확보
     gap = Inches(0.30)
     cw = Emu(int((int(Inches(11.78)) - int(gap) * 2) / 3))
-    ch = Inches(4.86) if not bottom_lines else Inches(4.30)
+    ch = Inches(5.46) if not bottom_lines else Inches(4.30)
     pad = Inches(0.28)
-    colors = [RGBColor(0x2E, 0x7D, 0x66), ACCENT, RGBColor(0x4B, 0x63, 0x88)]
+    colors = [ACCENT, ACCENT, ACCENT]   # 카드 띠 전부 회색 통일
     for i, axis in enumerate(axes[:3]):
         x = Emu(int(x0) + i * (int(cw) + int(gap)))
         accent = colors[i % len(colors)]
@@ -2189,15 +2202,15 @@ def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
 
         # Visual memory hook: one project image per scoring axis, matching the overview tone.
         if axis.get("thumb"):
-            img_x = x + Inches(0.25)
-            img_y = y0 + Inches(0.22)
-            img_w = Emu(int(cw) - int(Inches(0.50)))
-            img_h = Inches(0.68)
+            img_x = x + Inches(0.22)
+            img_y = y0 + Inches(0.20)
+            img_w = Emu(int(cw) - int(Inches(0.44)))
+            img_h = Inches(1.34)
             _rect(slide, img_x, img_y, img_w, img_h, WHITE, line=LINE,
                   shape=MSO_SHAPE.ROUNDED_RECTANGLE)
-            _img_cover(slide, axis["thumb"], img_x + Inches(0.04), img_y + Inches(0.04),
-                       Emu(int(img_w) - int(Inches(0.08))), img_h - Inches(0.08))
-            title_y = y0 + Inches(1.02)
+            _img_fit(slide, axis["thumb"], img_x + Inches(0.04), img_y + Inches(0.04),
+                     Emu(int(img_w) - int(Inches(0.08))), img_h - Inches(0.08), frame=False)
+            title_y = y0 + Inches(1.66)
         else:
             title_y = y0 + Inches(0.28)
 
@@ -2283,6 +2296,16 @@ def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
 def s_closing(slide, d, idx):
     _bg(slide, WHITE)
     has_kpi = bool(d.get("kpis"))
+    # score_axes(평가 항목 대응) 슬라이드: kicker가 결론 역할이므로 큰 제목은 생략하고
+    # 그 공간을 카드/이미지에 준다 (사용자 요청).
+    if d.get("score_axes"):
+        if d.get("kicker"):
+            _rect(slide, Inches(0.7), Inches(0.52), Inches(0.11), Inches(0.30), ACCENT)
+            _text(slide, Inches(1.0), Inches(0.5), Inches(11.5), Inches(0.34),
+                  [[(d["kicker"], dict(size=13.5, bold=True, color=NAVY))]])
+        _closing_score_summary(slide, d["score_axes"], d.get("bottom"), d.get("bottom_lines"))
+        _footer(slide, idx)
+        return
     # 강조 규칙 통일: 본문 슬라이드와 동일한 '제목 왼쪽 세로 teal 바' + eyebrow 라벨(헤더 일관성)
     if d.get("kicker"):
         _rect(slide, Inches(0.7), Inches(0.72), Inches(0.11), Inches(0.28), ACCENT)
@@ -2296,10 +2319,6 @@ def s_closing(slide, d, idx):
     _rect(slide, Inches(0.7), ty, Inches(0.135), Inches(0.84), ACCENT)
     _text(slide, Inches(1.02), Emu(int(ty)+int(Inches(0.04))), Inches(11.5), Inches(1.0),
           [[(d["title"], dict(size=31, bold=True, color=NAVY))]])
-    if d.get("score_axes"):
-        _closing_score_summary(slide, d["score_axes"], d.get("bottom"), d.get("bottom_lines"))
-        _footer(slide, idx)
-        return
     if d.get("projects"):
         _closing_projects(slide, d["projects"], d.get("common"))
         _footer(slide, idx)
