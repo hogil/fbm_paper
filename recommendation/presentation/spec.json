@@ -764,15 +764,15 @@
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "FBM image pipeline, Known F1 0.95, Unknown 13→7"
+              "answer": "Cython 변환, palette PNG, pyvips/Numba viewer, CNN→YOLO, contrastive"
             },
             {
               "check": "기술 리더십",
-              "answer": "DRAM YE 분석 담당자에게 FBM 판독법 학습, label/FP/FN 검증"
+              "answer": "DRAM YE에게 FBM 판독법 학습, label/FP/FN 검증 수행"
             },
             {
               "check": "기술성과",
-              "answer": "D1a/b/c/d 분석 파트 사용, 공수 90%↓, 수율 +0.02%p"
+              "answer": "Known F1 0.95, Unknown 13→7, D1a/b/c/d 사용"
             }
           ]
         },
@@ -783,7 +783,7 @@
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "FCM-PM, val_margin, NB reject로 FAR tail 제어"
+              "answer": "image multi-label, FCM-PM, Pair Mask, val_margin, NB reject"
             },
             {
               "check": "기술 리더십",
@@ -791,7 +791,7 @@
             },
             {
               "check": "기술성과",
-              "answer": "controlled validation bit-F1 0.9927, FAR 0.00%"
+              "answer": "controlled validation bit-F1 0.9927, FAR 0.00%, KD 후보"
             }
           ]
         },
@@ -802,7 +802,7 @@
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "episode generator와 binary validation으로 이상 판정 검증"
+              "answer": "Region×Noise×Anomaly episode generator, normality calibration"
             },
             {
               "check": "기술 리더십",
@@ -810,7 +810,7 @@
             },
             {
               "check": "기술성과",
-              "answer": "7,000 trend benchmark, binary-F1 0.9967, 타 item 확장 가능"
+              "answer": "7,000 trend benchmark, binary-F1 0.9967, 타 item 확장"
             }
           ]
         }
