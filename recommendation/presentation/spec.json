@@ -769,9 +769,10 @@
           "axis": "기술 리더십",
           "question": "협업 / 의사결정 / 확산",
           "evidence": [
-            "현업, 관리자, AI센터 협업과 교수 자문 기반 의사결정",
-            "타 조직 확산: DRAM 전제품 분석 파트 매일 사용",
-            "기술 공유: 세미나, 문서, 코드 교육"
+            "DRAM YE와 P1/P2 공동 구상, 설계와 구현은 본인 주도",
+            "본인 기술 의사결정: ConvNeXtV2, FCM-PM, val-margin, object-id map",
+            "타 조직 확산: DRAM 전제품 viewer 매일 사용",
+            "기술 공유: 세미나, 기술 문서, 동료 코드 교육"
           ]
         },
         {
@@ -780,7 +781,7 @@
           "evidence": [
             "양산 직접 적용: P1 viewer 운영 (mapviewer)",
             "KPI 개선: 공수 90% 감소, 수율 +0.02%p, 123억",
-            "Flash YE에서 P1/P2 적용 가능 여부 문의 접수 (타 제품 확장)",
+            "Flash YE에서 P1/P2 확산 요청 접수 (타 제품 확장)",
             "확장 구조: generator 재현, object-id, multimodal"
           ]
         }
