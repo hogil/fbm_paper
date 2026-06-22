@@ -317,7 +317,7 @@ def s_title(slide, d, idx):
     _text(slide, Inches(0.95), Inches(1.46), Inches(11.6), Inches(1.8), title_lines)
     if d.get("subtitle"):
         _text(slide, Inches(0.97), Inches(3.20), Inches(11.9), Inches(0.6),
-              [[(d["subtitle"], dict(size=15.5, color=RGBColor(0x47,0x55,0x69)))]])
+              [[(d["subtitle"], dict(size=14, color=RGBColor(0x47,0x55,0x69)))]])
     # 부제목과 발표자 사이 중앙 공백을 3개 과제(P1/P2/P3) 미니 카드로 채워 무게중심 균형(휑함 완화)
     tasks = d.get("tasks", [
         {"no": "P1", "t": "Failbit Map 불량 분석"},

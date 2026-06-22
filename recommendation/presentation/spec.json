@@ -5,7 +5,7 @@
       "anchor_metrics": "",
       "kicker": "'26 AI Specialist 면접 심사 자료",
       "title": "AI Specialist 인증 발표",
-      "subtitle": "10년 현업 경험을 바탕으로 데이터 처리 구조, viewer backend/frontend, AI model까지 직접 설계한 3개 과제",
+      "subtitle": "14년 제조 경력(계측/품질 10년)을 바탕으로 데이터 처리 구조, viewer backend/frontend, AI model까지 직접 설계한 3개 과제",
       "author": "최호길  |  메모리제조센터 QIE그룹 DSM 파트",
       "affil": ""
     },
@@ -304,7 +304,7 @@
       "title": "Known 검증: CNN tuning과 ROI cascade",
       "motivation": "전체 성능은 CNN이 높지만 같은 위치에 종류가 다른 불량은 ROI-YOLO가 더 정확(root cause 구분) → low confidence sample만 ROI-YOLO 2차 분류, F1 0.92 → 0.95",
       "bullets": [
-        "**1-stage CNN (백본 선정)** — 불량이 국소 영역에 몰려 있어 그 외 배경까지 보는 Transformer보다 locality에 강한 CNN이 유리하다고 판단 (연세대 인공지능학과 전해곤 교수 자문). ConvNeXtV2는 MaxViT와 F1 0.87 동급이면서 더 가벼움",
+        "**1-stage CNN (백본 선정)** — 불량이 특정 영역에 몰려 나타나, 넓게 보는 Transformer보다 좁은 영역을 잘 보는 CNN이 더 적합하다고 판단 (연세대 인공지능학과 전해곤 교수 자문). ConvNeXtV2는 MaxViT와 F1 0.87 동급이면서 더 가벼워 채택",
         "**Tuning** — Optuna로 schedule, focal loss, class-imbalance, augmentation strength를 조정해 F1 0.92로 향상",
         "**ROI cascade** — 선택된 ROI 안에서 chip class와 ROI 내 배치까지 재확인하는 selective 2-stage 구조"
       ],
@@ -770,8 +770,8 @@
           "question": "협업 / 의사결정 / 확산",
           "evidence": [
             "DRAM YE와 P1/P2 공동 구상, 설계와 구현은 본인 주도",
-            "본인 기술 의사결정: ConvNeXtV2, NeCo, FCM-PM, val-margin, episode generator",
-            "타 조직 확산: DRAM 전제품 viewer 매일 사용",
+            "본인 기술 의사결정: ConvNeXtV2, object-id map, NeCo, FCM-PM, val-margin, episode generator",
+            "조직 확산: DRAM D1a/b/c/d 4개 분석 파트 매일 사용",
             "기술 공유: 세미나, 기술 문서, 동료 코드 교육"
           ]
         },
@@ -779,7 +779,7 @@
           "axis": "기술성과",
           "question": "양산 적용 / KPI / 확장성",
           "evidence": [
-            "양산 직접 적용: P1 viewer 운영 (mapviewer)",
+            "양산 운영(viewer) + 양산 데이터 AI 검증 (Known/Unknown)",
             "KPI 개선: 공수 90% 감소, 수율 +0.02%p, 정량 사업 기여",
             "Flash YE에서 P1/P2 확산 요청 접수 (타 제품 확장)",
             "확장 구조: generator 재현, object-id, multimodal"
