@@ -32,17 +32,27 @@ def _render_via_pdf(pptx_path, out_dir, width, height):
             os.remove(pdf_path)
         except Exception:
             pass
-    ppt = win32com.client.Dispatch("PowerPoint.Application")
+    ppt = win32com.client.DispatchEx("PowerPoint.Application")
+    shared = False
     try:
-        ppt.Visible = 0
+        shared = ppt.Presentations.Count > 0  # 사용자가 이미 PPT를 열어둔 인스턴스에 붙은 경우
     except Exception:
         pass
+    if not shared:
+        try:
+            ppt.Visible = 0
+        except Exception:
+            pass
     pres = ppt.Presentations.Open(pptx_path, ReadOnly=True, Untitled=False, WithWindow=False)
     try:
         pres.SaveAs(pdf_path, 32)  # ppSaveAsPDF
     finally:
         pres.Close()
-        ppt.Quit()
+        if not shared:  # 우리가 띄운 인스턴스만 종료 — 사용자 PPT 창은 건드리지 않음
+            try:
+                ppt.Quit()
+            except Exception:
+                pass
     time.sleep(0.5)
     doc = fitz.open(pdf_path)
     n = 0
