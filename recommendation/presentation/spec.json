@@ -385,7 +385,7 @@
     {
       "type": "unknown_embedding_grouping",
       "kicker": "P1 | Unknown 탐색",
-      "title": "Unknown 후보: embedding 후 group으로 압축",
+      "title": "Unknown 신규 불량: embedding → grouping → 현업 전달",
       "motivation": "신규 불량은 정답 label이 없어 지도학습 불가 → wafer image를 embedding으로 바꾸고, 가까운 패턴끼리 묶어 검토 후보를 줄임",
       "bullets": [
         "**Embedding** — same-wafer views를 alignment target으로 두고, other wafers를 contrastive reference로 사용",
