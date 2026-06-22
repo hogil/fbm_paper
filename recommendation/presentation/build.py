@@ -1992,6 +1992,14 @@ def s_unknown_embedding_grouping(slide, d, idx):
         _rect(slide, Emu(plot_x+int(px*plot_w)-int(Inches(0.025))),
               Emu(plot_y+int(py*plot_h)-int(Inches(0.025))),
               Inches(0.05), Inches(0.05), RGBColor(0xA8,0xB1,0xBF), shape=MSO_SHAPE.OVAL)
+    # panel 1 의 A/B/C wafer 가 embedding 벡터로 매핑된 위치 (입력 ↔ 임베딩 대응)
+    for lab, px, py, ci in [("A", 0.27, 0.32, 0), ("B", 0.68, 0.40, 1), ("C", 0.51, 0.74, 2)]:
+        mx = plot_x + int(px*plot_w); my = plot_y + int(py*plot_h)
+        _rect(slide, Emu(mx-int(Inches(0.09))), Emu(my-int(Inches(0.09))),
+              Inches(0.18), Inches(0.18), colors[ci], line=WHITE, line_w=Pt(1.4), shape=MSO_SHAPE.OVAL)
+        _text(slide, Emu(mx-int(Inches(0.09))), Emu(my-int(Inches(0.09))),
+              Inches(0.18), Inches(0.18), [[(lab, dict(size=10.5, bold=True, color=WHITE))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _text(slide, x2+Inches(0.42), y+Inches(4.04), w2-Inches(0.84), Inches(0.32),
           [[("embedding distance가 가까운 wafer끼리 후보 group 형성", dict(size=12.5, bold=True, color=NAVY))]],
           align=PP_ALIGN.CENTER)
@@ -2009,9 +2017,9 @@ def s_unknown_embedding_grouping(slide, d, idx):
     _text(slide, x3+Inches(1.90), stat_y+Inches(0.52), Inches(1.32), Inches(0.24),
           [[("신규 failure 확인", dict(size=11.5, bold=True, color=INK))]], align=PP_ALIGN.CENTER)
     for k, (g, lab, col) in enumerate([
-        ("G03", "Center pattern", colors[0]),
-        ("G07", "Ring pattern", colors[1]),
-        ("G12", "Crescent pattern", colors[2]),
+        ("G03", "label 없음 → 검토", colors[0]),
+        ("G07", "label 없음 → 검토", colors[1]),
+        ("G12", "label 없음 → 검토", colors[2]),
     ]):
         gy = y+Inches(2.18+k*0.62)
         _rect(slide, x3+Inches(0.34), gy, w3-Inches(0.68), Inches(0.46),

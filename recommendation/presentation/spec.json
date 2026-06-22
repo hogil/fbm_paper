@@ -762,7 +762,7 @@
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "Cython 변환, palette PNG, pyvips/Numba viewer, CNN→YOLO, contrastive"
+              "answer": "Cython 변환, palette PNG, pyvips/Numba viewer, CNN→YOLO, contrastive embedding→HDBSCAN grouping"
             },
             {
               "check": "기술 리더십",
@@ -781,7 +781,7 @@
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "image multi-label, FCM-PM, Pair Mask, val_margin, NB reject"
+              "answer": "image multi-label, FCM-PM, Pair Mask, val_margin, Naive Bayes reject"
             },
             {
               "check": "기술 리더십",
@@ -800,7 +800,7 @@
           "items": [
             {
               "check": "기술 전문성",
-              "answer": "Region, Noise, Anomaly generator와 smoothing window, 이상 판정 기준 튜닝"
+              "answer": "Region/Noise/Anomaly generator, 합성 benchmark, binary gate 검증, robustness 점검"
             },
             {
               "check": "기술 리더십",
