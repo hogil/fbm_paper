@@ -1988,13 +1988,7 @@ def s_unknown_embedding_grouping(slide, d, idx):
     desc(xs[1], ["이미지를 점(vector)으로", "비슷한 것끼리 가까이"])
 
     # ---- panel 3: HDBSCAN grouping (설명 + 논문 + 군집) ----
-    _text(slide, Emu(xs[2] + int(Inches(0.16))), Emu(va_y - int(Inches(0.02))), Emu(pw - int(Inches(0.32))), Inches(0.30),
-          [[("밀도 기반 군집, 군집 수 미지정, noise 자동 분리", dict(size=10.5, bold=True, color=NAVY))]],
-          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    _text(slide, Emu(xs[2] + int(Inches(0.16))), Emu(va_y + int(Inches(0.26))), Emu(pw - int(Inches(0.32))), Inches(0.22),
-          [[("(Campello et al., 2013)", dict(size=9.5, color=MUTED))]],
-          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    dots(xs[2] + int(Inches(0.26)), pw - int(Inches(0.52)), va_y + int(Inches(0.56)), int(Inches(1.52)), True)
+    dots(xs[2] + int(Inches(0.26)), pw - int(Inches(0.52)), va_y + int(Inches(0.10)), int(Inches(1.94)), True)
     desc(xs[2], ["비슷한 vector를", "자동 group화 (군집)"])
 
     # ---- panel 4: 후보 group = 비슷한 wafer 여러 장 -> 현업 전달 ----
