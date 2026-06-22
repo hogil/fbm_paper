@@ -1505,17 +1505,7 @@ def _caption_runs(text, sz):
 def s_image_grid(slide, d, idx):
     _bg(slide, WHITE)
     _title_block(slide, d.get("kicker"), d["title"])
-    # 상단: 적용 이유 + HDBSCAN 설명 + 논문(full reference)
-    _text(slide, Inches(0.72), Inches(1.35), Inches(12.1), Inches(0.27),
-          [[("적용 이유   ", dict(size=12, bold=True, color=ACCENT)),
-            (d.get("motivation", ""), dict(size=12, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
-    _text(slide, Inches(0.72), Inches(1.64), Inches(12.1), Inches(0.27),
-          [[("HDBSCAN   ", dict(size=11, bold=True, color=NAVY)),
-            ("밀도가 높은 영역을 한 group으로, 희소한 점은 noise로 분리하고, 군집 수를 미리 지정하지 않는 계층적 밀도 기반 군집화",
-             dict(size=11, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
-    _text(slide, Inches(0.72), Inches(1.92), Inches(12.1), Inches(0.22),
-          [[("Campello, R.J.G.B., Moulavi, D. & Sander, J. Density-Based Clustering Based on Hierarchical Density Estimates. PAKDD 2013, LNCS 7819, pp. 160-172.",
-             dict(size=9, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
+    _motiv_head(slide, d.get("motivation"))
     imgs = d["images"]; cols = d.get("grid_cols", 3)
     rows = (len(imgs)+cols-1)//cols
     top = Inches(2.0)
@@ -3301,17 +3291,7 @@ def s_papertext(slide, d, idx):
     각 fig = 얇은 테두리 박스 + (선택 head) + (라벨 줄 + 들여쓴 monospace 내용) + 하단 Fig 캡션."""
     _bg(slide, WHITE)
     _title_block(slide, d.get("kicker"), d["title"])
-    # 상단: 적용 이유 + HDBSCAN 설명 + 논문(full reference)
-    _text(slide, Inches(0.72), Inches(1.35), Inches(12.1), Inches(0.27),
-          [[("적용 이유   ", dict(size=12, bold=True, color=ACCENT)),
-            (d.get("motivation", ""), dict(size=12, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
-    _text(slide, Inches(0.72), Inches(1.64), Inches(12.1), Inches(0.27),
-          [[("HDBSCAN   ", dict(size=11, bold=True, color=NAVY)),
-            ("밀도가 높은 영역을 한 group으로, 희소한 점은 noise로 분리하고, 군집 수를 미리 지정하지 않는 계층적 밀도 기반 군집화",
-             dict(size=11, color=INK))]], anchor=MSO_ANCHOR.MIDDLE)
-    _text(slide, Inches(0.72), Inches(1.92), Inches(12.1), Inches(0.22),
-          [[("Campello, R.J.G.B., Moulavi, D. & Sander, J. Density-Based Clustering Based on Hierarchical Density Estimates. PAKDD 2013, LNCS 7819, pp. 160-172.",
-             dict(size=9, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
+    _motiv_head(slide, d.get("motivation"))
     top = int(Inches(2.0))
     if d.get("bullets"):
         bh = int(Inches(d.get("body_h", 0.7)))
