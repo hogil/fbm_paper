@@ -754,63 +754,63 @@
     },
     {
       "type": "closing",
-      "kicker": "결론 | 평가 항목 대응 summary",
-      "title": "평가 항목별 핵심 근거",
+      "kicker": "결론 | 프로젝트별 평가 항목 대응",
+      "title": "P1/P2/P3 핵심 근거",
       "score_axes": [
         {
-          "axis": "기술 전문성",
-          "thumb": "roi_yolo_cascade_panel.png",
-          "question": "AI 문제 정의 → 모델/실험 → pipeline → 모니터링",
+          "axis": "P1 | Failbit Map AI",
+          "thumb": "p1_roi_crop_real.png",
+          "question": "대량 FBM 조회와 Known/Unknown 분석",
           "items": [
             {
-              "check": "문제 정의와 목표",
-              "answer": "P1 FBM image / P2 multi-label / P3 trend anomaly"
+              "check": "기술 전문성",
+              "answer": "FBM image pipeline, Known F1 0.95, Unknown 13→7"
             },
             {
-              "check": "모델 설계와 실험 개선",
-              "answer": "Known F1 0.95 / P2 bit-F1 0.9927 / P3 binary-F1 0.9967"
+              "check": "기술 리더십",
+              "answer": "DRAM YE 분석 담당자에게 FBM 판독법 학습, label/FP/FN 검증"
             },
             {
-              "check": "데이터 pipeline과 운영 loop",
-              "answer": "FBM 변환, FCM-PM 합성, generator, label → retrain → monitoring"
+              "check": "기술성과",
+              "answer": "D1a/b/c/d 분석 파트 사용, 공수 90%↓, 수율 +0.02%p"
             }
           ]
         },
         {
-          "axis": "기술 리더십",
-          "thumb": "wafer_center_scratch.png",
-          "question": "현업 구상 → 기술 결정 → 조직 확산",
+          "axis": "P2 | Chip multi-label",
+          "thumb": "fcm_pm_panel.png",
+          "question": "measure value 한계 → image supervision",
           "items": [
             {
-              "check": "협업 범위와 의사결정",
-              "answer": "DRAM YE 공동 구상, 설계/구현 본인 주도"
+              "check": "기술 전문성",
+              "answer": "FCM-PM, val_margin, NB reject로 FAR tail 제어"
             },
             {
-              "check": "기술 선택 전문성",
-              "answer": "ConvNeXtV2, NeCo, FCM-PM, val_margin 적용 결정"
+              "check": "기술 리더십",
+              "answer": "P1 판독 기준으로 현업 유사 chip image와 2-combo rule 설계"
             },
             {
-              "check": "조직 확산과 coverage",
-              "answer": "D1a/b/c/d 분석 파트 사용"
+              "check": "기술성과",
+              "answer": "controlled validation bit-F1 0.9927, FAR 0.00%"
             }
           ]
         },
         {
-          "axis": "기술성과",
+          "axis": "P3 | Trend anomaly",
           "thumb": "trend_spike_view.png",
-          "question": "양산 적용 → KPI → 타 제품 확장",
+          "question": "abnormal label 부족 → synthetic validation",
           "items": [
             {
-              "check": "양산 공정과 품질 적용",
-              "answer": "P1 viewer 양산 운영, Known 및 Unknown 데이터 검증"
+              "check": "기술 전문성",
+              "answer": "episode generator와 binary validation으로 이상 판정 검증"
             },
             {
-              "check": "핵심 KPI 개선",
-              "answer": "공수 90%↓, 수율 +0.02%p, 정량 기여"
+              "check": "기술 리더십",
+              "answer": "BBD/Overlay/CD 판정 경험을 generator rule로 코드화"
             },
             {
-              "check": "타 공정과 제품 확장",
-              "answer": "Flash YE 확장 요청, object-id, multimodal, generator 확장"
+              "check": "기술성과",
+              "answer": "7,000 trend benchmark, binary-F1 0.9967, 타 item 확장 가능"
             }
           ]
         }
