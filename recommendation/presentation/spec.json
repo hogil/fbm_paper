@@ -766,7 +766,7 @@
             },
             {
               "check": "기술 리더십",
-              "answer": "DRAM YE 공동 구상, FBM 판독법 학습 후 label/FP/FN 검증"
+              "answer": "DRAM YE 공동 구상, 설계/구현 본인 수행 — 판독법 학습 후 label/FP/FN 검증"
             },
             {
               "check": "기술성과",
@@ -785,7 +785,7 @@
             },
             {
               "check": "기술 리더십",
-              "answer": "DRAM YE와 중복 failure 문제 공동 구상, FCM-PM/val-margin 의사결정 주도"
+              "answer": "DRAM YE 중복 failure 문제 공동 구상, FCM-PM/val-margin 설계 본인 수행"
             },
             {
               "check": "기술성과",
@@ -808,7 +808,7 @@
             },
             {
               "check": "기술성과",
-              "answer": "7,000 trend benchmark, binary-F1 0.9967, 타 item 확대"
+              "answer": "7,000 trend benchmark, binary-F1 0.9967, 현업 item 확장"
             }
           ]
         }

@@ -4003,9 +4003,6 @@ def s_p2_selection(slide, d, idx):
               [[(delta, dict(size=9.0, bold=True, color=green if delta != "reject" else red))]],
               align=PP_ALIGN.RIGHT)
 
-    _text(slide, Inches(0.78), Inches(6.82), Inches(11.8), Inches(0.20),
-          [[("NB reject는 별도 inference safeguard이며, 다음 장 main table은 FCM-PM + val-margin 단독 성능입니다.",
-             dict(size=9.6, color=MUTED))]], anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
 
