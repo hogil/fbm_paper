@@ -348,7 +348,110 @@ def s_title(slide, d, idx):
           align=PP_ALIGN.RIGHT, anchor=MSO_ANCHOR.MIDDLE)
 
 
+def s_section_story(slide, d, idx):
+    """프로젝트 표지 (clean 3-beat 스토리): 좌측 P 번호 레일 + 우측 [문제 → 개발 → 성과]
+    3컬럼 흐름 + 하단 본인기여/운영상태 한 줄. 칸 욱여넣기 대신 좌→우 한 흐름으로 읽히게 함."""
+    _bg(slide, WHITE)
+    SLATE = RGBColor(0x55, 0x60, 0x75)
+    # ── 좌측 레일 (정체성만: PROJECT / rail_sub / 큰 P 번호 / 진행 점) ──
+    _rect(slide, 0, 0, Inches(3.2), EMU_H, PANEL)
+    _rect(slide, 0, 0, EMU_W, Inches(0.12), RGBColor(0xCF, 0xD4, 0xDB))
+    _rect(slide, Inches(0.85), Inches(0.92), Inches(0.5), Pt(2.2), ACCENT)
+    _text(slide, Inches(0.85), Inches(1.10), Inches(2.2), Inches(0.3),
+          [[("PROJECT", dict(size=12, bold=True, color=ACCENT))]])
+    _text(slide, Inches(0.85), Inches(1.42), Inches(2.3), Inches(0.5),
+          [[(d.get("rail_sub", "제조품질 AI"), dict(size=12.5, bold=True, color=NAVY))]])
+    _rect(slide, Inches(0.85), Inches(2.62), Inches(0.16), Inches(1.5), ACCENT)
+    _text(slide, Inches(1.2), Inches(2.46), Inches(2.0), Inches(1.5),
+          [[(d.get("no", ""), dict(size=78, bold=True, color=ACCENT))]])
+    if d.get("prog"):
+        cur, tot = d["prog"]
+        seg = ["P1  Failbit Map", "P2  Chip multi", "P3  Trend generate"]
+        sy0 = int(Inches(4.34)); srow = int(Inches(0.32))
+        for k in range(tot):
+            on = (k + 1) == cur; yy = sy0 + k * srow
+            _rect(slide, Inches(0.95), Emu(yy + int(Inches(0.04))), Inches(0.13), Inches(0.13),
+                  ACCENT if on else RGBColor(0xC2, 0xCC, 0xDC), shape=MSO_SHAPE.OVAL)
+            _text(slide, Inches(1.23), Emu(yy), Inches(1.95), Inches(0.26),
+                  [[(seg[k] if k < len(seg) else f"P{k+1}", dict(size=11, bold=on,
+                     color=(NAVY if on else MUTED)))]], anchor=MSO_ANCHOR.MIDDLE)
+    # 하단 운영 상태 배지(레일 안)
+    if d.get("ops"):
+        oy = int(Inches(6.5))
+        _rect(slide, Inches(0.85), Emu(oy), Inches(2.3), Inches(0.5), WHITE, line=LINE)
+        _rect(slide, Inches(0.85), Emu(oy), Inches(0.09), Inches(0.5), ACCENT)
+        _text(slide, Inches(1.06), Emu(oy), Inches(2.0), Inches(0.5),
+              [[("운영 상태", dict(size=8.5, bold=True, color=ACCENT))],
+               [(d["ops"], dict(size=9.5, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+    # ── 우측: 제목 + 배경 띠 ──
+    rx = Inches(3.65); rw = Inches(9.25)
+    _text(slide, rx, Inches(0.52), rw, Inches(0.95),
+          [[(d["title"].replace("\n", "  "), dict(size=29, bold=True, color=NAVY))]],
+          anchor=MSO_ANCHOR.MIDDLE)
+    if d.get("lead"):
+        by = int(Inches(1.62)); bh = int(Inches(0.56))
+        _rect(slide, rx, Emu(by), rw, Emu(bh), RGBColor(0xEE, 0xF1, 0xF7))
+        _rect(slide, rx, Emu(by), Inches(0.1), Emu(bh), ACCENT)
+        _text(slide, Emu(int(rx) + int(Inches(0.24))), Emu(by), Inches(1.2), Emu(bh),
+              [[("배경", dict(size=12.5, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, Emu(int(rx) + int(Inches(1.35))), Emu(by), Emu(int(rw) - int(Inches(1.55))), Emu(bh),
+              [[(d["lead"], dict(size=14, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+    # ── 3컬럼 스토리: 문제 → 개발 → 성과 ──
+    story = d.get("story", [])
+    n = len(story)
+    col_y = int(Inches(2.42))
+    col_h = int(Inches(5.5)) - col_y
+    hdr_h = int(Inches(0.4))
+    gap = int(Inches(0.46)); x0 = int(rx)
+    cw = (int(rw) - gap * (n - 1)) // max(1, n)
+    for i, col in enumerate(story):
+        cx = x0 + i * (cw + gap)
+        _rect(slide, Emu(cx), Emu(col_y), Emu(cw), Emu(col_h), WHITE, line=LINE,
+              shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        # 컬럼 헤더 (얇은 띠)
+        _rect(slide, Emu(cx), Emu(col_y), Emu(cw), Emu(hdr_h), ACCENT,
+              shape=MSO_SHAPE.ROUNDED_RECTANGLE)
+        _rect(slide, Emu(cx), Emu(col_y + hdr_h - int(Inches(0.2))), Emu(cw), Inches(0.2), ACCENT)
+        _text(slide, Emu(cx + int(Inches(0.22))), Emu(col_y), Emu(cw - int(Inches(0.38))), Emu(hdr_h),
+              [[(col.get("head", ""), dict(size=12.5, bold=True, color=WHITE))]],
+              anchor=MSO_ANCHOR.MIDDLE)
+        # 컬럼 항목 (간격 상한을 두고 본문 영역 중앙에 배치 — 항목 적어도 휑하지 않게)
+        items = col.get("items", [])
+        ni = max(1, len(items))
+        body_top = col_y + hdr_h + int(Inches(0.12)); body_bot = col_y + col_h - int(Inches(0.12))
+        avail = body_bot - body_top
+        slot = min(int(Inches(0.5)), avail // ni)
+        start = body_top + (avail - slot * ni) // 2
+        isz = 13 if ni <= 4 else 11.5
+        for j, it in enumerate(items):
+            iy = start + j * slot
+            _rect(slide, Emu(cx + int(Inches(0.24))), Emu(iy + slot // 2 - int(Inches(0.055))),
+                  Inches(0.11), Inches(0.11), ACCENT, shape=MSO_SHAPE.OVAL)
+            _text(slide, Emu(cx + int(Inches(0.48))), Emu(iy), Emu(cw - int(Inches(0.64))), Emu(slot),
+                  [[(it, dict(size=isz, bold=True, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+        # 컬럼 사이 화살표
+        if i < n - 1:
+            ax = cx + cw + (gap - int(Inches(0.3))) // 2
+            _rect(slide, Emu(ax), Emu(col_y + col_h // 2 - int(Inches(0.15))),
+                  Inches(0.3), Inches(0.3), RGBColor(0xB7, 0xC0, 0xCE), shape=MSO_SHAPE.RIGHT_ARROW)
+    # ── 하단 띠: 본인 기여 → 기술 stack 순서 ──
+    def _band(by, h, lab, txt, txt_size, txt_bold):
+        _rect(slide, rx, Emu(by), rw, Emu(h), RGBColor(0xF2, 0xF5, 0xFA))
+        _rect(slide, rx, Emu(by), Inches(0.09), Emu(h), ACCENT)
+        _text(slide, Emu(int(rx) + int(Inches(0.22))), Emu(by), Inches(1.6), Emu(h),
+              [[(lab, dict(size=11, bold=True, color=ACCENT))]], anchor=MSO_ANCHOR.MIDDLE)
+        _text(slide, Emu(int(rx) + int(Inches(1.8))), Emu(by), Emu(int(rw) - int(Inches(2.0))), Emu(h),
+              [[(txt, dict(size=txt_size, bold=txt_bold, color=NAVY))]], anchor=MSO_ANCHOR.MIDDLE)
+    if d.get("contrib"):
+        _band(int(Inches(5.66)), int(Inches(0.48)), "본인 기여", d["contrib"], 12.5, True)
+    if d.get("stack"):
+        _band(int(Inches(6.18)), int(Inches(0.44)), "기술 stack", d["stack"], 11, False)
+    _footer(slide, idx)
+
+
 def s_section(slide, d, idx):
+    if d.get("story"):
+        return s_section_story(slide, d, idx)
     _bg(slide, WHITE)
     # 옅은 좌측 색면으로 빈 공간 절제 있게 채움(공백 과다 완화)
     _rect(slide, 0, 0, Inches(3.55), EMU_H, PANEL)
@@ -1963,9 +2066,9 @@ def _closing_score_summary(slide, axes, bottom, bottom_lines=None):
                   Emu(int(cw) - int(pad)*2 - int(Inches(0.16))), Inches(0.36),
                   [[(axis["question"], dict(size=11.2, bold=True, color=NAVY))]],
                   align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-        chip_y = y0 + Inches(1.36)
-        for j, ev in enumerate(axis.get("evidence", [])[:3]):
-            cy = Emu(int(chip_y) + j * int(Inches(0.66)))
+        chip_y = y0 + Inches(1.32)
+        for j, ev in enumerate(axis.get("evidence", [])[:4]):
+            cy = Emu(int(chip_y) + j * int(Inches(0.62)))
             box_fill = RGBColor(0xF7, 0xFA, 0xFC) if j == 0 else WHITE
             _rect(slide, x + pad, cy, Emu(int(cw) - int(pad)*2), Inches(0.50),
                   box_fill, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE)

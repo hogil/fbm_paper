@@ -18,7 +18,7 @@
           "no": "P1",
           "task": "Failbit Map failure analysis",
           "thumb": "wafer_center_scratch.png",
-          "problem": "Known 고질불량 정확 파악, Unknown 신규불량 조기검출, 대량 UI 조회",
+          "problem": "고질불량 발생 wafer/물량 선별, 신규 불량 조기 포착, 대량 Failbit Map 조회",
           "approach": "좌표 보존 FBM + ultra-fast viewer + Known/Unknown AI",
           "result": "[양산 운영] 일 2만 wafer/day, 공수 90%↓ + 수율 개선 사례",
           "stack": "Stack: Cython / pyvips / Numba, ConvNeXtV2 / YOLO, contrastive / HDBSCAN"
@@ -47,44 +47,29 @@
       "type": "section",
       "no": "P1",
       "title": "Failbit Map\nKnown & Unknown 분석",
-      "subtitle": "Known 고질불량 분류, Unknown 신규불량 후보 검출, 대규모 Failbit Map 초고속 UI 조회를 운영 구조로 통합",
-      "field_problem": "FBM 48매 조회 한계, 대량 이미지 초고속 검토와 고질 불량 정확 파악, 신규 불량 신속 확인 필요",
-      "tech_problem": "raw log를 좌표 보존 이미지로 대량 변환, 초고속 viewer engine, Known 2-stage 분류, label 없는 Unknown 군집",
+      "lead": "Failbit Map은 공정개발 최종 결과맵, EDS test로 unit block별 불량 정도(0~7)를 약 1,000만 point로 표현, 일 약 2만 장 누적",
+      "stack": "Cython / pyvips / Numba, ConvNeXtV2 / YOLO, contrastive / HDBSCAN",
       "prog": [
         1,
         3
       ],
-      "desc": "발표 구조: 개발배경·문제 → AI 필요성 → 개발내용 → 성과·적용 → 확장·본인기여",
-      "kpi": "평가축: 기술 전문성 / 기술 리더십 / 기술성과",
-      "stat_cards": [
+      "rail_sub": "Failbit Map 분석",
+      "story": [
         {
-          "big": "문제·AI 필요성",
-          "label": "Known/Unknown + 대량 UI"
+          "head": "문제 / AI 필요성",
+          "items": ["48매 조회 / 수작업으로 대량 확인 한계", "고질불량 물량 정확 선별", "신규불량 조기 검출"]
         },
         {
-          "big": "개발내용",
-          "label": "pipeline·viewer·model"
+          "head": "개발 내용",
+          "items": ["이미지 데이터 파이프라인", "대용량 이미지 조회 / 라벨링 web app", "CNN 2-stage 분류", "self-supervised 표현학습"]
         },
         {
-          "big": "성과·확장",
-          "label": "양산 운영·object-id"
+          "head": "성과 / 확장",
+          "items": ["분류 F1 0.95", "이상 검출 7/13", "일 2만 wafer 양산 운영", "123억 정량 기여", "object-id map 차세대 모델"]
         }
       ],
-      "side_stat_cards": [
-        {
-          "big": "본인 60%",
-          "label": "직접 설계/구현"
-        },
-        {
-          "big": "양산 운영",
-          "label": "viewer + pipeline"
-        }
-      ],
-      "ba": {
-        "before": "소량 수작업 검토",
-        "after": "대량 image UI + AI 검증"
-      },
-      "rail_sub": "문제 → 개발 → 성과"
+      "contrib": "데이터 파이프라인 / 대용량 이미지 web app / AI 모델 전 영역 직접 설계, 구현",
+      "ops": "mapviewer D1a/b/c/d 운영"
     },
     {
       "type": "archflow",
@@ -468,44 +453,29 @@
       "type": "section",
       "no": "P2",
       "title": "Chip Multi-label\nFCM-PM classification",
-      "subtitle": "Measure value 한계와 2-combo label 불가를 image multi-label supervision으로 해결",
-      "field_problem": "measure value로는 chip 내 중복 결함(2-combo)을 확인할 수 없음",
-      "tech_problem": "single label도 부족, 2-combo label 수집 불가능, single source에서 FCM-PM으로 2-combo 합성",
+      "lead": "chip 불량 분석은 표준적으로 measure value 중심, 동시 발생하는 여러 failure pattern은 이미지로만 확인 가능",
+      "stack": "PyTorch, FCM-PM, label smoothing / ASL, NB reject, KD",
       "prog": [
         2,
         3
       ],
-      "rail_sub": "문제 → 개발 → 성과",
-      "desc": "발표 구조: 개발배경·문제 → AI 필요성 → 개발내용 → 성과·적용 → 확장·본인기여",
-      "kpi": "평가축: 기술 전문성 / 기술 리더십 / 기술성과",
-      "stat_cards": [
+      "rail_sub": "Chip multi-label",
+      "story": [
         {
-          "big": "문제·AI 필요성",
-          "label": "중복 failure 확인 한계"
+          "head": "문제 / AI 필요성",
+          "items": ["chip 내 중복 결함 확인 불가", "single label도 부족", "2-combo label 수집 불가"]
         },
         {
-          "big": "개발내용",
-          "label": "FCM-PM·val-margin"
+          "head": "개발 내용",
+          "items": ["CutMix 기반 데이터 합성", "multi-label 이미지 분류", "validation 기반 모델 선택", "false alarm 제어"]
         },
         {
-          "big": "성과·확장",
-          "label": "bit-F1·FAR·KD"
+          "head": "성과 / 확장",
+          "items": ["multi-label F1 0.9927", "false alarm 0%", "single + 2-combo 동시 검출", "ensemble robustness 확보", "KD 단일 모델 생산성"]
         }
       ],
-      "side_stat_cards": [
-        {
-          "big": "본인 80%",
-          "label": "직접 설계/구현"
-        },
-        {
-          "big": "개발 중",
-          "label": "GPU 배포 예정"
-        }
-      ],
-      "ba": {
-        "before": "measure value 한계",
-        "after": "single source → 2-combo supervision"
-      }
+      "contrib": "데이터 합성 / multi-label 분류 / 모델 선택 / false alarm 제어 전 영역 직접 설계, 구현",
+      "ops": "controlled synthetic 검증 단계"
     },
     {
       "type": "p2_intro",
@@ -531,44 +501,29 @@
       "type": "section",
       "no": "P3",
       "title": "Trend Anomaly",
-      "subtitle": "real abnormal label 부족을 domain-rule episode generator와 binary validation으로 해결",
-      "field_problem": "BBD/Overlay/CD trend 수동 모니터링, 초보자 누락과 spec-in 사고 위험",
-      "tech_problem": "실제 이상 label 희소, episode generator로 trend와 anomaly, noise 합성 후 binary gate 검증",
+      "lead": "Thickness / Overlay / CD 등 제품 계측 trend(시계열)를 사람이 보고 정상 산포 대비 이상 여부 판정",
+      "stack": "config 기반 episode generator, binary classifier",
       "prog": [
         3,
         3
       ],
-      "rail_sub": "문제 → 개발 → 성과",
-      "desc": "발표 구조: 개발배경·문제 → AI 필요성 → 개발내용 → 성과·적용 → 확장·본인기여",
-      "kpi": "평가축: 기술 전문성 / 기술 리더십 / 기술성과",
-      "stat_cards": [
+      "rail_sub": "Trend anomaly",
+      "story": [
         {
-          "big": "문제·AI 필요성",
-          "label": "abnormal label 부족"
+          "head": "문제 / AI 필요성",
+          "items": ["수작업 판정 → 누락 / spec-in 위험", "실제 이상 label 희소", "검증 데이터 부족"]
         },
         {
-          "big": "개발내용",
-          "label": "rule-based generator"
+          "head": "개발 내용",
+          "items": ["도메인 규칙 기반 시계열 합성", "정상 산포 / 노이즈 모델링", "이상 패턴 주입", "binary 분류 검증"]
         },
         {
-          "big": "성과·확장",
-          "label": "benchmark·binary validation"
+          "head": "성과 / 확장",
+          "items": ["benchmark 7,000 구성", "binary F1 0.9967", "abnormal recall 0.9987", "현업 데이터 적용", "defect type 다중 분류 확장"]
         }
       ],
-      "side_stat_cards": [
-        {
-          "big": "본인 70%",
-          "label": "직접 설계/구현"
-        },
-        {
-          "big": "PoC",
-          "label": "현업 검증 예정"
-        }
-      ],
-      "ba": {
-        "before": "real abnormal 부족",
-        "after": "generator + validation"
-      }
+      "contrib": "BBD / Overlay / CD 계측 경험 기반 데이터 합성 / 이상 검출 / 검증 체계 직접 설계, 구현",
+      "ops": "synthetic trend PoC, 현업 검증 예정"
     },
     {
       "type": "p3_intro",
@@ -674,29 +629,32 @@
       "score_axes": [
         {
           "axis": "기술 전문성",
-          "question": "문제정의 · 모델 · pipeline",
+          "question": "문제정의 / 모델 / pipeline / 모니터링",
           "evidence": [
-            "P1: FBM pipeline",
-            "P2: FCM-PM",
-            "P3: generator"
+            "AI 문제 정의와 목표 설정 (P1 / P2 / P3)",
+            "모델 설계 / 실험으로 성능 개선 (F1 0.95 / 0.9927 / 0.9967)",
+            "데이터 pipeline + validation 구조",
+            "재학습 / 모니터링 체계 (NT sweep, retrain loop)"
           ]
         },
         {
           "axis": "기술 리더십",
-          "question": "협업 · 의사결정 · 확산",
+          "question": "협업 / 의사결정 / 확산",
           "evidence": [
-            "현업/관리자와 운영·검증 flow 주도",
-            "교수 자문 기반 기술 선택",
-            "세미나·문서·코드 교육"
+            "현업 / 관리자 / AI센터 협업 주도",
+            "교수 자문 기반 기술 의사결정",
+            "viewer 양산 운영, DRAM 전제품 사용",
+            "세미나 / 문서 / 코드 교육으로 확산"
           ]
         },
         {
           "axis": "기술성과",
-          "question": "양산 · KPI · 확장",
+          "question": "양산 / KPI / 확장",
           "evidence": [
-            "P1 viewer 양산 운영",
-            "공수 90%↓, 수율 +0.02%p",
-            "object-id map·multimodal 확장"
+            "P1 viewer 양산 운영 + 123억 정량 기여",
+            "공수 90%↓, 수율 +0.02%p (KPI)",
+            "신규불량 7/13 review",
+            "P2 / P3 타 공정 / 제품 확장 PoC"
           ]
         }
       ],
@@ -714,7 +672,7 @@
           "items": [
             {
               "label": "2 소개",
-              "text": "고질불량 · 신규 후보 · 대량 조회"
+              "text": "고질불량 물량 · 신규 불량 · 대량 조회"
             },
             {
               "label": "3 개발",
