@@ -3628,29 +3628,50 @@ def s_unknown_ablation(slide, d, idx):
     _bg(slide, WHITE)
     _title_block_compact(slide, "P1 | Unknown evidence", "생성 평가셋 기반 contrastive recipe ablation")
     _text(slide, Inches(0.80), Inches(1.40), Inches(11.8), Inches(0.34),
-          [[("[생성 데이터 개발 지표] 실전 현업 review와 분리한 모델 개발용 ablation",
-             dict(size=12.6, bold=True, color=NAVY))]])
+          [[("[생성 데이터 개발 지표] 실전 현업 review와 분리한 개발용 ablation — Local 추가/제외 결과 동일, 최종은 4-tool 채택",
+             dict(size=12.0, bold=True, color=NAVY))]])
 
-    headers = ["#", "Recipe (per class 500, normal 2000)", "M1 capture", "M2 noise", "M3 Completeness", "Sil"]
+    headers = ["#", "Recipe (per class 500, normal 2000)", "capture ↑", "noise % ↓", "Completeness ↑", "n_cluster"]
     rows = [
-        ("1", "Global InfoNCE only (baseline)", "0.9337", "15.78%", "0.9468", "0.582"),
-        ("2", "+ Local DenseCL (LW=0.5)", "0.9361", "13.87%", "0.9502", "0.514"),
-        ("3", "+ MoCo Queue 4096", "0.9356", "9.45%", "0.9474", "0.573"),
-        ("4", "+ Neg-sim filter 0.72", "0.9250", "8.23%", "0.9485", "0.611"),
-        ("5", "+ NeCo 0.2 (5-tool full)", "0.9559", "6.66%", "0.9660", "0.6104"),
-        ("6", "Final recipe (Local DenseCL 제외 4-tool)", "0.9559", "6.66%", "0.9660", "0.781"),
-        ("7", "Final recipe + noise threshold τ=0.5", "0.9619", "0.00%", "0.9679", "0.781"),
+        ("1", "Global InfoNCE only (baseline)", "0.9337", "15.78%", "0.9468", "40"),
+        ("2", "+ Local DenseCL (LW=0.5)", "0.9361", "13.87%", "0.9502", "37"),
+        ("3", "+ MoCo Queue 4096", "0.9356", "9.45%", "0.9474", "41"),
+        ("4", "+ NV-Retriever NEG 0.72", "0.9250", "8.23%", "0.9485", "40"),
+        ("5", "+ NeCo 0.2 (Local 포함, 5-tool)", "0.9559", "6.66%", "0.9660", "35"),
+        ("6", "최종 4-tool (Local 제외 = 5-tool 동일)", "0.9559", "6.66%", "0.9660", "35"),
     ]
-    _native_evidence_table(slide, Inches(0.70), Inches(1.90), Inches(11.92), Inches(4.30),
-                           headers, rows, [0.42, 4.80, 1.20, 1.05, 1.45, 0.82],
-                           font_size=10.2, header_size=10.4, left_cols={1},
-                           bold_rows={6})
+    _native_evidence_table(slide, Inches(0.70), Inches(1.90), Inches(11.92), Inches(3.72),
+                           headers, rows, [0.42, 4.62, 1.18, 1.12, 1.50, 0.88],
+                           font_size=10.8, header_size=11.0, left_cols={1},
+                           bold_rows={5})
 
-    _rect(slide, Inches(0.82), Inches(6.38), Inches(11.75), Inches(0.34), PANEL, line=LINE)
-    _rect(slide, Inches(0.82), Inches(6.38), Inches(0.10), Inches(0.34), COVER_BAR)
-    _text(slide, Inches(1.00), Inches(6.36), Inches(11.35), Inches(0.38),
-          [[("Noise 15.78% → 0.00%  /  Capture 0.9337 → 0.9619",
-             dict(size=14.0, bold=True, color=NAVY))]], align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    # Row 7 is not another representation recipe. It reuses the final embedding
+    # and only changes the noise rejection threshold, so show it as a separate
+    # operating-point step instead of a duplicate-looking recipe row.
+    _rect(slide, Inches(0.82), Inches(5.82), Inches(11.75), Inches(0.74), WHITE, line=LINE)
+    _rect(slide, Inches(0.82), Inches(5.82), Inches(0.11), Inches(0.74), COVER_BAR)
+    _text(slide, Inches(1.05), Inches(5.92), Inches(3.05), Inches(0.22),
+          [[("Final operating point", dict(size=12.8, bold=True, color=NAVY))]])
+    _text(slide, Inches(1.05), Inches(6.18), Inches(3.05), Inches(0.20),
+          [[("동일 embedding에 threshold τ=0.5 적용", dict(size=10.8, color=MUTED))]])
+    metric_x = [Inches(4.35), Inches(6.95), Inches(9.55)]
+    metric_w = Inches(2.25)
+    metrics = [
+        ("noise", "6.66% → 0.00%"),
+        ("capture", "0.9559 → 0.9619"),
+        ("complete", "0.9660 → 0.9679"),
+    ]
+    for mx, (lab, val) in zip(metric_x, metrics):
+        _text(slide, mx, Inches(5.92), metric_w, Inches(0.20),
+              [[(lab, dict(size=10.5, bold=True, color=MUTED))]],
+              align=PP_ALIGN.CENTER)
+        _text(slide, mx, Inches(6.13), metric_w, Inches(0.28),
+              [[(val, dict(size=12.4, bold=True, color=NAVY))]],
+              align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    _text(slide, Inches(4.35), Inches(6.36), Inches(7.45), Inches(0.16),
+          [[("새 학습 recipe가 아니라 후보 noise를 제거하는 후처리",
+             dict(size=9.5, color=MUTED))]],
+          align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
     _footer(slide, idx)
 
 
